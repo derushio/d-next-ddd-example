@@ -29,12 +29,12 @@ graph TD
     
     SA --> APP
     
-    style PRES fill:#e3f2fd,stroke:#1976d2
-    style APP fill:#e1f5fe,stroke:#0277bd
-    style UI fill:#f3e5f5,stroke:#9c27b0
-    style SA fill:#e8f5e8,stroke:#4caf50
-    style STATE fill:#fff3e0,stroke:#ff9800
-    style EVENT fill:#ffebee,stroke:#f44336
+    style PRES fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style APP fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style UI fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style SA fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style STATE fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style EVENT fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
 ```
 
 ### 他レイヤーとの連携 🤝
@@ -156,10 +156,10 @@ graph TD
     DTO --> SA
     SA --> UI
     
-    style SA fill:#e8f5e8,stroke:#4caf50
-    style UI fill:#f3e5f5,stroke:#9c27b0
-    style UC fill:#e1f5fe,stroke:#0277bd
-    style DTO fill:#fff3e0,stroke:#ff9800
+    style SA fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style UI fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style UC fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style DTO fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
 ```
 
 **連携方法：**
@@ -176,9 +176,9 @@ graph TD
     PRES --> APP[Application Layer]
     APP --> DOMAIN
     
-    style PRES fill:#e3f2fd,stroke:#1976d2
-    style APP fill:#e1f5fe,stroke:#0277bd
-    style DOMAIN fill:#e8f5e8,stroke:#388e3c
+    style PRES fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style APP fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style DOMAIN fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     
     classDef forbidden stroke-dasharray: 5 5,stroke:#f44336
     class PRES-->DOMAIN forbidden
@@ -194,9 +194,9 @@ graph TD
     PRES --> APP[Application Layer]
     APP --> INFRA
     
-    style PRES fill:#e3f2fd,stroke:#1976d2
-    style APP fill:#e1f5fe,stroke:#0277bd
-    style INFRA fill:#fff3e0,stroke:#f57c00
+    style PRES fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style APP fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style INFRA fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
     
     classDef forbidden stroke-dasharray: 5 5,stroke:#f44336
     class PRES-->INFRA forbidden

@@ -64,11 +64,11 @@ graph TB
     IS --> EXT
     DB_FACTORY --> DB
     
-    classDef presentation fill:#e3f2fd
-    classDef application fill:#e1f5fe
-    classDef domain fill:#f3e5f5
-    classDef infrastructure fill:#e8f5e8
-    classDef external fill:#fff3e0
+    classDef presentation fill:#1e3a8a,stroke:#1e40af,stroke-width:2px,color:#ffffff
+    classDef application fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    classDef domain fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    classDef infrastructure fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    classDef external fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
 ```
 
 ---

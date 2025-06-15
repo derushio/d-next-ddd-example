@@ -32,10 +32,10 @@ graph TD
     C --> H
     D --> I
     
-    style A fill:#e3f2fd
-    style B fill:#e8f5e8
-    style C fill:#fff3e0
-    style D fill:#f3e5f5
+    style A fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style B fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style C fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style D fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style E fill:#fce4ec
 ```
 
@@ -52,12 +52,12 @@ graph LR
     CONFIG[Configuration] --> IMPL
     LOGGER[Logger] --> IMPL
     
-    style DOMAIN fill:#e8f5e8
-    style IMPL fill:#e3f2fd
-    style EMAIL fill:#fff3e0
-    style STORAGE fill:#fff3e0
-    style API fill:#fff3e0
-    style PAYMENT fill:#fff3e0
+    style DOMAIN fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style IMPL fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style EMAIL fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style STORAGE fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style API fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style PAYMENT fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
 ```
 
 ---

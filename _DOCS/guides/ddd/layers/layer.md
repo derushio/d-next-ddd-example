@@ -22,10 +22,10 @@ graph TD
         HIGH[上位層] --> LOW[下位層]
     end
     
-    style PRES fill:#e3f2fd,stroke:#1976d2
-    style APP fill:#e1f5fe,stroke:#0277bd
-    style DOMAIN fill:#e8f5e8,stroke:#388e3c
-    style INFRA fill:#fff3e0,stroke:#f57c00
+    style PRES fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style APP fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style DOMAIN fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style INFRA fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
     
     classDef userStyle fill:#f8bbd9,stroke:#e91e63
     class USER userStyle
@@ -48,17 +48,17 @@ graph LR
         I3 -.-> A3[Application]
     end
     
-    style P1 fill:#e3f2fd
-    style A1 fill:#e1f5fe
-    style D1 fill:#e8f5e8
-    style I1 fill:#fff3e0
+    style P1 fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style A1 fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style D1 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style I1 fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
     
-    style D2 fill:#ffebee,stroke:#f44336
-    style I2 fill:#ffebee,stroke:#f44336
-    style A2 fill:#ffebee,stroke:#f44336
-    style I3 fill:#ffebee,stroke:#f44336
-    style D3 fill:#ffebee,stroke:#f44336
-    style A3 fill:#ffebee,stroke:#f44336
+    style D2 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff,stroke:#f44336
+    style I2 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff,stroke:#f44336
+    style A2 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff,stroke:#f44336
+    style I3 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff,stroke:#f44336
+    style D3 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff,stroke:#f44336
+    style A3 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff,stroke:#f44336
 ```
 
 **重要なルール：**

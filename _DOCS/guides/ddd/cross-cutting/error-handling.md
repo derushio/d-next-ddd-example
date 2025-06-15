@@ -26,10 +26,10 @@ graph TD
     REPO --> IE
     UC --> UNE
     
-    style DE fill:#ffebee
-    style VE fill:#fff3e0
-    style IE fill:#e1f5fe
-    style UNE fill:#f3e5f5
+    style DE fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style VE fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style IE fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style UNE fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
 ```
 
 ---
@@ -646,10 +646,10 @@ graph TD
     F -->|Yes| G[InfrastructureError]
     F -->|No| H[予期しないエラー]
     
-    style C fill:#ffebee
-    style E fill:#fff3e0
-    style G fill:#e1f5fe
-    style H fill:#f3e5f5
+    style C fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style E fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style G fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style H fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
 ```
 
 ---

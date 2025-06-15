@@ -35,10 +35,10 @@ graph TD
     WARN --> FILE
     INFO --> EXTERNAL
     
-    style ERROR fill:#ffebee
-    style WARN fill:#fff3e0
-    style INFO fill:#e8f5e8
-    style DEBUG fill:#e3f2fd
+    style ERROR fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style WARN fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style INFO fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style DEBUG fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
 ```
 
 ---

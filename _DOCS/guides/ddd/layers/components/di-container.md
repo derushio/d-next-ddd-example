@@ -34,10 +34,10 @@ graph TD
     D --> I
     E --> J
     
-    style A fill:#e3f2fd
-    style B fill:#e8f5e8
-    style C fill:#fff3e0
-    style D fill:#f3e5f5
+    style A fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style B fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style C fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style D fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style E fill:#fce4ec
 ```
 
@@ -54,10 +54,10 @@ graph LR
     RESOLVE --> INJECT[インスタンス注入]
     INJECT --> EXECUTE[実行]
     
-    style BOOT fill:#e8f5e8
-    style REGISTER fill:#e3f2fd
-    style REQUEST fill:#fff3e0
-    style RESOLVE fill:#f3e5f5
+    style BOOT fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style REGISTER fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style REQUEST fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style RESOLVE fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style INJECT fill:#fce4ec
 ```
 

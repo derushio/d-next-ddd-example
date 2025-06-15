@@ -20,11 +20,11 @@ graph TD
     D --> E[設計とコードに反映]
     E --> A
     
-    style A fill:#f3e5f5
-    style B fill:#e1f5fe
-    style C fill:#e8f5e8
-    style D fill:#fff3e0
-    style E fill:#e3f2fd
+    style A fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style B fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style C fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style D fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style E fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
 ```
 
 **基本原則：**
@@ -56,10 +56,10 @@ graph TD
         PROB3[変更に脆い設計]
     end
     
-    style DB1 fill:#ffebee
-    style MODEL1 fill:#ffebee
-    style SERVICE1 fill:#ffebee
-    style UI1 fill:#ffebee
+    style DB1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style MODEL1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style SERVICE1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style UI1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
 ```
 
 **具体的な問題例：**
@@ -110,10 +110,10 @@ graph LR
         BENEFIT3[テストの容易性]
     end
     
-    style DOMAIN fill:#f3e5f5
-    style BENEFIT1 fill:#e8f5e8
-    style BENEFIT2 fill:#e8f5e8
-    style BENEFIT3 fill:#e8f5e8
+    style DOMAIN fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style BENEFIT1 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style BENEFIT2 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style BENEFIT3 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
 ```
 
 **具体例：ユーザー昇格のDDD実装**
@@ -181,9 +181,9 @@ graph TD
     U1 -.-> O1
     O1 -.-> P1
     
-    style U1 fill:#e3f2fd
-    style O1 fill:#e1f5fe
-    style P1 fill:#f3e5f5
+    style U1 fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style O1 fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style P1 fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     
     note1[各コンテキストは独立して<br/>発展・変更可能]
 ```
@@ -251,11 +251,11 @@ graph TB
     AGG1 --> R1
     AGG2 --> R2
     
-    classDef vo fill:#fff3e0
-    classDef entity fill:#e8f5e8
-    classDef aggregate fill:#e1f5fe
-    classDef service fill:#f3e5f5
-    classDef repo fill:#e3f2fd
+    classDef vo fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    classDef entity fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    classDef aggregate fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    classDef service fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    classDef repo fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
 ```
 
 ### 各パターンの役割
@@ -303,10 +303,10 @@ graph TB
     DE --> AGG_DDD
     REPO --> REPO_DDD
     
-    style DS fill:#f3e5f5
-    style DE fill:#e8f5e8
-    style UC fill:#e1f5fe
-    style REPO fill:#e3f2fd
+    style DS fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style DE fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style UC fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style REPO fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
 ```
 
 ### 実装例：User ドメイン
@@ -599,9 +599,9 @@ graph LR
         M2 --> M3[技術的負債の削減]
     end
     
-    style B1 fill:#e8f5e8
-    style D1 fill:#e1f5fe
-    style M1 fill:#f3e5f5
+    style B1 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style D1 fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style M1 fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
 ```
 
 ### 具体的な効果例
@@ -690,11 +690,11 @@ graph TD
     D --> E[継続的な改善]
     E --> A
     
-    style A fill:#e3f2fd
-    style B fill:#f3e5f5
-    style C fill:#e1f5fe
-    style D fill:#e8f5e8
-    style E fill:#fff3e0
+    style A fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style B fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style C fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style D fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style E fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
 ```
 
 **相乗効果：**

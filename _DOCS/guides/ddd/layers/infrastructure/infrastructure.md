@@ -44,12 +44,12 @@ graph TD
     EXT_SERVICE --> CACHE
     EXT_SERVICE --> QUEUE
     
-    style APP fill:#e1f5fe,stroke:#0277bd
-    style INFRA fill:#fff3e0,stroke:#f57c00
-    style REPO fill:#e8f5e8,stroke:#4caf50
-    style EXT_SERVICE fill:#f3e5f5,stroke:#9c27b0
-    style DB fill:#e3f2fd,stroke:#1976d2
-    style CONFIG fill:#ffebee,stroke:#f44336
+    style APP fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style INFRA fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style REPO fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style EXT_SERVICE fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style DB fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style CONFIG fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style DI fill:#fce4ec,stroke:#c2185b
     style TYPES fill:#f1f8e9,stroke:#689f38
 ```
@@ -188,11 +188,11 @@ graph TD
     UC --> EXT_SERVICE
     AS --> DB
     
-    style UC fill:#e1f5fe,stroke:#0277bd
-    style AS fill:#f3e5f5,stroke:#9c27b0
-    style REPO_IMPL fill:#fff3e0,stroke:#f57c00
-    style EXT_SERVICE fill:#e8f5e8,stroke:#4caf50
-    style DB fill:#f3e5f5,stroke:#9c27b0
+    style UC fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style AS fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style REPO_IMPL fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style EXT_SERVICE fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style DB fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
 ```
 
 **連携方法：**
@@ -218,10 +218,10 @@ graph TD
     REPO_IMPL -.-> REPO_IF
     EXT_IMPL -.-> EXT_IF
     
-    style REPO_IF fill:#e8f5e8,stroke:#388e3c
-    style EXT_IF fill:#e8f5e8,stroke:#388e3c
-    style REPO_IMPL fill:#fff3e0,stroke:#f57c00
-    style EXT_IMPL fill:#fff3e0,stroke:#f57c00
+    style REPO_IF fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style EXT_IF fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style REPO_IMPL fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style EXT_IMPL fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
     
     classDef dependencyInversion stroke-dasharray: 5 5,stroke:#4caf50
     class REPO_IMPL-->REPO_IF,EXT_IMPL-->EXT_IF dependencyInversion
@@ -237,9 +237,9 @@ graph TD
     PRES --> APP[📋 Application Layer]
     APP --> INFRA
     
-    style PRES fill:#e3f2fd,stroke:#1976d2
-    style APP fill:#e1f5fe,stroke:#0277bd
-    style INFRA fill:#fff3e0,stroke:#f57c00
+    style PRES fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style APP fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style INFRA fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
     
     classDef forbidden stroke-dasharray: 5 5,stroke:#f44336
     class PRES-->INFRA forbidden

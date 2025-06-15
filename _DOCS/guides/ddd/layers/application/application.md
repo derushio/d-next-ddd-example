@@ -28,14 +28,14 @@ graph TD
     APP --> SERVICE
     APP --> FLOW
     
-    style PRES fill:#e3f2fd,stroke:#1976d2
-    style APP fill:#e1f5fe,stroke:#0277bd
-    style DOMAIN fill:#e8f5e8,stroke:#388e3c
-    style INFRA fill:#fff3e0,stroke:#f57c00
-    style UC fill:#f3e5f5,stroke:#9c27b0
-    style DTO fill:#fff3e0,stroke:#ff9800
-    style SERVICE fill:#e8f5e8,stroke:#4caf50
-    style FLOW fill:#ffebee,stroke:#f44336
+    style PRES fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style APP fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style DOMAIN fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style INFRA fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style UC fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style DTO fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style SERVICE fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style FLOW fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
 ```
 
 ### 他レイヤーとの調整役 🎼
@@ -150,10 +150,10 @@ graph TD
     DTO --> SA
     SA --> UI
     
-    style SA fill:#e8f5e8,stroke:#4caf50
-    style UI fill:#f3e5f5,stroke:#9c27b0
-    style UC fill:#e1f5fe,stroke:#0277bd
-    style DTO fill:#fff3e0,stroke:#ff9800
+    style SA fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style UI fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style UC fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style DTO fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
 ```
 
 **連携方法：**
@@ -182,11 +182,11 @@ graph TD
     AS --> DS
     AS --> REPO_IF
     
-    style UC fill:#e1f5fe,stroke:#0277bd
-    style AS fill:#f3e5f5,stroke:#9c27b0
-    style ENTITY fill:#e8f5e8,stroke:#388e3c
-    style DS fill:#fff3e0,stroke:#ff9800
-    style REPO_IF fill:#ffebee,stroke:#f44336
+    style UC fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style AS fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style ENTITY fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style DS fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style REPO_IF fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
 ```
 
 **連携方法：**
@@ -214,11 +214,11 @@ graph TD
     UC --> EXT_SERVICE
     UC --> DB
     
-    style UC fill:#e1f5fe,stroke:#0277bd
-    style DTO fill:#fff3e0,stroke:#ff9800
-    style REPO_IMPL fill:#fff3e0,stroke:#f57c00
-    style EXT_SERVICE fill:#e8f5e8,stroke:#4caf50
-    style DB fill:#f3e5f5,stroke:#9c27b0
+    style UC fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style DTO fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style REPO_IMPL fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style EXT_SERVICE fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style DB fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
 ```
 
 **連携方法：**

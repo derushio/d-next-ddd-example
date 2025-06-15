@@ -24,10 +24,10 @@ graph TD
     
     INFRA[Infrastructure Layer] --> REPO
     
-    style ENTITY fill:#e8f5e8
-    style VO fill:#fff3e0
-    style DS fill:#f3e5f5
-    style REPO fill:#e1f5fe
+    style ENTITY fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style VO fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style DS fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style REPO fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style DOMAIN_EVENT fill:#fce4ec
 ```
 
@@ -1059,9 +1059,9 @@ graph TD
     C -->|Yes| E[Entity/Value Objectに実装]
     C -->|No| F[Domain Serviceに実装]
     
-    style E fill:#e8f5e8
-    style F fill:#e8f5e8
-    style D fill:#ffebee
+    style E fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style F fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style D fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
 ```
 
 ### Domain Layer設計のチェックリスト

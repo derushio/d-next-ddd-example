@@ -30,12 +30,12 @@ graph TD
     DOMAIN --> DOMAIN_EVENT
     DOMAIN --> FACTORY
     
-    style APP fill:#e1f5fe,stroke:#0277bd
-    style DOMAIN fill:#e8f5e8,stroke:#388e3c
-    style ENTITY fill:#f3e5f5,stroke:#9c27b0
-    style VO fill:#fff3e0,stroke:#ff9800
-    style DS fill:#ffebee,stroke:#f44336
-    style REPO_IF fill:#e3f2fd,stroke:#1976d2
+    style APP fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style DOMAIN fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style ENTITY fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style VO fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style DS fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style REPO_IF fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style DOMAIN_EVENT fill:#fce4ec,stroke:#c2185b
     style FACTORY fill:#f1f8e9,stroke:#689f38
 ```
@@ -62,14 +62,14 @@ graph TD
     INVARIANTS -.-> API
     PURE -.-> UI
     
-    style PURE fill:#e8f5e8,stroke:#388e3c
-    style RULES fill:#e8f5e8,stroke:#388e3c
-    style INVARIANTS fill:#e8f5e8,stroke:#388e3c
+    style PURE fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style RULES fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style INVARIANTS fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     
-    style FRAMEWORK fill:#ffebee,stroke:#f44336
-    style DB fill:#ffebee,stroke:#f44336
-    style API fill:#ffebee,stroke:#f44336
-    style UI fill:#ffebee,stroke:#f44336
+    style FRAMEWORK fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style DB fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style API fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style UI fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     
     classDef forbidden stroke-dasharray: 5 5,stroke:#f44336
     class PURE-->FRAMEWORK,RULES-->DB,INVARIANTS-->API,PURE-->UI forbidden
@@ -193,11 +193,11 @@ graph TD
     AS --> DS
     AS --> REPO_IF
     
-    style UC fill:#e1f5fe,stroke:#0277bd
-    style AS fill:#f3e5f5,stroke:#9c27b0
-    style ENTITY fill:#e8f5e8,stroke:#388e3c
-    style DS fill:#fff3e0,stroke:#ff9800
-    style REPO_IF fill:#ffebee,stroke:#f44336
+    style UC fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style AS fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style ENTITY fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style DS fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style REPO_IF fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
 ```
 
 **連携方法：**
@@ -220,8 +220,8 @@ graph TD
     
     REPO_IMPL -.-> REPO_IF
     
-    style REPO_IF fill:#e8f5e8,stroke:#388e3c
-    style REPO_IMPL fill:#fff3e0,stroke:#f57c00
+    style REPO_IF fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style REPO_IMPL fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
     
     classDef dependencyInversion stroke-dasharray: 5 5,stroke:#4caf50
     class REPO_IMPL-->REPO_IF dependencyInversion
@@ -237,9 +237,9 @@ graph TD
     PRES --> APP[📋 Application Layer]
     APP --> DOMAIN
     
-    style PRES fill:#e3f2fd,stroke:#1976d2
-    style APP fill:#e1f5fe,stroke:#0277bd
-    style DOMAIN fill:#e8f5e8,stroke:#388e3c
+    style PRES fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style APP fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style DOMAIN fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     
     classDef forbidden stroke-dasharray: 5 5,stroke:#f44336
     class PRES-->DOMAIN forbidden

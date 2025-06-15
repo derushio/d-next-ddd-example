@@ -284,6 +284,16 @@ graph TB
     B2 --> D1
     B4 --> D1
     C1 --> D1
+    
+    classDef coreStyle fill:#1e3a8a,stroke:#1e40af,stroke-width:2px,color:#ffffff
+    classDef infraStyle fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    classDef domainStyle fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    classDef appStyle fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    
+    class A1,A2 coreStyle
+    class B1,B2,B3,B4,B5 infraStyle
+    class C1,C2 domainStyle
+    class D1,D2,D3,D4,D5 appStyle
 ```
 
 ### 依存関係の方向性

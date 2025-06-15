@@ -14,18 +14,18 @@
 graph TD
     subgraph "❌ 避けるべき構造"
         A1[Page Component <br/>use client] --> B1[子コンポーネント全て<br/>Client Component化]
-        style A1 fill:#ffebee
-        style B1 fill:#ffebee
+        style A1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+        style B1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     end
     
     subgraph "✅ 推奨するドーナツ構造"
         A2[Page Component <br/>Server Component] --> B2[Container<br/>Server Component]
         B2 --> C2[Interactive Part<br/>use client]
         A2 --> D2[Static Content<br/>Server Component]
-        style A2 fill:#e8f5e8
-        style B2 fill:#e8f5e8
-        style C2 fill:#fff3e0
-        style D2 fill:#e8f5e8
+        style A2 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+        style B2 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+        style C2 fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+        style D2 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     end
 ```
 
@@ -95,9 +95,9 @@ graph TD
     C -->|Yes| E[Client Component]
     C -->|No| F[Server Component + Server Action]
     
-    style D fill:#e8f5e8
-    style E fill:#fff3e0
-    style F fill:#e8f5e8
+    style D fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style E fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style F fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
 ```
 
 **判断基準：**
@@ -203,9 +203,9 @@ graph LR
     example2[text-red-600] --> slash2[/75] --> result2[text-red-600/75]
     example3[border-gray-300] --> slash3[/50] --> result3[border-gray-300/50]
     
-    style result1 fill:#e3f2fd
-    style result2 fill:#e3f2fd  
-    style result3 fill:#e3f2fd
+    style result1 fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style result2 fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style result3 fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
 ```
 
 ### Flowbite-React との統合
@@ -307,10 +307,10 @@ graph TD
     C --> E[良いUX]
     D --> F[混乱・離脱]
     
-    style C fill:#e8f5e8
-    style D fill:#ffebee
-    style E fill:#e8f5e8
-    style F fill:#ffebee
+    style C fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style D fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style E fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style F fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
 ```
 
 ### パフォーマンス最適化

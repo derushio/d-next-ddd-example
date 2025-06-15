@@ -19,10 +19,10 @@ graph TD
     C --> D[ビジネスロジックの独立性]
     D --> A
     
-    style A fill:#e3f2fd
-    style B fill:#e1f5fe
-    style C fill:#f3e5f5
-    style D fill:#e8f5e8
+    style A fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style B fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style C fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style D fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
 ```
 
 1. **依存関係の逆転 (Dependency Inversion)** - 上位レイヤーが下位レイヤーの詳細に依存しない
@@ -42,10 +42,10 @@ graph TD
     BL --> DB[Database]
     BL --> EXT[External API]
     
-    style UI fill:#ffebee
-    style BL fill:#ffebee
-    style DB fill:#ffebee
-    style EXT fill:#ffebee
+    style UI fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style BL fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style DB fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style EXT fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     
     note1[❌ ビジネスロジックがDB/APIに直接依存<br/>❌ テストが困難<br/>❌ 変更の影響範囲が広い]
 ```
@@ -94,8 +94,8 @@ graph LR
         note2[テスト時はモックで代替可能]
     end
     
-    style A1 fill:#ffebee
-    style A2 fill:#e8f5e8
+    style A1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style A2 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
 ```
 
 #### 2. 保守性の向上 🔧
@@ -113,8 +113,8 @@ graph TD
     G[Business Logic] 
     G -.-> H[影響を受けない]
     
-    style G fill:#e8f5e8
-    style H fill:#e8f5e8
+    style G fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style H fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
 ```
 
 **具体例：**
@@ -159,10 +159,10 @@ graph LR
         note1[既存コードに影響せず機能追加可能]
     end
     
-    style A fill:#e8f5e8
-    style B fill:#fff3e0
-    style C fill:#fff3e0
-    style D fill:#e8f5e8
+    style A fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style B fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style C fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style D fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
 ```
 
 **具体例：**
@@ -227,10 +227,10 @@ graph TB
     UC --> PRES
     EXT --> GATE
     
-    classDef external fill:#fff3e0
-    classDef adapter fill:#e8f5e8
-    classDef application fill:#e1f5fe
-    classDef enterprise fill:#f3e5f5
+    classDef external fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    classDef adapter fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    classDef application fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    classDef enterprise fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
 ```
 
 ### 各レイヤーの責務
@@ -258,10 +258,10 @@ graph TB
         I2 -.->|❌| F2[Frameworks]
     end
     
-    style F fill:#fff3e0
-    style I fill:#e8f5e8
-    style A fill:#e1f5fe
-    style E fill:#f3e5f5
+    style F fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style I fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style A fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style E fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
 ```
 
 **重要な原則：**
@@ -346,8 +346,8 @@ graph TB
         note2[責務による分離]
     end
     
-    style A1 fill:#ffebee
-    style A2 fill:#e8f5e8
+    style A1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style A2 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
 ```
 
 ### 誤解2：すべてをインターフェース化

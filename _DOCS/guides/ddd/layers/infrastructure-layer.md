@@ -19,11 +19,11 @@ graph TD
     
     INFRA --> CONFIG[Configuration]
     
-    style INFRA fill:#fff3e0
-    style REPO fill:#e8f5e8
-    style SERVICE fill:#e1f5fe
-    style CONFIG fill:#f3e5f5
-    style DB_FACTORY fill:#fff3e0
+    style INFRA fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style REPO fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style SERVICE fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style CONFIG fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style DB_FACTORY fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
 ```
 
 **Infrastructure Layerの責務：**

@@ -25,11 +25,11 @@ graph TD
     MAPPING --> DATA_TO_ENTITY[DB→Entity変換]
     TRANSACTION --> CONSISTENCY[データ整合性]
     
-    style REPO_IMPL fill:#e1f5fe,stroke:#0277bd
-    style INTERFACE fill:#e8f5e8,stroke:#4caf50
-    style PERSISTENCE fill:#fff3e0,stroke:#ff9800
-    style MAPPING fill:#f3e5f5,stroke:#9c27b0
-    style TRANSACTION fill:#ffebee,stroke:#f44336
+    style REPO_IMPL fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style INTERFACE fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style PERSISTENCE fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style MAPPING fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style TRANSACTION fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
 ```
 
 ### Repository のレイヤー関係 🏗️

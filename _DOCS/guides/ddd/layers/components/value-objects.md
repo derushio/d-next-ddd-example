@@ -23,11 +23,11 @@ graph TD
     VALIDATION --> CONSTRUCTOR["コンストラクタ検証"]
     BEHAVIOR --> DOMAIN_LOGIC["値に関するロジック"]
     
-    style VO fill:#f3e5f5,stroke:#9c27b0
-    style IMMUTABLE fill:#e8f5e8,stroke:#4caf50
-    style EQUALITY fill:#e1f5fe,stroke:#0277bd
-    style VALIDATION fill:#fff3e0,stroke:#ff9800
-    style BEHAVIOR fill:#ffebee,stroke:#f44336
+    style VO fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style IMMUTABLE fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style EQUALITY fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style VALIDATION fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style BEHAVIOR fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
 ```
 
 ### Entity vs Value Object の違い 🔍

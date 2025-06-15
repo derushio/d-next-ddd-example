@@ -145,11 +145,11 @@ graph TD
     F[console.error使用] --> G[ログノイズ増加]
     G --> H[本当の問題が見つけにくい]
     
-    style C fill:#e8f5e8
-    style D fill:#e8f5e8
-    style E fill:#e8f5e8
-    style G fill:#ffebee
-    style H fill:#ffebee
+    style C fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style D fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style E fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style G fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style H fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
 ```
 
 ### 本番コードでのロギング
@@ -453,12 +453,12 @@ graph LR
     D --> E[適切なコミットメッセージ]
     E --> F[コミット]
     
-    style A fill:#e8f5e8
-    style B fill:#e1f5fe
-    style C fill:#f3e5f5
-    style D fill:#fff3e0
-    style E fill:#e8f5e8
-    style F fill:#e3f2fd
+    style A fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style B fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style C fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style D fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style E fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style F fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
 ```
 
 ---

@@ -86,9 +86,9 @@ graph TD
         J[調味料メーカー] --> F
     end
     
-    style A fill:#f44336,color:#fff
-    style F fill:#4caf50,color:#fff
-    style G fill:#2e7d32,color:#fff
+    style A fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style F fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style G fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
 ```
 
 **DI なし**: シェフが材料調達からすべて担当 → 非効率的  
@@ -105,11 +105,11 @@ graph LR
         E[責任が明確] --> D
     end
     
-    style D fill:#4caf50,color:#fff
-    style A fill:#2196f3,color:#fff
-    style B fill:#4caf50,color:#fff
-    style C fill:#ff9800,color:#fff
-    style E fill:#9c27b0,color:#fff
+    style D fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style A fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style B fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style C fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style E fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
 ```
 
 ---
@@ -141,10 +141,10 @@ graph TD
     K --> A
     D --> L[完成したUserService]
     
-    style A fill:#2196f3,color:#fff
-    style B fill:#4caf50,color:#fff
-    style C fill:#ff9800,color:#fff
-    style D fill:#9c27b0,color:#fff
+    style A fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style B fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style C fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style D fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
 ```
 
 ### 🔧 DIコンテナの働き
@@ -198,10 +198,10 @@ graph TD
         H[Database/Config] --> D
     end
     
-    style A fill:#e91e63,color:#fff
-    style B fill:#2196f3,color:#fff
-    style C fill:#4caf50,color:#fff
-    style D fill:#ff9800,color:#fff
+    style A fill:#be185d,stroke:#ec4899,stroke-width:2px,color:#ffffff
+    style B fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style C fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style D fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
 ```
 
 **各レイヤの責任**：
@@ -439,10 +439,10 @@ graph TD
         H --> J[何もしない]
     end
     
-    style D fill:#f44336,color:#fff
-    style E fill:#f44336,color:#fff
-    style I fill:#4caf50,color:#fff
-    style J fill:#4caf50,color:#fff
+    style D fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style E fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style I fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style J fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
 ```
 
 ### 🏃‍♀️ テストの実行速度
@@ -564,11 +564,11 @@ graph TD
         F[アーキテクチャ設計負荷] --> D
     end
     
-    style A fill:#f44336,color:#fff
-    style B fill:#f44336,color:#fff
-    style C fill:#f44336,color:#fff
-    style E fill:#f44336,color:#fff
-    style F fill:#f44336,color:#fff
+    style A fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style B fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style C fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style E fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style F fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style D fill:#ff1744,color:#fff
 ```
 
@@ -664,10 +664,10 @@ graph LR
         G[豊富な実装例] --> C
     end
     
-    style A fill:#4caf50,color:#fff
-    style B fill:#4caf50,color:#fff
-    style C fill:#4caf50,color:#fff
-    style D fill:#2e7d32,color:#fff
+    style A fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style B fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style C fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style D fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
 ```
 
 **AIがDI設計を得意とする理由**：
@@ -720,20 +720,20 @@ graph TD
         M[Vibe Coding: 5-10分]
     end
     
-    style A fill:#f44336,color:#fff
-    style B fill:#f44336,color:#fff
-    style C fill:#f44336,color:#fff
-    style D fill:#f44336,color:#fff
-    style E fill:#f44336,color:#fff
-    style F fill:#f44336,color:#fff
-    style G fill:#f44336,color:#fff
-    style L fill:#f44336,color:#fff
+    style A fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style B fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style C fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style D fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style E fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style F fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style G fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style L fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     
-    style H fill:#4caf50,color:#fff
-    style I fill:#4caf50,color:#fff
-    style J fill:#4caf50,color:#fff
-    style K fill:#4caf50,color:#fff
-    style M fill:#4caf50,color:#fff
+    style H fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style I fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style J fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style K fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style M fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
 ```
 
 ### 🔮 AI時代のDIのメリット
@@ -804,11 +804,11 @@ graph TD
         I --> J[信頼できるコード]
     end
     
-    style C fill:#f44336,color:#fff
-    style D fill:#f44336,color:#fff
-    style E fill:#f44336,color:#fff
-    style F fill:#f44336,color:#fff
-    style J fill:#4caf50,color:#fff
+    style C fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style D fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style E fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style F fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style J fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
 ```
 
 **専門家の指摘**：
@@ -894,9 +894,9 @@ graph TD
         I --> J[モック注入でテスト高速化]
     end
     
-    style A fill:#4caf50,color:#fff
-    style E fill:#4caf50,color:#fff
-    style J fill:#4caf50,color:#fff
+    style A fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style E fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style J fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
 ```
 
 **開発者の実体験**：

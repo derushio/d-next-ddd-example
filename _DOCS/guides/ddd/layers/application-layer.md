@@ -20,10 +20,10 @@ graph LR
         FLOW[Business Flow]
     end
     
-    style APP fill:#e1f5fe
-    style UC fill:#e8f5e8
-    style DTO fill:#fff3e0
-    style FLOW fill:#f3e5f5
+    style APP fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style UC fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style DTO fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style FLOW fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
 ```
 
 **Application Layerの責務：**

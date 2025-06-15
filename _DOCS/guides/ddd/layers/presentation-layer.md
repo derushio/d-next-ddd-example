@@ -17,10 +17,10 @@ graph LR
     UI --> STATE[UI State Management]
     UI --> EVENT[Event Handling]
     
-    style UI fill:#e3f2fd
-    style SA fill:#e1f5fe
-    style STATE fill:#fff3e0
-    style EVENT fill:#fff3e0
+    style UI fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style SA fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style STATE fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style EVENT fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
 ```
 
 **Presentation Layerの責務：**
@@ -413,9 +413,9 @@ graph TD
     E --> H[フォーム送信、ナビゲーション]
     F --> I[リアルタイム更新、アニメーション]
     
-    style C fill:#e8f5e8
-    style E fill:#e8f5e8
-    style F fill:#fff3e0
+    style C fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style E fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style F fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
 ```
 
 ### 推奨実装パターン
@@ -682,9 +682,9 @@ graph TD
     C -->|No| E[Presentation Layerで実装OK]
     C -->|Yes| F[Application/Domain Layerに委譲]
     
-    style E fill:#e8f5e8
-    style F fill:#fff3e0
-    style D fill:#ffebee
+    style E fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style F fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style D fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
 ```
 
 ---

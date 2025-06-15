@@ -23,11 +23,11 @@ graph TD
     DEPENDENCY_INVERSION --> TESTABILITY[テスト容易性]
     DOMAIN_FOCUS --> BUSINESS_LANGUAGE[ビジネス用語使用]
     
-    style REPO_IF fill:#e8f5e8,stroke:#4caf50
-    style CONTRACT fill:#e1f5fe,stroke:#0277bd
-    style ABSTRACTION fill:#fff3e0,stroke:#ff9800
-    style DEPENDENCY_INVERSION fill:#f3e5f5,stroke:#9c27b0
-    style DOMAIN_FOCUS fill:#ffebee,stroke:#f44336
+    style REPO_IF fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style CONTRACT fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style ABSTRACTION fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style DEPENDENCY_INVERSION fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style DOMAIN_FOCUS fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
 ```
 
 ### 依存性の逆転 🔄
@@ -47,7 +47,7 @@ graph TD
     
     style DL1 fill:#ffcdd2
     style DL2 fill:#c8e6c9
-    style RI fill:#e1f5fe
+    style RI fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
 ```
 
 ---

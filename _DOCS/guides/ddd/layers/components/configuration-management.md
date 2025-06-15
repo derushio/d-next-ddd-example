@@ -34,10 +34,10 @@ graph TD
     D --> I
     E --> J
     
-    style A fill:#e3f2fd
-    style B fill:#e8f5e8
-    style C fill:#fff3e0
-    style D fill:#f3e5f5
+    style A fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style B fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style C fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style D fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style E fill:#fce4ec
 ```
 
@@ -52,10 +52,10 @@ graph LR
     PARSER --> CONFIG[設定オブジェクト]
     CONFIG --> DI[DIコンテナ]
     
-    style ENV fill:#e8f5e8
-    style LOADER fill:#e3f2fd
-    style VALIDATOR fill:#fff3e0
-    style PARSER fill:#f3e5f5
+    style ENV fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style LOADER fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style VALIDATOR fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style PARSER fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style CONFIG fill:#fce4ec
 ```
 

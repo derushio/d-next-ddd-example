@@ -23,10 +23,10 @@ graph TD
     C --> D[可読性]
     D --> A
     
-    style A fill:#e3f2fd
-    style B fill:#e1f5fe
-    style C fill:#f3e5f5
-    style D fill:#e8f5e8
+    style A fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style B fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style C fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style D fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
 ```
 
 1. **高速実行** - テストは数秒で完了する

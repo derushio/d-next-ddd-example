@@ -47,10 +47,10 @@ graph TD
     PERM --> API_SEC
     ENCRYPT --> LOG_SEC
     
-    style CSP fill:#ffebee
-    style AUTH fill:#fff3e0
-    style BIZ fill:#e8f5e8
-    style DB_SEC fill:#e3f2fd
+    style CSP fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style AUTH fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style BIZ fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style DB_SEC fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
 ```
 
 ---

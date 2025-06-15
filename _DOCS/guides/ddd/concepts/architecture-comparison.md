@@ -18,9 +18,9 @@ graph TD
         C[🔥 フルDDD<br/>・Aggregate Root<br/>・Domain Event<br/>・CQRS パターン]
     end
     
-    style A fill:#ffebee
-    style B fill:#e8f5e8
-    style C fill:#fff3e0
+    style A fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style B fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style C fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
 ```
 
 **本プロジェクトは「DDD（ドメイン駆動設計）」を採用しています** 🎯
@@ -467,9 +467,9 @@ graph TD
         note3[モック対象：5-8個<br/>テスト：Event + CQRS<br/>学習コスト：高]
     end
     
-    style A1 fill:#fff3e0
-    style A2 fill:#e8f5e8
-    style A3 fill:#ffebee
+    style A1 fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style A2 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style A3 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
 ```
 
 ### 実際の開発での比較
@@ -579,8 +579,8 @@ graph TD
         note2[✅ 高速実行<br/>✅ 環境に依存しない<br/>✅ CI/CDで安定]
     end
     
-    style A1 fill:#ffebee
-    style A2 fill:#e8f5e8
+    style A1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style A2 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
 ```
 
 ### 実際の開発チームでの体験
