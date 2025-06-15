@@ -198,7 +198,7 @@ graph TD
         H[Database/Config] --> D
     end
     
-    style A fill:#be185d,stroke:#ec4899,stroke-width:2px,color:#ffffff
+    style A fill:#831843,stroke:#be185d,stroke-width:2px,color:#ffffff
     style B fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style C fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style D fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
