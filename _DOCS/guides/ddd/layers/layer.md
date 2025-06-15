@@ -27,7 +27,7 @@ graph TD
     style DOMAIN fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style INFRA fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
     
-    classDef userStyle fill:#f8bbd9,stroke:#e91e63
+    classDef userStyle fill:#831843,stroke:#be185d,stroke-width:2px,color:#ffffff
     class USER userStyle
 ```
 
