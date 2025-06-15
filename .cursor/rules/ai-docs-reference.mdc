@@ -1,0 +1,69 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# AI向けドキュメント参照ルール 🤖
+
+**必ず作業開始前に該当ドキュメントを読み込んでから実装すること**
+
+## 新規機能開発時
+
+- **UseCase実装** → [development-guide.md](mdc:_DOCS/development-guide.md) の「新機能開発手順」章
+- **Repository実装** → [development-guide.md](mdc:_DOCS/development-guide.md) の「Repository作成」章 + [dependency-injection.md](mdc:_DOCS/dependency-injection.md) の「DI登録」章
+- **Domain Service** → [architecture-overview.md](mdc:_DOCS/architecture-overview.md) の「Domain Layer」章
+- **Server Actions** → [development-guide.md](mdc:_DOCS/development-guide.md) の「Server Action作成」章
+
+## UI・コンポーネント開発時
+
+- **Client Component** → [development-guide.md](mdc:_DOCS/development-guide.md) の「Component開発」章
+- **フロントエンド最適化** → [guides/frontend-best-practices.md](mdc:_DOCS/guides/frontend-best-practices.md) 全体
+- **Next.js統合** → [guides/nextjs-integration-patterns.md](mdc:_DOCS/guides/nextjs-integration-patterns.md) 該当パターン章
+
+## テスト実装時
+
+- **ユニットテスト** → [testing-strategy.md](mdc:_DOCS/testing-strategy.md) の「ユニットテスト実装」章
+- **モック作成** → [testing-strategy.md](mdc:_DOCS/testing-strategy.md) の「自動モック生成」章
+- **E2Eテスト** → [testing-strategy.md](mdc:_DOCS/testing-strategy.md) の「E2Eテスト」章
+
+## アーキテクチャ・設計時
+
+- **Clean Architecture理解** → [architecture-overview.md](mdc:_DOCS/architecture-overview.md) の「レイヤー構成」章
+- **DI設計** → [dependency-injection.md](mdc:_DOCS/dependency-injection.md) の「基本的な使用方法」章
+- **プロジェクト構造** → [project-structure.md](mdc:_DOCS/project-structure.md) の「ディレクトリ構造」章
+
+## デプロイ・運用時
+
+- **本番デプロイ** → [deployment-guide.md](mdc:_DOCS/deployment-guide.md) の「デプロイ手順」章
+- **環境変数設定** → [deployment-guide.md](mdc:_DOCS/deployment-guide.md) の「環境変数設定」章
+
+## エラー・問題発生時
+
+- **テストエラー** → [troubleshootings/](mdc:_DOCS/troubleshootings) 該当ファイル
+- **vitest-mock-extended** → [troubleshootings/vitest-mock-extended-setup.md](mdc:_DOCS/troubleshootings/vitest-mock-extended-setup.md)
+- **Prismaモック** → [troubleshootings/prisma-mock-setup.md](mdc:_DOCS/troubleshootings/prisma-mock-setup.md)
+
+## コードレビュー・リファクタ時
+
+- **コーディング規約確認** → [guides/coding-standards.md](mdc:_DOCS/guides/coding-standards.md) 全体
+- **アーキテクチャ準拠確認** → [architecture-overview.md](mdc:_DOCS/architecture-overview.md) の「各レイヤーの責務」章
+
+## 必須制約（常に守ること）
+
+- 相対パス禁止：必ず `@/*` alias使用
+- DI：TSyringe + `resolve()` 関数使用
+- テストモック：vitest-mock-extended優先
+- Client Component：最小限に留める
+- Clean Architecture：レイヤー境界厳守
+- Next.js：App Router + Server Actions優先
+- TailwindCSS：v4記法、`bg-opacity`禁止
+
+## 実装前チェックリスト
+
+1. 該当ドキュメントを読み込み完了
+2. アーキテクチャ層の責務を理解
+3. DI登録が必要か確認
+4. テスト実装方針を決定
+5. 既存パターンとの整合性確認
+
+**迷ったら _DOCS を読め！実装前に必ず参照せよ！**

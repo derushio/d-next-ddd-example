@@ -1,0 +1,88 @@
+{
+  "User": {
+    "table": {
+      "tableName": "User",
+      "comment": "ユーザーテーブル"
+    },
+    "columns": [
+      {
+        "tableName": "User",
+        "columnName": "id",
+        "comment": ""
+      },
+      {
+        "tableName": "User",
+        "columnName": "name",
+        "comment": ""
+      },
+      {
+        "tableName": "User",
+        "columnName": "email",
+        "comment": ""
+      },
+      {
+        "tableName": "User",
+        "columnName": "passwordHash",
+        "comment": "salt hash"
+      },
+      {
+        "tableName": "User",
+        "columnName": "createdAt",
+        "comment": ""
+      },
+      {
+        "tableName": "User",
+        "columnName": "updatedAt",
+        "comment": ""
+      }
+    ]
+  },
+  "UserSession": {
+    "table": {
+      "tableName": "UserSession",
+      "comment": "ユーザーのサインインセッション"
+    },
+    "columns": [
+      {
+        "tableName": "UserSession",
+        "columnName": "id",
+        "comment": ""
+      },
+      {
+        "tableName": "UserSession",
+        "columnName": "userId",
+        "comment": ""
+      },
+      {
+        "tableName": "UserSession",
+        "columnName": "accessTokenHash",
+        "comment": ""
+      },
+      {
+        "tableName": "UserSession",
+        "columnName": "accessTokenExpireAt",
+        "comment": ""
+      },
+      {
+        "tableName": "UserSession",
+        "columnName": "resetTokenHash",
+        "comment": ""
+      },
+      {
+        "tableName": "UserSession",
+        "columnName": "resetTokenExpireAt",
+        "comment": ""
+      },
+      {
+        "tableName": "UserSession",
+        "columnName": "createdAt",
+        "comment": ""
+      },
+      {
+        "tableName": "UserSession",
+        "columnName": "updatedAt",
+        "comment": ""
+      }
+    ]
+  }
+}

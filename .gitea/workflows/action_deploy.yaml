@@ -1,0 +1,31 @@
+name: 'deploy'
+run-name: 'deploy to k8s'
+on:
+  push:
+    branches:
+      - 'main'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Set up runner
+        run: |
+          apk update && apk add git docker docker-compose nodejs gpg openssh npm kubectl
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Docker image build & push
+        working-directory: ./.gitea/scripts
+        run: |
+          ./deploy-image.sh ${{ env.GITHUB_SHA }}
+      - name: Upgrade k8s next
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        run: |
+          kubectl --kubeconfig=<(echo "$KUBE_CONFIG") set image deployment/d-next-ddd-example-next-deployment container-0=harbor.example.com/d-next-ddd-example/next:${{ env.GITHUB_SHA }} --namespace=d-next-ddd-example

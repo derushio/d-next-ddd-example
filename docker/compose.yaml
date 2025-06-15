@@ -1,0 +1,15 @@
+services:
+  pg:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: $DB_USER
+      POSTGRES_PASSWORD: $DB_PASSWORD
+      POSTGRES_DB: $DB_NAME
+      POSTGRES_INITDB_ARGS: '--locale-provider=icu --icu-locale=ja-x-icu'
+    ports:
+      - '${DB_PORT}:5432'
+    volumes:
+      - d-next-ddd-example-volume:/var/lib/postgresql/data
+
+volumes:
+  d-next-ddd-example-volume: {}

@@ -1,0 +1,40 @@
+productName: "d-next-ddd-example"
+
+asar: true
+afterPack: "./afterPack.js"
+directories:
+  buildResources: build
+  output: dist
+files:
+  - "main.js"
+  - "!**/.vscode/*"
+  - "!src/*"
+extraResources:
+  - from: "node_modules/.prisma/client"
+    to: "node_modules/.prisma/client"
+  - from: "node_modules/@prisma/client"
+    to: "node_modules/@prisma/client"
+  - from: "node_modules/@prisma/engines"
+    to: "node_modules/@prisma/engines"
+  - from: "prisma"
+    to: "prisma"
+asarUnpack:
+  - "node_modules/.prisma/**/*"
+  - "node_modules/@prisma/**/*"
+  - "prisma/**/*"
+
+win:
+  executableName: "d-next-ddd-example"
+nsis:
+  artifactName: ${name}-${version}-setup.${ext}
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
+  createDesktopShortcut: always
+
+linux:
+  target:
+    - dir
+    - AppImage
+appImage:
+  artifactName: ${name}-${version}.${ext}
+npmRebuild: false
