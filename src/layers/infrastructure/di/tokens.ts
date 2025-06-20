@@ -11,13 +11,13 @@
 import type { AuthService } from '@/layers/application/services/AuthService';
 import type { TokenService } from '@/layers/application/services/TokenService';
 import type { UserService } from '@/layers/application/services/UserService';
-import type { UpdateUserUseCase } from '@/layers/application/usecases/UpdateUserUseCase';
 import type { ChangePasswordUseCase } from '@/layers/application/usecases/auth/ChangePasswordUseCase';
 import type { GetCurrentUserUseCase } from '@/layers/application/usecases/auth/GetCurrentUserUseCase';
 import type { RefreshTokenUseCase } from '@/layers/application/usecases/auth/RefreshTokenUseCase';
 import type { ResetPasswordUseCase } from '@/layers/application/usecases/auth/ResetPasswordUseCase';
 import type { SignInUseCase } from '@/layers/application/usecases/auth/SignInUseCase';
 import type { SignOutUseCase } from '@/layers/application/usecases/auth/SignOutUseCase';
+import type { UpdateUserUseCase } from '@/layers/application/usecases/UpdateUserUseCase';
 // Use Cases
 import type { CreateUserUseCase } from '@/layers/application/usecases/user/CreateUserUseCase';
 import type { ISessionRepository } from '@/layers/domain/repositories/ISessionRepository';

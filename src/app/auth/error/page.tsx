@@ -1,4 +1,4 @@
-import { Card } from 'flowbite-react';
+import { Card } from '@/components/ui-legacy/Card';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
@@ -99,13 +99,13 @@ export default async function AuthErrorPage({ searchParams }: ErrorPageProps) {
   const errorInfo = getErrorMessage(error);
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8'>
+    <div className='min-h-screen bg-gradient-to-br from-[var(--error-light)] via-[var(--surface)] to-[var(--warning-light)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8'>
       <div className='max-w-md w-full space-y-8'>
         {/* ヘッダー部分 */}
         <div className='text-center'>
-          <div className='mx-auto h-16 w-16 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center mb-6 shadow-lg'>
+          <div className='mx-auto h-16 w-16 bg-gradient-to-r from-[var(--error)] to-[var(--warning)] rounded-full flex items-center justify-center mb-6 shadow-lg'>
             <svg
-              className='h-8 w-8 text-white'
+              className='h-8 w-8 text-[var(--text-inverse)]'
               fill='none'
               stroke='currentColor'
               viewBox='0 0 24 24'
@@ -119,25 +119,30 @@ export default async function AuthErrorPage({ searchParams }: ErrorPageProps) {
             </svg>
           </div>
 
-          <h2 className='text-3xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent'>
+          <h2 className='text-3xl font-bold bg-gradient-to-r from-[var(--error)] to-[var(--warning)] bg-clip-text text-transparent'>
             {errorInfo.title}
           </h2>
 
-          <p className='mt-3 text-sm text-gray-600 font-medium'>
+          <p className='mt-3 text-sm text-[var(--text-muted)] font-medium'>
             Clean Architecture サンプルアプリ
           </p>
         </div>
 
         {/* エラーカード */}
-        <Card className='shadow-xl border-0 bg-white/80 backdrop-blur-sm'>
+        <Card
+          variant='glass'
+          className='shadow-xl border-0 bg-[var(--surface)]/80 backdrop-blur-sm'
+        >
           <div className='p-6 space-y-6 text-center'>
             {/* エラーメッセージ */}
-            <div className='p-4 bg-red-50 border-l-4 border-red-400 rounded-r-lg'>
+            <div className='p-4 bg-[var(--error-light)] border-l-4 border-[var(--error)] rounded-r-lg'>
               <div className='flex flex-col space-y-2'>
-                <p className='text-red-800 font-semibold text-sm'>
+                <p className='text-[var(--error)] font-semibold text-sm'>
                   {errorInfo.message}
                 </p>
-                <p className='text-red-600 text-xs'>{errorInfo.suggestion}</p>
+                <p className='text-[var(--error)] text-xs'>
+                  {errorInfo.suggestion}
+                </p>
               </div>
             </div>
 
@@ -145,7 +150,7 @@ export default async function AuthErrorPage({ searchParams }: ErrorPageProps) {
             <div className='space-y-3'>
               <Link
                 href='/auth/sign-in'
-                className='w-full inline-flex justify-center items-center px-4 py-3 border border-transparent text-sm font-semibold rounded-lg text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]'
+                className='w-full inline-flex justify-center items-center px-4 py-3 border border-transparent text-sm font-semibold rounded-lg text-[var(--text-inverse)] bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] hover:from-[var(--primary-hover)] hover:to-[var(--secondary-hover)] focus:outline-none focus:ring-4 focus:ring-[var(--primary-muted)] transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]'
               >
                 <svg
                   className='h-4 w-4 mr-2'
@@ -165,7 +170,7 @@ export default async function AuthErrorPage({ searchParams }: ErrorPageProps) {
 
               <Link
                 href='/'
-                className='w-full inline-flex justify-center items-center px-4 py-3 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-gray-200 transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]'
+                className='w-full inline-flex justify-center items-center px-4 py-3 border border-[var(--border)] text-sm font-medium rounded-lg text-[var(--text-secondary)] bg-[var(--surface)] hover:bg-[var(--surface-50)] focus:outline-none focus:ring-4 focus:ring-[var(--border-light)] transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]'
               >
                 <svg
                   className='h-4 w-4 mr-2'
@@ -188,18 +193,21 @@ export default async function AuthErrorPage({ searchParams }: ErrorPageProps) {
 
         {/* フッター部分 */}
         <div className='text-center space-y-2'>
-          <p className='text-xs text-gray-500'>
+          <p className='text-xs text-[var(--text-muted)]'>
             問題が解決しない場合は、お問い合わせください
           </p>
-          <div className='flex justify-center space-x-4 text-xs text-gray-400'>
+          <div className='flex justify-center space-x-4 text-xs text-[var(--text-disabled)]'>
             <a
               href='/contact'
-              className='hover:text-gray-600 transition-colors'
+              className='hover:text-[var(--text-muted)] transition-colors'
             >
               お問い合わせ
             </a>
             <span>|</span>
-            <a href='/help' className='hover:text-gray-600 transition-colors'>
+            <a
+              href='/help'
+              className='hover:text-[var(--text-muted)] transition-colors'
+            >
               ヘルプ
             </a>
           </div>

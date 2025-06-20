@@ -1,7 +1,11 @@
-import { injectable, inject } from 'tsyringe';
 import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
-import type { IConfigService, AppConfig } from '@/layers/infrastructure/services/ConfigService';
+import type {
+  AppConfig,
+  IConfigService,
+} from '@/layers/infrastructure/services/ConfigService';
+
 import * as bcrypt from 'bcryptjs';
+import { inject, injectable } from 'tsyringe';
 
 /**
  * パスワードハッシュを担当するユーティリティサービス。
@@ -17,7 +21,7 @@ export interface IHashService {
 @injectable()
 export class HashService implements IHashService {
   constructor(
-    @inject(INJECTION_TOKENS.ConfigService) private config: IConfigService
+    @inject(INJECTION_TOKENS.ConfigService) private config: IConfigService,
   ) {}
 
   async generateHash(text: string): Promise<string> {
@@ -29,4 +33,4 @@ export class HashService implements IHashService {
   async compareHash(text: string, hash: string): Promise<boolean> {
     return await bcrypt.compare(text, hash);
   }
-} 
+}

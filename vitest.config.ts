@@ -12,7 +12,12 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@prisma/generated': path.resolve(__dirname, './src/layers/infrastructure/persistence/prisma/generated'),
       '@tests': path.resolve(__dirname, './tests'),
+      '@/components/ui': path.resolve(__dirname, './src/components/ui-shadcn'),
+      '@/components/ui-shadcn': path.resolve(__dirname, './src/components/ui-shadcn'),
+      '@/components/ui-legacy': path.resolve(__dirname, './src/components/ui-legacy'),
+      '@/lib/utils-shadcn': path.resolve(__dirname, './src/lib/utils-shadcn'),
     },
   },
 });

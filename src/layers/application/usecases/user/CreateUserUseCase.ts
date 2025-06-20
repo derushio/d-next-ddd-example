@@ -1,12 +1,14 @@
-import { injectable, inject } from 'tsyringe';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
+import { failure, Result, success } from '@/layers/application/types/Result';
+import { User } from '@/layers/domain/entities/User';
+import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import type { UserDomainService } from '@/layers/domain/services/UserDomainService';
-import { User } from '@/layers/domain/entities/User';
 import { Email } from '@/layers/domain/value-objects/Email';
-import { DomainError } from '@/layers/domain/errors/DomainError';
+import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
 import type { IHashService } from '@/layers/infrastructure/services/HashService';
 import type { ILogger } from '@/layers/infrastructure/services/Logger';
+
+import { inject, injectable } from 'tsyringe';
 
 export interface CreateUserRequest {
   name: string;
@@ -25,13 +27,19 @@ export interface CreateUserResponse {
 @injectable()
 export class CreateUserUseCase {
   constructor(
-    @inject(INJECTION_TOKENS.UserRepository) private userRepository: IUserRepository,
-    @inject(INJECTION_TOKENS.UserDomainService) private userDomainService: UserDomainService,
+    @inject(INJECTION_TOKENS.UserRepository)
+    private userRepository: IUserRepository,
+    @inject(INJECTION_TOKENS.UserDomainService)
+    private userDomainService: UserDomainService,
     @inject(INJECTION_TOKENS.HashService) private hashService: IHashService,
-    @inject(INJECTION_TOKENS.Logger) private logger: ILogger
+    @inject(INJECTION_TOKENS.Logger) private logger: ILogger,
   ) {}
 
-  async execute({ name, email, password }: CreateUserRequest): Promise<CreateUserResponse> {
+  async execute({
+    name,
+    email,
+    password,
+  }: CreateUserRequest): Promise<Result<CreateUserResponse>> {
     this.logger.info('ユーザー作成開始', { name, email });
 
     try {
@@ -42,41 +50,44 @@ export class CreateUserUseCase {
       const passwordHash = await this.hashService.generateHash(password);
 
       // 3. ドメインオブジェクト作成
-      const user = User.create(
-        new Email(email),
-        name,
-        passwordHash
-      );
+      const user = User.create(new Email(email), name, passwordHash);
 
       // 4. 永続化
       await this.userRepository.save(user);
 
-      this.logger.info('ユーザー作成完了', { userId: user.getId().toString(), email });
+      this.logger.info('ユーザー作成完了', {
+        userId: user.getId().toString(),
+        email,
+      });
 
       // 5. レスポンス変換
-      return {
+      return success({
         id: user.getId().toString(),
         name: user.getName(),
         email: user.getEmail().toString(),
         createdAt: user.getCreatedAt(),
-        updatedAt: user.getUpdatedAt()
-      };
-
+        updatedAt: user.getUpdatedAt(),
+      });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error('ユーザー作成失敗', { email, error: errorMessage });
-      
-      // DomainErrorはそのまま再スロー（具体的なエラーメッセージを保持）
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('ユーザー作成失敗', {
+        email,
+        error: errorMessage,
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+
+      // DomainErrorの場合は適切なエラーコードで返す
       if (error instanceof DomainError) {
-        throw error;
+        return failure(error.message, error.code);
       }
-      
-      // その他のエラーも元のメッセージを保持
+
+      // その他の予期しないエラー
       if (error instanceof Error) {
-        throw new DomainError(error.message, 'USER_CREATION_FAILED');
+        return failure(error.message, 'USER_CREATION_FAILED');
       }
-      
-      throw new DomainError('ユーザーの作成に失敗しました', 'USER_CREATION_FAILED');
+
+      return failure('ユーザーの作成に失敗しました', 'USER_CREATION_FAILED');
     }
   }
-} 
+}

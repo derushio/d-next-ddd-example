@@ -1,13 +1,21 @@
 import 'reflect-metadata';
 
-import { injectable, inject } from 'tsyringe';
+import { failure, Result, success } from '@/layers/application/types/Result';
 import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
 import { getAuth } from '@/layers/infrastructure/persistence/nextAuth';
+import type { ILogger } from '@/layers/infrastructure/services/Logger';
+
+import { inject, injectable } from 'tsyringe';
+
+export interface GetCurrentUserResponse {
+  id: string;
+  email: string;
+  name: string;
+}
 
 /**
  * 現在のユーザー情報取得 UseCase
- * 
+ *
  * DDD/Clean Architecture パターン:
  * - 認証情報の取得をUseCaseレイヤーでラップ
  * - NextAuthの実装詳細を隠蔽
@@ -16,20 +24,16 @@ import { getAuth } from '@/layers/infrastructure/persistence/nextAuth';
 @injectable()
 export class GetCurrentUserUseCase {
   constructor(
-    @inject(INJECTION_TOKENS.Logger) 
-    private readonly logger: ILogger
+    @inject(INJECTION_TOKENS.Logger)
+    private readonly logger: ILogger,
   ) {}
 
   /**
    * 現在認証されているユーザー情報を取得
-   * 
-   * @returns 認証済みユーザー情報（未認証の場合はnull）
+   *
+   * @returns 認証済みユーザー情報のResult型
    */
-  async execute(): Promise<{
-    id: string;
-    email: string;
-    name: string;
-  } | null> {
+  async execute(): Promise<Result<GetCurrentUserResponse>> {
     try {
       this.logger.info('現在のユーザー情報取得開始', {
         action: 'getCurrentUser',
@@ -39,12 +43,18 @@ export class GetCurrentUserUseCase {
       // Infrastructure層のgetAuthを使用（将来的にはRepositoryパターンで抽象化可能）
       const auth = await getAuth();
 
-      if (!auth || !auth.user || !auth.user.id || !auth.user.email || !auth.user.name) {
+      if (
+        !auth ||
+        !auth.user ||
+        !auth.user.id ||
+        !auth.user.email ||
+        !auth.user.name
+      ) {
         this.logger.info('ユーザー未認証または必要な情報が不足', {
           action: 'getCurrentUser',
           result: 'unauthenticated',
         });
-        return null;
+        return failure('認証が必要です', 'UNAUTHENTICATED');
       }
 
       const userInfo = {
@@ -59,7 +69,7 @@ export class GetCurrentUserUseCase {
         email: userInfo.email,
       });
 
-      return userInfo;
+      return success(userInfo);
     } catch (error) {
       this.logger.error('ユーザー情報取得エラー', {
         action: 'getCurrentUser',
@@ -67,31 +77,30 @@ export class GetCurrentUserUseCase {
         stack: error instanceof Error ? error.stack : undefined,
       });
 
-      // エラーが発生した場合も未認証として扱う
-      return null;
+      return failure(
+        'ユーザー情報の取得に失敗しました',
+        'USER_INFO_FETCH_ERROR',
+      );
     }
   }
 
   /**
    * 認証状態チェック（認証が必要な機能での前処理）
-   * 
-   * @throws {Error} 未認証の場合エラーをスロー
+   *
+   * @returns 認証済みユーザー情報のResult型
    */
-  async requireAuthentication(): Promise<{
-    id: string;
-    email: string;
-    name: string;
-  }> {
-    const user = await this.execute();
+  async requireAuthentication(): Promise<Result<GetCurrentUserResponse>> {
+    const result = await this.execute();
 
-    if (!user) {
+    if (result.success === false) {
       this.logger.warn('認証が必要な処理で未認証ユーザーがアクセス', {
         action: 'requireAuthentication',
         timestamp: new Date().toISOString(),
+        error: result.error.message,
       });
-      throw new Error('認証が必要です');
+      return result; // 既にfailureなのでそのまま返す
     }
 
-    return user;
+    return result; // 成功の場合もそのまま返す
   }
-} 
+}

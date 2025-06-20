@@ -1,10 +1,11 @@
-import { injectable, inject } from 'tsyringe';
 import { User } from '@/layers/domain/entities/User';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import { Email } from '@/layers/domain/value-objects/Email';
 import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
 import type { IHashService } from '@/layers/infrastructure/services/HashService';
+
+import { inject, injectable } from 'tsyringe';
 
 export interface IUserDomainService {
   validateUserData(name: string, email: string): Promise<void>;
@@ -19,10 +20,10 @@ export interface IUserDomainService {
 @injectable()
 export class UserDomainService implements IUserDomainService {
   constructor(
-    @inject(INJECTION_TOKENS.UserRepository) 
+    @inject(INJECTION_TOKENS.UserRepository)
     private userRepository: IUserRepository,
-    @inject(INJECTION_TOKENS.HashService) 
-    private hashService: IHashService
+    @inject(INJECTION_TOKENS.HashService)
+    private hashService: IHashService,
   ) {}
 
   // ビジネスルール：ユーザーデータの妥当性検証
@@ -97,7 +98,10 @@ export class UserDomainService implements IUserDomainService {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      throw new DomainError('有効なメールアドレスを入力してください', 'INVALID_EMAIL_FORMAT');
+      throw new DomainError(
+        '有効なメールアドレスを入力してください',
+        'INVALID_EMAIL_FORMAT',
+      );
     }
   }
 
@@ -107,7 +111,10 @@ export class UserDomainService implements IUserDomainService {
     }
 
     if (password.length < 8) {
-      throw new DomainError('パスワードは8文字以上で入力してください', 'PASSWORD_TOO_SHORT');
+      throw new DomainError(
+        'パスワードは8文字以上で入力してください',
+        'PASSWORD_TOO_SHORT',
+      );
     }
   }
 

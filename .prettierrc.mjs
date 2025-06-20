@@ -20,22 +20,26 @@ export default {
   embeddedLanguageFormatting: 'auto',
   htmlWhitespaceSensitivity: 'ignore',
 
+  // Import sorting configuration
   importOrder: [
-    'server-only',
-    'source-map-support',
-    '#/utils/formdata',
-    'reflect-metadata',
+    '^(server-only|source-map-support|#/utils/formdata|reflect-metadata)$',
+    '',
     '^.*\\.vue$',
-    '^@core\\/(.*)$',
-    '^@server\\/(.*)$',
-    '^@ui\\/(.*)$',
-    '^@\\/(.*)$',
-    '^src\\/(.*)$',
-    '^.*$',
-    '^(\\.{1,}\\/)(.*)$',
+    '',
+    '^@core/(.*)$',
+    '^@server/(.*)$',
+    '^@ui/(.*)$',
+    '',
+    '^@/(.*)$',
+    '',
+    '^src/(.*)$',
+    '',
+    '<THIRD_PARTY_MODULES>',
+    '',
+    '^[.]',
   ],
-  importOrderSeparation: true,
-  importOrderSortSpecifiers: true,
+  importOrderParserPlugins: ['typescript', 'decorators-legacy'],
+
   overrides: [
     {
       files: ['*.md'],
@@ -43,7 +47,13 @@ export default {
         tabWidth: 1,
       },
     },
+    {
+      files: ['*.ts', '*.tsx'],
+      options: {
+        parser: 'typescript',
+      },
+    },
   ],
 
-  plugins: ['@trivago/prettier-plugin-sort-imports'],
+  plugins: ['@ianvs/prettier-plugin-sort-imports'],
 };

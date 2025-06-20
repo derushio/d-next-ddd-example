@@ -117,32 +117,63 @@ graph TD
     style H fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
 ```
 
-**具体例：**
+**ORM変更時の影響範囲：**
 
-```typescript
-// 例：Prisma から別のORMに変更する場合
+#### ❌ 従来のアーキテクチャ：大きな影響範囲
 
-// ❌ 従来の方法だと：
-// ビジネスロジック内のPrisma呼び出しを全て修正が必要
+```mermaid
+graph TD
+    A[Use Case 1] -->|直接依存| P1[Prisma Client]
+    B[Use Case 2] -->|直接依存| P2[Prisma Client]
+    C[Use Case 3] -->|直接依存| P3[Prisma Client]
+    P1 --> DB[(Database)]
+    P2 --> DB
+    P3 --> DB
+    
+    subgraph "ORM変更時の修正箇所"
+        M1[Use Case 1 修正必要]
+        M2[Use Case 2 修正必要]
+        M3[Use Case 3 修正必要]
+        M4[大量のコード修正]
+        M5[テスト全面修正]
+    end
+    
+    style A fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style B fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style C fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style M4 fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style M5 fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+```
 
-// ✅ クリーンアーキテクチャだと：
-// Repository実装を変更するだけ
+#### ✅ クリーンアーキテクチャ：最小限の影響
 
-// 変更前
-class PrismaUserRepository implements IUserRepository {
-  async create(data: CreateUserData): Promise<User> {
-    return await this.prisma.user.create({ data });
-  }
-}
-
-// 変更後（Drizzleに変更）
-class DrizzleUserRepository implements IUserRepository {
-  async create(data: CreateUserData): Promise<User> {
-    return await this.db.insert(users).values(data);
-  }
-}
-
-// ビジネスロジック（UseCase）は一切変更不要！
+```mermaid
+graph TD
+    A[Use Case 1] -->|インターフェース| I[IUserRepository]
+    B[Use Case 2] -->|インターフェース| I
+    C[Use Case 3] -->|インターフェース| I
+    
+    P[PrismaUserRepository] -->|implements| I
+    D[DrizzleUserRepository] -->|implements| I
+    
+    P --> DB[(Database)]
+    D --> DB
+    
+    subgraph "ORM変更時の修正箇所"
+        C1[✅ Repository実装のみ変更]
+        C2[✅ UseCase変更不要]
+        C3[✅ ビジネスロジック保護]
+        C4[✅ テスト影響最小]
+    end
+    
+    style A fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style B fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style C fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style I fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style C1 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style C2 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style C3 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style C4 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
 ```
 
 #### 3. スケーラビリティの確保 📈
@@ -165,29 +196,57 @@ graph LR
     style D fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
 ```
 
-**具体例：**
+**新機能追加時の安全性：**
 
-```typescript
-// 例：「ユーザー削除」機能を追加する場合
-
-// 新しいUseCaseを追加するだけ
-class DeleteUserUseCase {
-  constructor(
-    private userRepository: IUserRepository, // 既存のRepository再利用
-    private userDomainService: UserDomainService // 既存のDomainService再利用
-  ) {}
-  
-  async execute(userId: string): Promise<void> {
-    // 既存のバリデーションロジックを再利用
-    await this.userDomainService.validateUserExists(userId);
+```mermaid
+graph TB
+    subgraph "既存の機能（変更不要）"
+        CUC[CreateUserUseCase]
+        LUC[LoginUseCase]
+        UUC[UpdateUserUseCase]
+    end
     
-    // 既存のRepository機能を再利用
-    await this.userRepository.delete(userId);
-  }
-}
-
-// 既存のCreateUserUseCase、LoginUseCaseは一切変更不要
-// 各レイヤーの責務が明確なため、安全に機能追加可能
+    subgraph "新機能追加"
+        DUC[DeleteUserUseCase<br/>🆕 新規追加]
+    end
+    
+    subgraph "既存の共有コンポーネント（再利用）"
+        REPO[IUserRepository<br/>♻️ 再利用]
+        DS[UserDomainService<br/>♻️ 再利用]
+        ENT[User Entity<br/>♻️ 再利用]
+    end
+    
+    CUC --> REPO
+    CUC --> DS
+    LUC --> REPO
+    LUC --> DS
+    UUC --> REPO
+    UUC --> DS
+    
+    DUC --> REPO
+    DUC --> DS
+    
+    REPO --> ENT
+    DS --> ENT
+    
+    subgraph "追加機能のメリット"
+        M1[✅ 既存コード変更なし]
+        M2[✅ 既存機能への影響ゼロ]
+        M3[✅ 共有コンポーネント再利用]
+        M4[✅ 安全で高速な開発]
+    end
+    
+    style CUC fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style LUC fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style UUC fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style DUC fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style REPO fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style DS fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style ENT fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style M1 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style M2 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style M3 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style M4 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
 ```
 
 ---
@@ -300,29 +359,49 @@ sequenceDiagram
 
 ### 依存関係逆転の実現
 
-```typescript
-// ✅ 正しい依存関係の向き
-interface IUserRepository {
-  create(data: CreateUserData): Promise<User>;
-}
-
-class CreateUserUseCase {
-  constructor(
-    private userRepository: IUserRepository // インターフェースに依存
-  ) {}
-}
-
-class PrismaUserRepository implements IUserRepository {
-  // UseCaseが定義したインターフェースを実装
-  async create(data: CreateUserData): Promise<User> {
-    return await this.prisma.user.create({ data });
-  }
-}
-
-// DIコンテナで具象クラスを注入
-container.register<IUserRepository>('UserRepository', {
-  useClass: PrismaUserRepository
-});
+```mermaid
+graph TB
+    subgraph "Application Layer（高レベル）"
+        UC[CreateUserUseCase]
+        IFACE[IUserRepository<br/>インターフェース定義]
+    end
+    
+    subgraph "Infrastructure Layer（低レベル）"
+        IMPL[PrismaUserRepository<br/>具象実装]
+    end
+    
+    subgraph "DI Container"
+        DI[依存性注入]
+    end
+    
+    UC -->|依存| IFACE
+    IMPL -->|implements| IFACE
+    DI -->|inject| UC
+    DI -->|具象クラス提供| IMPL
+    
+    subgraph "逆転の効果"
+        E1[✅ 高レベルが低レベルに依存しない]
+        E2[✅ インターフェースが詳細を決定]
+        E3[✅ テスト時はモック注入可能]
+        E4[✅ 実装変更が容易]
+    end
+    
+    subgraph "従来の依存関係（問題）"
+        UC2[UseCase] -->|直接依存| IMPL2[Prisma実装]
+        PROB[❌ 高レベル → 低レベル依存]
+    end
+    
+    style UC fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style IFACE fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style IMPL fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style DI fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#d97706
+    style UC2 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style IMPL2 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style PROB fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style E1 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style E2 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style E3 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style E4 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
 ```
 
 ---

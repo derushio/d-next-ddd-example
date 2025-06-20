@@ -14,31 +14,26 @@ import { BodyContainerClient } from '@/components/navigation/body/BodyContainerC
 import { SessionProvider } from '@/components/providers/SessionProvider';
 import '@/layers/infrastructure/di/container';
 
-import {
-  ThemeConfig,
-  ThemeModeScript,
-  ThemeProvider,
-  createTheme,
-} from 'flowbite-react';
 import type { Metadata } from 'next';
 
 /**
- * flowbiteのtheme設定
+ * Tailwind v4ダークモード用のスクリプト
  */
-const theme = createTheme({
-  button: {
-    color: {
-      primary: 'bg-primary hover:bg-primary2 text-white',
-      error: 'bg-error hover:bg-error2 text-white',
-      warn: 'bg-warn hover:bg-warn2 text-black',
-    },
-  },
-  sidebar: {
-    root: {
-      base: 'h-full overflow-y-auto overflow-x-hidden rounded-none bg-gray-50 px-3 py-4 dark:bg-gray-800',
-    },
-  },
-});
+function ThemeModeScript() {
+  return (
+    <script
+      dangerouslySetInnerHTML={{
+        __html: `
+          (function() {
+            const theme = localStorage.getItem('theme') || 'system';
+            const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            document.documentElement.classList.toggle('dark', isDark);
+          })()
+        `,
+      }}
+    />
+  );
+}
 
 /**
  * アプリのメタデータ
@@ -70,14 +65,12 @@ export default async function RootLayout({
         className={`${geistSansFont.className} ${geistMonoFont.className} antialiased h-full`}
       >
         <SessionProvider>
-          <ThemeProvider theme={theme}>
-            <BodyContainerClient>
-              <BodyContainer>
-                {children}
-                <AppToast />
-              </BodyContainer>
-            </BodyContainerClient>
-          </ThemeProvider>
+          <BodyContainerClient>
+            <BodyContainer>
+              {children}
+              <AppToast />
+            </BodyContainer>
+          </BodyContainerClient>
         </SessionProvider>
       </body>
     </html>

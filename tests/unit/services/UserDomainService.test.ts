@@ -7,26 +7,29 @@ import { UserId } from '@/layers/domain/value-objects/UserId';
 import { container } from '@/layers/infrastructure/di/container';
 import { resolve } from '@/layers/infrastructure/di/resolver';
 import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
+import type { IHashService } from '@/layers/infrastructure/services/HashService';
 
 import {
   expectMockCalledWith,
   setupMockReturnValues,
   setupTestEnvironment,
 } from '../../utils/helpers/testHelpers';
-import { createAutoMockUserRepository } from '../../utils/mocks/autoMocks';
+import { createAutoMockHashService, createAutoMockUserRepository } from '../../utils/mocks/autoMocks';
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { MockProxy } from 'vitest-mock-extended';
 
 describe('UserDomainService', () => {
   let userDomainService: UserDomainService;
   let mockUserRepository: MockProxy<IUserRepository>;
+  let mockHashService: MockProxy<IHashService>;
 
   beforeEach(() => {
     // 🚀 自動モック生成（vitest-mock-extended）
     mockUserRepository = createAutoMockUserRepository();
+    mockHashService = createAutoMockHashService();
 
     // UserDomainServiceを直接インスタンス化してテストする
-    userDomainService = new UserDomainService(mockUserRepository);
+    userDomainService = new UserDomainService(mockUserRepository, mockHashService);
   });
 
   describe('validateUserData', () => {

@@ -1,0 +1,136 @@
+'use client';
+
+import {
+  ReactNode,
+  createContext,
+  useContext,
+  useReducer,
+  useCallback,
+  memo,
+  useEffect,
+} from 'react';
+
+export type LayoutState = {
+  isSidenavOpen: boolean;
+  isSidenavHide: boolean;
+  sidenavMargin: string;
+};
+
+export type LayoutAction =
+  | { type: 'TOGGLE_SIDENAV' }
+  | { type: 'SET_SIDENAV_OPEN'; payload: boolean }
+  | { type: 'SET_SIDENAV_HIDE'; payload: boolean }
+  | { type: 'UPDATE_MARGIN'; payload: string };
+
+export type LayoutContextType = LayoutState & {
+  dispatch: React.Dispatch<LayoutAction>;
+  setIsSidenavOpen: (value: boolean) => void;
+  setIsSidenavHide: (value: boolean) => void;
+};
+
+/**
+ * サイドナビ状態管理用のReducer
+ * 軽微な状態管理最適化: useReducer部分導入
+ */
+function layoutReducer(state: LayoutState, action: LayoutAction): LayoutState {
+  switch (action.type) {
+    case 'TOGGLE_SIDENAV':
+      return {
+        ...state,
+        isSidenavOpen: !state.isSidenavOpen,
+      };
+
+    case 'SET_SIDENAV_OPEN':
+      return {
+        ...state,
+        isSidenavOpen: action.payload,
+      };
+
+    case 'SET_SIDENAV_HIDE':
+      return {
+        ...state,
+        isSidenavHide: action.payload,
+        // マージンも同時に更新
+        sidenavMargin: action.payload ? 'sm:ml-0' : 'sm:ml-72',
+      };
+
+    case 'UPDATE_MARGIN':
+      return {
+        ...state,
+        sidenavMargin: action.payload,
+      };
+
+    default:
+      return state;
+  }
+}
+
+/**
+ * レイアウト専用コンテキスト
+ * 軽微な状態管理最適化: Context分離実装
+ */
+export const LayoutContext = createContext<LayoutContextType>({
+  isSidenavOpen: false,
+  isSidenavHide: false,
+  sidenavMargin: 'sm:ml-72',
+  dispatch: () => {},
+  setIsSidenavOpen: () => {},
+  setIsSidenavHide: () => {},
+});
+
+/**
+ * レイアウト状態管理Provider
+ *
+ * 最適化ポイント:
+ * - useReducer による状態統一管理
+ * - レイアウト状態のみに責務を限定
+ * - useCallback による function 参照安定化
+ * - memo による不必要な再レンダリング防止
+ */
+export const LayoutProvider = memo(function LayoutProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const [state, dispatch] = useReducer(layoutReducer, {
+    isSidenavOpen: false,
+    isSidenavHide: false,
+    sidenavMargin: 'sm:ml-72',
+  });
+
+  // 便利なヘルパー関数
+  const setIsSidenavOpen = useCallback((value: boolean) => {
+    dispatch({ type: 'SET_SIDENAV_OPEN', payload: value });
+  }, []);
+
+  const setIsSidenavHide = useCallback((value: boolean) => {
+    dispatch({ type: 'SET_SIDENAV_HIDE', payload: value });
+  }, []);
+
+  const contextValue = useCallback(
+    () => ({
+      ...state,
+      dispatch,
+      setIsSidenavOpen,
+      setIsSidenavHide,
+    }),
+    [state, setIsSidenavOpen, setIsSidenavHide],
+  );
+
+  return (
+    <LayoutContext.Provider value={contextValue()}>
+      {children}
+    </LayoutContext.Provider>
+  );
+});
+
+/**
+ * レイアウトコンテキスト使用Hook
+ */
+export function useLayout() {
+  const context = useContext(LayoutContext);
+  if (!context) {
+    throw new Error('useLayout must be used within a LayoutProvider');
+  }
+  return context;
+}

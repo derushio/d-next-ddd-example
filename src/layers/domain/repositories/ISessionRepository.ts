@@ -1,4 +1,7 @@
-import type { User, UserSession } from '@/layers/infrastructure/persistence/prisma/generated';
+import type {
+  User,
+  UserSession,
+} from '@/layers/infrastructure/persistence/prisma/generated';
 
 /**
  * セッション作成用のDTO

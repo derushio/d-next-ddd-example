@@ -1,3 +1,3 @@
-CREATE DATABASE "d-next-ddd-example"
+CREATE DATABASE "null"
 WITH
   ENCODING 'UTF8' LOCALE_PROVIDER 'icu' ICU_LOCALE 'ja-x-icu' TEMPLATE 'template0';

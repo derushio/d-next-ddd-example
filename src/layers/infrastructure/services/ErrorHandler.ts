@@ -1,6 +1,7 @@
-import { injectable, inject } from 'tsyringe';
 import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
 import type { ILogger } from '@/layers/infrastructure/services/Logger';
+
+import { inject, injectable } from 'tsyringe';
 
 export interface ErrorResult {
   type: 'validation' | 'authentication' | 'internal';
@@ -13,13 +14,18 @@ export interface IErrorHandler {
 
 @injectable()
 export class ErrorHandler implements IErrorHandler {
-  constructor(
-    @inject(INJECTION_TOKENS.Logger) private logger: ILogger
-  ) {}
+  constructor(@inject(INJECTION_TOKENS.Logger) private logger: ILogger) {}
 
-  handleError(error: Error, context: Record<string, unknown> = {}): ErrorResult {
+  handleError(
+    error: Error,
+    context: Record<string, unknown> = {},
+  ): ErrorResult {
     // コンストラクター注入されたloggerを使用
-    this.logger.error('Unhandled Exception', { error: error.message, stack: error.stack, ...context });
+    this.logger.error('Unhandled Exception', {
+      error: error.message,
+      stack: error.stack,
+      ...context,
+    });
 
     // アプリケーションエラー種別を判定（暫定）
     if (error.name === 'ValidationError') {
@@ -30,4 +36,4 @@ export class ErrorHandler implements IErrorHandler {
     }
     return { type: 'internal', message: '内部サーバーエラーが発生しました' };
   }
-} 
+}

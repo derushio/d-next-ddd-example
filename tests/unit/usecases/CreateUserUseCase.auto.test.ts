@@ -1,6 +1,7 @@
 import type { IHashService } from '@/layers/infrastructure/services/HashService';
 import type { ILogger } from '@/layers/infrastructure/services/Logger';
 import { CreateUserUseCase } from '@/layers/application/usecases/user/CreateUserUseCase';
+import { isFailure, isSuccess } from '@/layers/application/types/Result';
 import { User } from '@/layers/domain/entities/User';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
@@ -77,14 +78,17 @@ describe('CreateUserUseCase with Auto Mocks', () => {
       // Act
       const result = await createUserUseCase.execute(validInput);
 
-      // Assert - 自動生成だから型安全✨
-      expect(result).toEqual({
-        id: expect.any(String),
-        name: validInput.name,
-        email: validInput.email,
-        createdAt: expect.any(Date),
-        updatedAt: expect.any(Date),
-      });
+      // Assert - Result型対応✨
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        expect(result.data).toEqual({
+          id: expect.any(String),
+          name: validInput.name,
+          email: validInput.email,
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
+        });
+      }
 
       expect(mockUserDomainService.validateUserData).toHaveBeenCalledWith(
         validInput.name,
@@ -100,7 +104,7 @@ describe('CreateUserUseCase with Auto Mocks', () => {
       });
     });
 
-    it('should throw error when email is invalid', async () => {
+    it('should return failure when email is invalid', async () => {
       // Arrange
       const invalidEmailInput = {
         name: 'Test User',
@@ -108,13 +112,18 @@ describe('CreateUserUseCase with Auto Mocks', () => {
         password: 'validPassword123',
       };
 
-      // Act & Assert - Email Value Objectでエラーが発生
-      await expect(
-        createUserUseCase.execute(invalidEmailInput),
-      ).rejects.toThrow('メールアドレスの形式が正しくありません');
+      // Act
+      const result = await createUserUseCase.execute(invalidEmailInput);
+
+      // Assert - Result型対応
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.message).toBe('メールアドレスの形式が正しくありません');
+        expect(result.error.code).toBe('EMAIL_INVALID_FORMAT');
+      }
     });
 
-    it('should throw error when validation fails', async () => {
+    it('should return failure when validation fails', async () => {
       // Arrange
       const validationError = new DomainError(
         'バリデーションエラー',
@@ -122,10 +131,15 @@ describe('CreateUserUseCase with Auto Mocks', () => {
       );
       mockUserDomainService.validateUserData.mockRejectedValue(validationError);
 
-      // Act & Assert
-      await expect(createUserUseCase.execute(validInput)).rejects.toThrow(
-        validationError,
-      );
+      // Act
+      const result = await createUserUseCase.execute(validInput);
+
+      // Assert - Result型対応
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.message).toBe('バリデーションエラー');
+        expect(result.error.code).toBe('VALIDATION_ERROR');
+      }
 
       expect(mockUserDomainService.validateUserData).toHaveBeenCalledWith(
         validInput.name,
@@ -133,17 +147,22 @@ describe('CreateUserUseCase with Auto Mocks', () => {
       );
     });
 
-    it('should throw error when save fails', async () => {
+    it('should return failure when save fails', async () => {
       // Arrange
       mockUserDomainService.validateUserData.mockResolvedValue(undefined);
       mockHashService.generateHash.mockResolvedValue('hashedPassword');
       const saveError = new Error('Database error');
       mockUserRepository.save.mockRejectedValue(saveError);
 
-      // Act & Assert
-      await expect(createUserUseCase.execute(validInput)).rejects.toThrow(
-        'Database error',
-      );
+      // Act
+      const result = await createUserUseCase.execute(validInput);
+
+      // Assert - Result型対応
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.message).toBe('Database error');
+        expect(result.error.code).toBe('USER_CREATION_FAILED');
+      }
 
       expect(mockUserRepository.save).toHaveBeenCalledWith(expect.any(User));
     });

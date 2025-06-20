@@ -44,48 +44,46 @@ graph TD
 - CRUD中心の処理
 - 外部サービスとの統合が主目的
 
-### 実装例
+### シンプルアーキテクチャの実装フロー
 
-```typescript
-// シンプルなクリーンアーキテクチャ（CRUD中心）
-class CreateUserUseCase {
-  constructor(
-    private userRepository: IUserRepository,
-    private emailService: IEmailService
-  ) {}
-  
-  async execute(data: CreateUserRequest): Promise<User> {
-    // シンプルなCRUD + 外部サービス呼び出し
-    const user = await this.userRepository.create(data);
-    await this.emailService.sendWelcomeEmail(user.email);
-    return user;
-  }
-}
-```
-
-### テスト例
-
-```typescript
-// テスト：シンプルなモック
-describe('CreateUserUseCase (シンプル)', () => {
-  it('ユーザー作成成功', async () => {
-    // モックは単純なCRUD操作のみ
-    const mockRepo = { 
-      create: vi.fn().mockResolvedValue(mockUser) 
-    };
-    const mockEmail = { 
-      sendWelcomeEmail: vi.fn() 
-    };
+```mermaid
+graph TB
+    subgraph "🚫 シンプルなクリーンアーキテクチャ"
+        A[CreateUserUseCase] --> B[Repository.create]
+        B --> C[Database Insert]
+        C --> D[User作成完了]
+        D --> E[EmailService.sendWelcomeEmail]
+        E --> F[External API Call]
+        F --> G[処理完了]
+    end
     
-    const useCase = new CreateUserUseCase(mockRepo, mockEmail);
+    subgraph "特徴"
+        H[✅ シンプルな構造]
+        I[✅ 学習コスト低]
+        J[✅ 実装速度高]
+        K[❌ ビジネスロジック薄]
+        L[❌ テスト複雑]
+    end
     
-    // データの入出力のテストが中心
-    const result = await useCase.execute(userData);
+    subgraph "テストの課題"
+        M[💾 実際のDB必要]
+        N[🌐 外部API必要]
+        O[⏱️ テスト実行遅い]
+        P[🔄 CI/CD不安定]
+    end
     
-    expect(result).toBe(mockUser);
-    expect(mockEmail.sendWelcomeEmail).toHaveBeenCalledWith(userData.email);
-  });
-});
+    style A fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style C fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style F fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style H fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style I fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style J fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style K fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style L fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style M fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style N fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style O fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style P fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
 ```
 
 ### メリット・デメリット
@@ -98,35 +96,48 @@ describe('CreateUserUseCase (シンプル)', () => {
 | **ビジネスロジック** | 薄い |
 | **テスト複雑度** | 低い |
 
-### 実際の問題点
+### シンプルアーキテクチャの深刻な問題点
 
-```typescript
-// ❌ シンプルアーキテクチャの場合：外部依存でテストが困難
-describe('CreateUserUseCase (シンプル)', () => {
-  it('ユーザー作成成功', async () => {
-    // 問題1: 実際のDBが必要
-    const testDb = await setupTestDatabase(); // 重い！
+```mermaid
+graph TB
+    subgraph "❌ シンプルアーキテクチャのテスト地獄"
+        A[テスト開始] --> B[setupTestDatabase<br/>⏱️ 30秒]
+        B --> C[startEmailStubServer<br/>⏱️ 10秒]
+        C --> D[seedTestData<br/>⏱️ 15秒]
+        D --> E[実際のテスト実行<br/>⏱️ 5秒]
+        E --> F[cleanupTestDatabase<br/>⏱️ 10秒]
+        F --> G[stopEmailStubServer<br/>⏱️ 5秒]
+        G --> H[テスト完了<br/>⏱️ 合計75秒]
+    end
     
-    // 問題2: 外部APIのスタブサーバーが必要
-    const emailStub = await startEmailStubServer(); // 複雑！
+    subgraph "CI/CDでの問題"
+        I[🚫 DBコンテナ起動待ち]
+        J[🚫 ネットワークエラー]
+        K[🚫 並列実行でデータ競合]
+        L[🚫 フレイキーテスト]
+        M[🚫 メンテナンス大変]
+    end
     
-    // 問題3: テスト環境の準備が大変
-    await seedTestData(testDb);
+    subgraph "開発効率への影響"
+        N[😡 開発者の待機時間]
+        O[💸 CIリソース消費]
+        P[🔄 テスト失敗でリトライ]
+        Q[📈 技術的負債の蓄積]
+    end
     
-    const useCase = new CreateUserUseCase(realRepo, realEmailService);
-    
-    // 問題4: テストが遅い（DB + 外部API）
-    const result = await useCase.execute(userData); // 数秒かかる
-    
-    // 問題5: CI/CDで不安定
-    // - DBコンテナの起動待ち
-    // - ネットワークエラーでテスト失敗
-    // - 並列実行でデータ競合
-    
-    await cleanupTestDatabase(testDb);
-    await stopEmailStubServer(emailStub);
-  });
-});
+    style B fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style C fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style D fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style H fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style I fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style J fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style K fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style L fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style M fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style N fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style O fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style P fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style Q fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
 ```
 
 ---
@@ -143,116 +154,101 @@ describe('CreateUserUseCase (シンプル)', () => {
 - Repository パターンで永続化抽象化
 - Use Case でアプリケーションフロー制御
 
-### 実装例
+### DDDアプローチの実装フロー
 
-```typescript
-// ✅ DDD版：ビジネスロジックが複雑
-class CreateUserUseCase {
-  constructor(
-    private userRepository: IUserRepository,
-    private userDomainService: UserDomainService,
-    private emailService: IEmailService,
-    private logger: ILogger
-  ) {}
-  
-  async execute(data: CreateUserRequest): Promise<User> {
-    // 1. ドメインサービスでビジネスルール検証
-    await this.userDomainService.validateUserUniqueness(new Email(data.email));
+```mermaid
+graph TB
+    subgraph "✅ 本プロジェクト（DDD採用）"
+        A[CreateUserUseCase] --> B[UserDomainService<br/>validateUserUniqueness]
+        B --> C[UserFactory<br/>createNewUser]
+        C --> D[Email Value Object<br/>バリデーション]
+        D --> E[UserDomainService<br/>validateUserCreationRules]
+        E --> F[Repository.save<br/>ドメインオブジェクト]
+        F --> G[EmailService<br/>sendWelcomeEmail]
+        G --> H[Logger.info<br/>構造化ログ]
+        H --> I[User Entity返却]
+    end
     
-    // 2. ドメインファクトリーでエンティティ作成
-    const user = UserFactory.createNewUser(
-      new Email(data.email),
-      data.name,
-      RegistrationSource.DIRECT
-    );
+    subgraph "DDD特徴"
+        J[✅ 豊富なビジネスロジック]
+        K[✅ ドメインサービス活用]
+        L[✅ Value Object型安全性]
+        M[✅ エンティティの不変条件]
+        N[✅ 構造化ログ]
+    end
     
-    // 3. ドメインサービスで追加検証
-    this.userDomainService.validateUserCreationRules(user);
+    subgraph "テストの利点"
+        O[🚀 モックで高速テスト]
+        P[🎯 ビジネスロジック詳細検証]
+        Q[🔒 外部依存なし]
+        R[⚡ ミリ秒で実行完了]
+    end
     
-    // 4. 永続化
-    await this.userRepository.save(user);
-    
-    // 5. ドメインイベント処理
-    await this.emailService.sendWelcomeEmail(user.getEmail().toString());
-    
-    this.logger.info('ユーザー作成完了', { userId: user.getId().toString() });
-    
-    return user;
-  }
-}
+    style A fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style B fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style C fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style E fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style J fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style K fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style L fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style M fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style N fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style O fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style P fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style Q fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style R fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
 ```
 
-### テスト例
+### DDDテストの革命的改善
 
-```typescript
-// テスト：複雑なビジネスロジックのモック
-describe('CreateUserUseCase (DDD)', () => {
-  let mockUserRepository: ReturnType<typeof createMockUserRepository>;
-  let mockUserDomainService: ReturnType<typeof createMockUserDomainService>;
-  let mockEmailService: ReturnType<typeof createMockEmailService>;
-  let mockLogger: ReturnType<typeof createMockLogger>;
-  
-  beforeEach(() => {
-    // DDDでは多くのドメインサービスをモック
-    mockUserRepository = createMockUserRepository();
-    mockUserDomainService = createMockUserDomainService();
-    mockEmailService = createMockEmailService();
-    mockLogger = createMockLogger();
-  });
-  
-  it('正常系：複雑なビジネスルールを含むユーザー作成', async () => {
-    // Given: ビジネスルールのモック設定
-    setupMockReturnValues(mockUserDomainService, {
-      validateUserUniqueness: undefined,
-      validateUserCreationRules: undefined,
-    });
-    setupMockReturnValues(mockUserRepository, {
-      save: undefined,
-    });
-    setupMockReturnValues(mockEmailService, {
-      sendWelcomeEmail: undefined,
-    });
+```mermaid
+graph TB
+    subgraph "⚡ DDDテストのスピード"
+        A[テスト開始] --> B[モック作成<br/>⏱️ 1ms]
+        B --> C[ビジネスロジック実行<br/>⏱️ 2ms]
+        C --> D[検証<br/>⏱️ 1ms]
+        D --> E[テスト完了<br/>⏱️ 合計4ms]
+    end
     
-    const useCase = new CreateUserUseCase(
-      mockUserRepository,
-      mockUserDomainService,
-      mockEmailService,
-      mockLogger
-    );
+    subgraph "シンプル vs DDD 比較"
+        F[🚫 シンプル: 75秒]
+        G[✅ DDD: 4ms]
+        H[🚀 18,750倍高速！]
+    end
     
-    // When: UseCase実行
-    const result = await useCase.execute(userData);
+    subgraph "DDDテストのメリット"
+        I[✅ DB不要]
+        J[✅ 外部API不要]
+        K[✅ 瞬時実行]
+        L[✅ CI/CD安定]
+        M[✅ 並列実行OK]
+        N[✅ ビジネスロジック詳細検証]
+    end
     
-    // Then: ビジネスロジックの詳細な検証
-    expectMockCalledWith(mockUserDomainService.validateUserUniqueness, [expect.any(Email)]);
-    expectMockCalledWith(mockUserDomainService.validateUserCreationRules, [expect.any(User)]);
-    expectMockCalledWith(mockUserRepository.save, [expect.any(User)]);
-    expectMockCalledWith(mockEmailService.sendWelcomeEmail, [userData.email]);
-    expectMockCalledWith(mockLogger.info, ['ユーザー作成完了', expect.any(Object)]);
-  });
-  
-  it('異常系：メール重複エラー', async () => {
-    // Given: ビジネスルール違反のモック設定
-    setupMockReturnValues(mockUserDomainService, {
-      validateUserUniqueness: new DomainError('メールアドレスが重複しています', 'EMAIL_DUPLICATE'),
-    });
+    subgraph "検証内容"
+        O[📋 ドメインサービス呼び出し]
+        P[📋 Value Object生成]
+        Q[📋 エンティティ保存]
+        R[📋 エラー処理]
+        S[📋 ログ出力]
+    end
     
-    const useCase = new CreateUserUseCase(
-      mockUserRepository,
-      mockUserDomainService,
-      mockEmailService,
-      mockLogger
-    );
-    
-    // When & Then: ドメインエラーの検証
-    await expect(useCase.execute(userData))
-      .rejects.toThrow(DomainError);
-    
-    // ビジネスルール違反時は後続処理が実行されないことを確認
-    expectMockNotCalled(mockUserRepository.save);
-    expectMockNotCalled(mockEmailService.sendWelcomeEmail);
-  });
-});
+    style A fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style E fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style F fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style G fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style H fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#d97706
+    style I fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style J fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style K fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style L fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style M fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style N fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style O fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style P fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style Q fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style R fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style S fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
 ```
 
 ### メリット・デメリット
@@ -305,105 +301,103 @@ describe('CreateUserUseCase (DDD)', () => {
 - Event Sourcing（オプション）
 - Unit of Work パターン
 
-### 実装例
+### フルDDD実装の複雑性
 
-```typescript
-// フルDDD：Aggregate Root + Domain Event + CQRS
-class CreateUserUseCase {
-  constructor(
-    private userAggregateRepository: IUserAggregateRepository,
-    private domainEventPublisher: IDomainEventPublisher,
-    private commandBus: ICommandBus,
-    private queryBus: IQueryBus,
-    private unitOfWork: IUnitOfWork
-  ) {}
-  
-  async execute(command: CreateUserCommand): Promise<UserCreatedEvent> {
-    return await this.unitOfWork.execute(async () => {
-      // 1. クエリサイドで重複チェック
-      const existingUser = await this.queryBus.execute(
-        new FindUserByEmailQuery(command.email)
-      );
-      
-      if (existingUser) {
-        throw new DomainError('ユーザーが既に存在します');
-      }
-      
-      // 2. Aggregate Root作成
-      const userAggregate = UserAggregate.create(
-        command.email,
-        command.name,
-        command.registrationSource
-      );
-      
-      // 3. ドメインイベント発生
-      userAggregate.addDomainEvent(
-        new UserCreatedEvent(userAggregate.getId(), userAggregate.getEmail())
-      );
-      
-      // 4. 永続化
-      await this.userAggregateRepository.save(userAggregate);
-      
-      // 5. ドメインイベント発行
-      await this.domainEventPublisher.publishAll(userAggregate.getDomainEvents());
-      
-      return userAggregate.getDomainEvents()[0] as UserCreatedEvent;
-    });
-  }
-}
+```mermaid
+graph TB
+    subgraph "🔥 フルDDD：多層アーキテクチャ"
+        A[CreateUserUseCase] --> B[UnitOfWork<br/>トランザクション管理]
+        A --> C[CommandBus<br/>コマンド処理]
+        A --> D[QueryBus<br/>クエリ処理]
+        D --> E[FindUserByEmailQuery<br/>重複チェック]
+        A --> F[UserAggregate<br/>ドメインルート]
+        F --> G[UserCreatedEvent<br/>ドメインイベント]
+        A --> H[DomainEventPublisher<br/>イベント発行]
+        A --> I[UserAggregateRepository<br/>永続化]
+    end
+    
+    subgraph "フルDDDテストの複雑さ"
+        J[5つ以上のモックが必要]
+        K[AggregateRepository Mock]
+        L[EventPublisher Mock]
+        M[CommandBus Mock]
+        N[QueryBus Mock]
+        O[UnitOfWork Mock]
+        P[複雑な検証ロジック]
+    end
+    
+    subgraph "メリット"
+        Q[✅ 完全なイベント駆動]
+        R[✅ CQRS分離]
+        S[✅ 非常に高い拡張性]
+        T[✅ マイクロサービス対応]
+    end
+    
+    subgraph "デメリット"
+        U[❌ 非常に高い学習コスト]
+        V[❌ 実装時間が長い]
+        W[❌ オーバーエンジニアリング]
+        X[❌ 小中規模には不適切]
+    end
+    
+    style A fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style F fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style G fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style H fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style J fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style P fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style Q fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style R fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style S fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style T fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style U fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style V fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style W fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style X fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
 ```
 
-### テスト例
+### フルDDDテストの複雑性
 
-```typescript
-// テスト：非常に複雑なモック
-describe('CreateUserUseCase (フルDDD)', () => {
-  let mockAggregateRepo: ReturnType<typeof createMockUserAggregateRepository>;
-  let mockEventPublisher: ReturnType<typeof createMockDomainEventPublisher>;
-  let mockCommandBus: ReturnType<typeof createMockCommandBus>;
-  let mockQueryBus: ReturnType<typeof createMockQueryBus>;
-  let mockUnitOfWork: ReturnType<typeof createMockUnitOfWork>;
-  
-  beforeEach(() => {
-    // 多数のインフラストラクチャコンポーネントをモック
-    mockAggregateRepo = createMockUserAggregateRepository();
-    mockEventPublisher = createMockDomainEventPublisher();
-    mockCommandBus = createMockCommandBus();
-    mockQueryBus = createMockQueryBus();
-    mockUnitOfWork = createMockUnitOfWork();
-  });
-  
-  it('正常系：Aggregate + Event + CQRS', async () => {
-    // Given: 複雑なモック設定
-    mockQueryBus.execute.mockResolvedValue(null); // 重複なし
-    mockAggregateRepo.save.mockResolvedValue(undefined);
-    mockEventPublisher.publishAll.mockResolvedValue(undefined);
+```mermaid
+graph TB
+    subgraph "🧪 フルDDDテストセットアップ"
+        A[5つ以上のモック作成] --> B[AggregateRepository]
+        A --> C[EventPublisher]
+        A --> D[CommandBus]
+        A --> E[QueryBus]
+        A --> F[UnitOfWork]
+    end
     
-    const useCase = new CreateUserUseCase(
-      mockAggregateRepo,
-      mockEventPublisher,
-      mockCommandBus,
-      mockQueryBus,
-      mockUnitOfWork
-    );
+    subgraph "テスト実行フロー"
+        G[Query実行モック設定] --> H[Aggregate作成検証]
+        H --> I[Event発行検証]
+        I --> J[Repository保存検証]
+        J --> K[UnitOfWork実行検証]
+        K --> L[複雑な引数マッチング]
+    end
     
-    // When: コマンド実行
-    const result = await useCase.execute(createUserCommand);
+    subgraph "検証の複雑さ"
+        M["expect.any(FindUserByEmailQuery)"]
+        N["expect.any(UserAggregate)"]
+        O["expect.arrayContaining([expect.any(UserCreatedEvent)])"]
+        P["mockUnitOfWork.execute.toHaveBeenCalled()"]
+        Q[複数のモック相互作用検証]
+    end
     
-    // Then: 複雑な検証
-    expect(mockQueryBus.execute).toHaveBeenCalledWith(
-      expect.any(FindUserByEmailQuery)
-    );
-    expect(mockUnitOfWork.execute).toHaveBeenCalled();
-    expect(mockAggregateRepo.save).toHaveBeenCalledWith(
-      expect.any(UserAggregate)
-    );
-    expect(mockEventPublisher.publishAll).toHaveBeenCalledWith(
-      expect.arrayContaining([expect.any(UserCreatedEvent)])
-    );
-    expect(result).toBeInstanceOf(UserCreatedEvent);
-  });
-});
+    subgraph "コスト"
+        R[⏱️ テスト作成時間：長]
+        S[📚 学習コスト：非常に高]
+        T[🔧 メンテナンス：複雑]
+        U[👥 チーム習得：困難]
+    end
+    
+    style A fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style L fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style Q fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style R fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style S fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style T fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style U fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
 ```
 
 ### メリット・デメリット
@@ -435,42 +429,72 @@ describe('CreateUserUseCase (フルDDD)', () => {
 
 ### 複雑さの段階的増加
 
+#### 1. シンプルアーキテクチャ：CRUD中心
+
 ```mermaid
 graph TD
-    subgraph "シンプル：CRUD中心"
-        A1[UseCase] --> B1[Repository]
-        A1 --> C1[EmailService]
-        
-        note1[モック対象：2つ<br/>テスト：データの入出力<br/>学習コスト：低]
-    end
+    A[UseCase] --> B[Repository]
+    A --> C[EmailService]
     
-    subgraph "本プロジェクト：DDD"
-        A2[UseCase] --> B2[DomainService]
-        A2 --> C2[Repository]
-        A2 --> D2[EmailService]
-        A2 --> E2[Logger]
-        B2 --> F2[Entity Validation]
-        B2 --> G2[Business Rules]
-        
-        note2[モック対象：4-6個<br/>テスト：ビジネスロジック<br/>学習コスト：中]
-    end
+    D[特徴] --> E["✅ シンプルで学習しやすい"]
+    D --> F["✅ 小規模プロジェクト向け"]
+    D --> G["❌ ビジネスロジックが散在"]
+    D --> H["❌ テストが結合テスト中心"]
     
-    subgraph "フルDDD：高度"
-        A3[UseCase] --> B3[AggregateRepo]
-        A3 --> C3[EventPublisher]
-        A3 --> D3[CommandBus]
-        A3 --> E3[QueryBus]
-        A3 --> F3[UnitOfWork]
-        B3 --> G3[Aggregate Root]
-        C3 --> H3[Domain Events]
-        
-        note3[モック対象：5-8個<br/>テスト：Event + CQRS<br/>学習コスト：高]
-    end
-    
-    style A1 fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
-    style A2 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
-    style A3 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style A fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style D fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
 ```
+
+**テスト特性**：モック対象2つ、データ入出力テスト、学習コスト低
+
+#### 2. 本プロジェクト：DDD基本
+
+```mermaid
+graph TD
+    A[UseCase] --> B[DomainService]
+    A --> C[Repository]
+    A --> D[EmailService]
+    A --> E[Logger]
+    B --> F[Entity Validation]
+    B --> G[Business Rules]
+    
+    H[特徴] --> I["✅ ビジネスロジック分離"]
+    H --> J["✅ テスタブルな設計"]
+    H --> K["✅ 適度な複雑さ"]
+    H --> L["❌ 学習コストあり"]
+    
+    style A fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style B fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style H fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+```
+
+**テスト特性**：モック対象4-6個、ビジネスロジックテスト、学習コスト中
+
+#### 3. フルDDD：高度なパターン
+
+```mermaid
+graph TD
+    A[UseCase] --> B[AggregateRepo]
+    A --> C[EventPublisher]
+    A --> D[CommandBus]
+    A --> E[QueryBus]
+    A --> F[UnitOfWork]
+    B --> G[Aggregate Root]
+    C --> H[Domain Events]
+    
+    I[特徴] --> J["✅ 高度な設計パターン"]
+    I --> K["✅ 大規模システム対応"]
+    I --> L["✅ イベント駆動"]
+    I --> M["❌ 学習コスト高"]
+    I --> N["❌ 過度な複雑性リスク"]
+    
+    style A fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style B fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style C fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style I fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+```
+
+**テスト特性**：モック対象5-8個、イベント+CQRSテスト、学習コスト高
 
 ### 実際の開発での比較
 
@@ -488,51 +512,72 @@ graph TD
 
 ## CI/CDでの実際の違い 🔧
 
-### シンプルアーキテクチャの場合
+### CI/CD設定の劇的な違い
 
-```yaml
-# ❌ シンプルアーキテクチャの場合：複雑なCI設定
-name: Test (シンプル)
-jobs:
-  test:
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_PASSWORD: test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-      
-      email-stub:
-        image: mailhog/mailhog
-        ports:
-          - 1025:1025
+```mermaid
+graph TB
+    subgraph "❌ シンプルアーキテクチャのCI地獄"
+        A1[GitHub Actions開始] --> A2[PostgreSQLコンテナ起動]
+        A2 --> A3[MailHogコンテナ起動]
+        A3 --> A4[ヘルスチェック待機<br/>⏱️ 30秒]
+        A4 --> A5[テストデータシード<br/>⏱️ 2分]
+        A5 --> A6[テスト実行<br/>⏱️ 10分]
+        A6 --> A7[コンテナクリーンアップ<br/>⏱️ 1分]
+        A7 --> A8[CI完了<br/>⏱️ 合計13分30秒]
+    end
     
-    steps:
-      - name: Wait for services
-        run: sleep 30  # サービス起動待ち
-      
-      - name: Setup test data
-        run: npm run db:seed  # テストデータ準備
-      
-      - name: Run tests
-        run: npm test  # 遅い、不安定
-```
-
-### 本プロジェクト（DDD）の場合
-
-```yaml
-# ✅ 本プロジェクト（DDD）の場合：シンプルなCI設定
-name: Test (DDD)
-jobs:
-  test:
-    steps:
-      - name: Run tests
-        run: npm test  # 速い、安定
-    # それだけ！外部サービス不要
+    subgraph "シンプルアーキテクチャのCI問題"
+        B1[🚫 複雑なサービス設定]
+        B2[🚫 ネットワーク依存]
+        B3[🚫 リソース消費大]
+        B4[🚫 フレイキーテスト]
+        B5[🚫 デバッグ困難]
+    end
+    
+    subgraph "✅ DDD（本プロジェクト）のCIシンプル"
+        C1[GitHub Actions開始] --> C2[npm test実行<br/>⏱️ 30秒]
+        C2 --> C3[CI完了<br/>⏱️ 合計30秒]
+    end
+    
+    subgraph "DDDのCIメリット"
+        D1[✅ 設定がシンプル]
+        D2[✅ 外部サービス不要]
+        D3[✅ 高速実行]
+        D4[✅ 安定性が高い]
+        D5[✅ リソース効率良い]
+    end
+    
+    subgraph "速度比較"
+        E1[シンプル: 13分30秒]
+        E2[DDD: 30秒]
+        E3[🚀 27倍高速！]
+    end
+    
+    style A2 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style A3 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style A4 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style A5 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style A8 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    
+    style C1 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style C2 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style C3 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    
+    style B1 fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style B2 fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style B3 fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style B4 fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style B5 fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    
+    style D1 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style D2 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style D3 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style D4 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style D5 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    
+    style E1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style E2 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style E3 fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#d97706
 ```
 
 ---
@@ -585,18 +630,55 @@ graph TD
 
 ### 実際の開発チームでの体験
 
-```typescript
-// 実際の開発現場での声
-
-// ❌ 非DDD時代
-"テストが通らない...DBの接続エラーかな？"
-"CI が30分かかってる...また外部API のタイムアウト？"
-"ローカルでテスト環境作るのに1時間かかった..."
-
-// ✅ DDD導入後  
-"テストが3秒で全部通った！"
-"CI が2分で完了！安定してる！"
-"新人でもすぐにテスト書けるようになった！"
+```mermaid
+graph TB
+    subgraph "❌ 非DDD時代の開発者の声"
+        A1[💬 テストが通らない...<br/>DBの接続エラーかな？]
+        A2[💬 CIが30分かかってる...<br/>また外部APIのタイムアウト？]
+        A3[💬 ローカルでテスト環境作るのに<br/>1時間かかった...]
+        A4[😰 ストレス・フラストレーション]
+    end
+    
+    subgraph "✅ DDD導入後の開発者の声"
+        B1[😊 テストが3秒で全部通った！]
+        B2[🚀 CIが2分で完了！安定してる！]
+        B3[👍 新人でもすぐに<br/>テスト書けるようになった！]
+        B4[💪 生産性・満足度向上]
+    end
+    
+    subgraph "開発効率の変化"
+        C1[⏱️ テスト実行時間<br/>30分 → 3秒]
+        C2[🏗️ CI/CD時間<br/>30分 → 2分]
+        C3[📖 学習コスト<br/>高 → 低]
+        C4[🎯 開発者体験<br/>劣悪 → 優秀]
+    end
+    
+    subgraph "チーム全体への影響"
+        D1[✅ 新人の参加障壁低下]
+        D2[✅ 技術的負債の削減]
+        D3[✅ 開発速度の向上]
+        D4[✅ チームモラル向上]
+    end
+    
+    style A1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style A2 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style A3 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style A4 fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    
+    style B1 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style B2 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style B3 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style B4 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    
+    style C1 fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#d97706
+    style C2 fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#d97706
+    style C3 fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#d97706
+    style C4 fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#d97706
+    
+    style D1 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style D2 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style D3 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style D4 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
 ```
 
 ---

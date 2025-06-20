@@ -2,7 +2,9 @@
 
 import 'reflect-metadata';
 
+import { isFailure, isSuccess } from '@/layers/application/types/Result';
 import { resolve } from '@/layers/infrastructure/di/resolver';
+
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
@@ -54,39 +56,53 @@ export async function createUser(formData: FormData) {
     // resolve()でCreateUserUseCaseを取得してユーザー作成
     const createUserUseCase = resolve('CreateUserUseCase');
 
-    const user = await createUserUseCase.execute({
+    const result = await createUserUseCase.execute({
       name,
       email,
       password,
     });
 
-    logger.info('ユーザー作成成功', {
-      userId: user.id,
-      email: user.email,
-    });
+    // Result型のパターンマッチング
+    if (isSuccess(result)) {
+      logger.info('ユーザー作成成功', {
+        userId: result.data.id,
+        email: result.data.email,
+      });
 
-    // キャッシュの再検証
-    revalidatePath('/users');
+      // キャッシュの再検証
+      revalidatePath('/users');
 
-    return {
-      success: true,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-      },
-    };
+      return {
+        success: true,
+        user: {
+          id: result.data.id,
+          name: result.data.name,
+          email: result.data.email,
+        },
+      };
+    } else {
+      logger.warn('ユーザー作成失敗', {
+        error: result.error.message,
+        code: result.error.code,
+      });
+
+      return {
+        error: result.error.message,
+        code: result.error.code,
+      };
+    }
   } catch (error) {
-    // resolve()でLoggerを取得してエラーログ出力
+    // 予期しないエラー（UseCaseで処理されなかった例外）
     const logger = resolve('Logger');
 
-    logger.error('ユーザー作成エラー', {
+    logger.error('ユーザー作成処理中に予期しないエラーが発生', {
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
     });
 
     return {
-      error: 'ユーザーの作成に失敗しました',
+      error: 'システムエラーが発生しました',
+      code: 'SYSTEM_ERROR',
     };
   }
 }

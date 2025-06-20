@@ -2,6 +2,23 @@
 
 このドキュメントでは、Application Layer の Use Cases について、その役割と実装ルールを詳しく解説します。
 
+## 🚀 Result型パターンの採用
+
+**本プロジェクトでは、Use CaseにおいてResult型パターンを採用しています。**
+
+```typescript
+// 必要なimport
+import { Result, success, failure } from '@/layers/application/types/Result';
+import { DomainError } from '@/layers/domain/errors/DomainError';
+```
+
+### Result型パターンの利点
+
+- **型安全性**: 成功・失敗が型レベルで表現される
+- **明示的エラーハンドリング**: エラー処理が必須となり、見落としを防止
+- **統一的なエラー処理**: 全Use Caseで一貫したエラーハンドリング
+- **テスタビリティ**: エラーケースのテストが容易
+
 ---
 
 ## Use Cases とは？ 🎯
@@ -58,90 +75,66 @@ sequenceDiagram
 ### 1. **ビジネスフローの制御** 🎛️
 
 ```typescript
-// ✅ 推薦：Use Case でのフロー制御
+// ✅ 推薦：Use Case でのフロー制御（Result型パターン）
 @injectable()
 export class CreateUserUseCase {
   constructor(
     @inject('IUserRepository') private userRepository: IUserRepository,
     @inject('IUserDomainService') private userDomainService: IUserDomainService,
-    @inject('IEmailService') private emailService: IEmailService,
+    @inject('IHashService') private hashService: IHashService,
     @inject('ILogger') private logger: ILogger
   ) {}
   
-  async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
+  async execute(request: CreateUserRequest): Promise<Result<CreateUserResponse>> {
     this.logger.info('ユーザー作成開始', { email: request.email });
     
     try {
-      // 1. 入力データの検証
-      this.validateRequest(request);
+      // 1. Email Value Objectを作成（バリデーション込み）
+      const emailVO = new Email(request.email);
       
       // 2. ドメインサービスでビジネスルール検証
-      await this.userDomainService.validateUserCreation(
-        request.email,
-        request.name
+      await this.userDomainService.validateUserData(
+        request.name,
+        request.email
       );
       
-      // 3. 重複チェック
-      const existingUser = await this.userRepository.findByEmail(
-        new Email(request.email)
-      );
-      if (existingUser) {
-        throw new DomainError(
-          'このメールアドレスは既に使用されています',
-          'EMAIL_ALREADY_EXISTS'
-        );
-      }
+      // 3. パスワードハッシュ化
+      const hashedPassword = await this.hashService.generateHash(request.password);
       
       // 4. ドメインオブジェクト作成
-      const user = User.create(
-        generateUserId(),
-        new Email(request.email),
-        request.name
-      );
+      const user = User.create(emailVO, request.name, hashedPassword);
       
       // 5. データ永続化
       await this.userRepository.save(user);
       
-      // 6. 外部サービス連携（ウェルカムメール）
-      await this.emailService.sendWelcomeEmail(
-        user.getEmail().toString(),
-        user.getName()
-      );
-      
       this.logger.info('ユーザー作成完了', { 
-        userId: user.getId().toString() 
+        userId: user.getId().toString(),
+        email: request.email 
       });
       
-      // 7. レスポンス変換
-      return this.toResponse(user);
+      // 6. 成功レスポンス
+      return success({
+        id: user.getId().toString(),
+        name: user.getName(),
+        email: user.getEmail().toString(),
+        createdAt: user.getCreatedAt(),
+        updatedAt: user.getUpdatedAt()
+      });
       
     } catch (error) {
       this.logger.error('ユーザー作成失敗', { 
         email: request.email, 
-        error: error.message 
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
-      throw error;
+      
+      // DomainErrorの場合は適切なエラーコードで返す
+      if (error instanceof DomainError) {
+        return failure(error.message, error.code);
+      }
+      
+      // その他の予期しないエラー
+      return failure('ユーザー作成に失敗しました', 'UNEXPECTED_ERROR');
     }
-  }
-  
-  private validateRequest(request: CreateUserRequest): void {
-    if (!request.name || request.name.trim().length === 0) {
-      throw new ApplicationError('名前は必須です', 'NAME_REQUIRED');
-    }
-    
-    if (!request.email || request.email.trim().length === 0) {
-      throw new ApplicationError('メールアドレスは必須です', 'EMAIL_REQUIRED');
-    }
-  }
-  
-  private toResponse(user: User): CreateUserResponse {
-    return {
-      id: user.getId().toString(),
-      name: user.getName(),
-      email: user.getEmail().toString(),
-      level: user.getLevel(),
-      createdAt: user.getCreatedAt()
-    };
   }
 }
 ```
@@ -217,7 +210,7 @@ export class TransferUserPointsUseCase {
 ### 3. **認可・権限チェック** 🔐
 
 ```typescript
-// ✅ 推薦：Use Case での認可処理
+// ✅ 推薦：Use Case での認可処理（Result型パターン）
 @injectable()
 export class DeleteUserUseCase {
   constructor(
@@ -229,55 +222,74 @@ export class DeleteUserUseCase {
   async execute(
     request: DeleteUserRequest,
     currentUserId: string
-  ): Promise<void> {
-    // 1. 実行者の認証
-    const currentUser = await this.userRepository.findById(
-      new UserId(currentUserId)
-    );
-    if (!currentUser) {
-      throw new ApplicationError('認証が必要です', 'AUTHENTICATION_REQUIRED');
-    }
-    
-    // 2. 権限チェック
-    const hasPermission = await this.authService.hasPermission(
-      currentUserId,
-      'DELETE_USER'
-    );
-    
-    // 3. 自分自身または管理者権限の確認
-    const isOwnAccount = currentUserId === request.targetUserId;
-    const isAdmin = await this.authService.hasRole(currentUserId, 'ADMIN');
-    
-    if (!isOwnAccount && !isAdmin && !hasPermission) {
-      throw new ApplicationError(
-        'このユーザーを削除する権限がありません',
-        'INSUFFICIENT_PERMISSION'
+  ): Promise<Result<void>> {
+    try {
+      // 1. 実行者の認証
+      const currentUser = await this.userRepository.findById(
+        new UserId(currentUserId)
       );
-    }
-    
-    // 4. 削除対象ユーザーの取得
-    const targetUser = await this.userRepository.findById(
-      new UserId(request.targetUserId)
-    );
-    if (!targetUser) {
-      throw new DomainError('ユーザーが見つかりません', 'USER_NOT_FOUND');
-    }
-    
-    // 5. ビジネスルール：管理者の削除制限
-    if (await this.authService.hasRole(request.targetUserId, 'ADMIN') && !isAdmin) {
-      throw new DomainError(
-        '管理者ユーザーは削除できません',
-        'CANNOT_DELETE_ADMIN'
+      if (!currentUser) {
+        return failure('認証が必要です', 'AUTHENTICATION_REQUIRED');
+      }
+      
+      // 2. 権限チェック
+      const hasPermission = await this.authService.hasPermission(
+        currentUserId,
+        'DELETE_USER'
       );
+      
+      // 3. 自分自身または管理者権限の確認
+      const isOwnAccount = currentUserId === request.targetUserId;
+      const isAdmin = await this.authService.hasRole(currentUserId, 'ADMIN');
+      
+      if (!isOwnAccount && !isAdmin && !hasPermission) {
+        return failure(
+          'このユーザーを削除する権限がありません',
+          'INSUFFICIENT_PERMISSION'
+        );
+      }
+      
+      // 4. 削除対象ユーザーの取得
+      const targetUser = await this.userRepository.findById(
+        new UserId(request.targetUserId)
+      );
+      if (!targetUser) {
+        return failure('ユーザーが見つかりません', 'USER_NOT_FOUND');
+      }
+      
+      // 5. ビジネスルール：管理者の削除制限
+      if (await this.authService.hasRole(request.targetUserId, 'ADMIN') && !isAdmin) {
+        return failure(
+          '管理者ユーザーは削除できません',
+          'CANNOT_DELETE_ADMIN'
+        );
+      }
+      
+      // 6. 削除実行
+      await this.userRepository.delete(new UserId(request.targetUserId));
+      
+      this.logger.info('ユーザー削除完了', {
+        deletedUserId: request.targetUserId,
+        deletedBy: currentUserId
+      });
+      
+      return success(undefined);
+      
+    } catch (error) {
+      this.logger.error('ユーザー削除失敗', {
+        targetUserId: request.targetUserId,
+        currentUserId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      
+      // DomainErrorの場合は適切なエラーコードで返す
+      if (error instanceof DomainError) {
+        return failure(error.message, error.code);
+      }
+      
+      // その他の予期しないエラー
+      return failure('ユーザー削除に失敗しました', 'UNEXPECTED_ERROR');
     }
-    
-    // 6. 削除実行
-    await this.userRepository.delete(new UserId(request.targetUserId));
-    
-    this.logger.info('ユーザー削除完了', {
-      deletedUserId: request.targetUserId,
-      deletedBy: currentUserId
-    });
   }
 }
 ```
@@ -349,15 +361,16 @@ export class CompleteUserRegistrationUseCase {
 ### 5. **エラーハンドリングと適切なロギング** 📝
 
 ```typescript
-// ✅ 推薦：適切なエラーハンドリング
+// ✅ 推薦：適切なエラーハンドリング（Result型パターン）
 @injectable()
 export class UpdateUserProfileUseCase {
   constructor(
     @inject('IUserRepository') private userRepository: IUserRepository,
+    @inject('IUserDomainService') private userDomainService: IUserDomainService,
     @inject('ILogger') private logger: ILogger
   ) {}
   
-  async execute(request: UpdateUserProfileRequest): Promise<UpdateUserProfileResponse> {
+  async execute(request: UpdateUserProfileRequest): Promise<Result<UpdateUserProfileResponse>> {
     const startTime = Date.now();
     
     try {
@@ -366,16 +379,29 @@ export class UpdateUserProfileUseCase {
         fields: Object.keys(request).filter(key => key !== 'userId')
       });
       
-      // ビジネスロジック実行
+      // 1. ユーザー取得
       const user = await this.userRepository.findById(
         new UserId(request.userId)
       );
       
       if (!user) {
-        throw new DomainError('ユーザーが見つかりません', 'USER_NOT_FOUND');
+        return failure('ユーザーが見つかりません', 'USER_NOT_FOUND');
       }
       
-      // 更新処理
+      // 2. Email重複チェック（Emailが更新される場合）
+      if (request.email) {
+        const isDuplicate = await this.userDomainService.isEmailDuplicate(
+          new Email(request.email)
+        );
+        if (isDuplicate) {
+          return failure(
+            'このメールアドレスは既に使用されています',
+            'EMAIL_DUPLICATE'
+          );
+        }
+      }
+      
+      // 3. 更新処理
       if (request.name) {
         user.updateName(request.name);
       }
@@ -383,7 +409,7 @@ export class UpdateUserProfileUseCase {
         user.updateEmail(new Email(request.email));
       }
       
-      await this.userRepository.save(user);
+      await this.userRepository.update(user);
       
       const duration = Date.now() - startTime;
       this.logger.info('プロフィール更新完了', {
@@ -391,42 +417,29 @@ export class UpdateUserProfileUseCase {
         duration
       });
       
-      return this.toResponse(user);
+      return success({
+        id: user.getId().toString(),
+        name: user.getName(),
+        email: user.getEmail().toString(),
+        updatedAt: user.getUpdatedAt()
+      });
       
     } catch (error) {
       const duration = Date.now() - startTime;
       
+      this.logger.error('プロフィール更新失敗', {
+        userId: request.userId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        duration
+      });
+      
+      // DomainErrorの場合は適切なエラーコードで返す
       if (error instanceof DomainError) {
-        this.logger.warn('プロフィール更新：ドメインエラー', {
-          userId: request.userId,
-          error: error.message,
-          code: error.code,
-          duration
-        });
-        throw error;
-      } else if (error instanceof InfrastructureError) {
-        this.logger.error('プロフィール更新：インフラエラー', {
-          userId: request.userId,
-          error: error.message,
-          stack: error.stack,
-          duration
-        });
-        throw new ApplicationError(
-          'システムエラーが発生しました',
-          'SYSTEM_ERROR'
-        );
-      } else {
-        this.logger.error('プロフィール更新：予期しないエラー', {
-          userId: request.userId,
-          error: error.message,
-          stack: error.stack,
-          duration
-        });
-        throw new ApplicationError(
-          '予期しないエラーが発生しました',
-          'UNEXPECTED_ERROR'
-        );
+        return failure(error.message, error.code);
       }
+      
+      // その他の予期しないエラー
+      return failure('ユーザー更新に失敗しました', 'UNEXPECTED_ERROR');
     }
   }
 }
@@ -631,37 +644,25 @@ export class CreateUserUseCase {
 ### Unit Tests（単体テスト）
 
 ```typescript
-// ✅ Use Case テストの例
+// ✅ Use Case テストの例（Result型パターン対応）
 describe('CreateUserUseCase', () => {
   let createUserUseCase: CreateUserUseCase;
-  let mockUserRepository: jest.Mocked<IUserRepository>;
-  let mockUserDomainService: jest.Mocked<IUserDomainService>;
-  let mockEmailService: jest.Mocked<IEmailService>;
-  let mockLogger: jest.Mocked<ILogger>;
+  let mockUserRepository: MockProxy<IUserRepository>;
+  let mockUserDomainService: MockProxy<IUserDomainService>;
+  let mockHashService: MockProxy<IHashService>;
+  let mockLogger: MockProxy<ILogger>;
   
   beforeEach(() => {
-    mockUserRepository = {
-      findByEmail: jest.fn(),
-      save: jest.fn(),
-    } as any;
-    
-    mockUserDomainService = {
-      validateUserCreation: jest.fn(),
-    } as any;
-    
-    mockEmailService = {
-      sendWelcomeEmail: jest.fn(),
-    } as any;
-    
-    mockLogger = {
-      info: jest.fn(),
-      error: jest.fn(),
-    } as any;
+    // vitest-mock-extended を使用した自動モック生成
+    mockUserRepository = createAutoMockUserRepository();
+    mockUserDomainService = createAutoMockUserDomainService();
+    mockHashService = createAutoMockHashService();
+    mockLogger = createAutoMockLogger();
     
     createUserUseCase = new CreateUserUseCase(
       mockUserRepository,
       mockUserDomainService,
-      mockEmailService,
+      mockHashService,
       mockLogger
     );
   });
@@ -674,26 +675,32 @@ describe('CreateUserUseCase', () => {
       password: 'password123'
     };
     
-    mockUserRepository.findByEmail.mockResolvedValue(null);
-    mockUserDomainService.validateUserCreation.mockResolvedValue();
-    mockEmailService.sendWelcomeEmail.mockResolvedValue();
+    mockUserDomainService.validateUserData.mockResolvedValue(undefined);
+    mockHashService.generateHash.mockResolvedValue('hashedPassword');
+    mockUserRepository.save.mockResolvedValue(undefined);
     
     // Act
     const result = await createUserUseCase.execute(request);
     
-    // Assert
-    expect(result.name).toBe('テストユーザー');
-    expect(result.email).toBe('test@example.com');
-    expect(result.level).toBe(1);
+    // Assert - Result型パターン対応
+    expect(isSuccess(result)).toBe(true);
+    if (isSuccess(result)) {
+      expect(result.data.name).toBe('テストユーザー');
+      expect(result.data.email).toBe('test@example.com');
+      expect(result.data.id).toEqual(expect.any(String));
+      expect(result.data.createdAt).toEqual(expect.any(Date));
+      expect(result.data.updatedAt).toEqual(expect.any(Date));
+    }
     
-    expect(mockUserRepository.save).toHaveBeenCalledTimes(1);
-    expect(mockEmailService.sendWelcomeEmail).toHaveBeenCalledWith(
-      'test@example.com',
-      'テストユーザー'
+    expect(mockUserDomainService.validateUserData).toHaveBeenCalledWith(
+      'テストユーザー',
+      'test@example.com'
     );
+    expect(mockHashService.generateHash).toHaveBeenCalledWith('password123');
+    expect(mockUserRepository.save).toHaveBeenCalledWith(expect.any(User));
   });
   
-  it('重複メールアドレスでエラーが発生する', async () => {
+  it('メールアドレス重複でエラーが返される', async () => {
     // Arrange
     const request: CreateUserRequest = {
       name: 'テストユーザー',
@@ -701,18 +708,42 @@ describe('CreateUserUseCase', () => {
       password: 'password123'
     };
     
-    const existingUser = User.create(
-      new UserId('existing-123'),
-      new Email('test@example.com'),
-      '既存ユーザー'
+    const duplicateError = new DomainError(
+      'このメールアドレスは既に使用されています',
+      'EMAIL_DUPLICATE'
     );
+    mockUserDomainService.validateUserData.mockRejectedValue(duplicateError);
     
-    mockUserRepository.findByEmail.mockResolvedValue(existingUser);
+    // Act
+    const result = await createUserUseCase.execute(request);
     
-    // Act & Assert
-    await expect(createUserUseCase.execute(request))
-      .rejects
-      .toThrow('このメールアドレスは既に使用されています');
+    // Assert - Result型パターン対応
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+      expect(result.error.message).toBe('このメールアドレスは既に使用されています');
+      expect(result.error.code).toBe('EMAIL_DUPLICATE');
+    }
+    
+    expect(mockUserRepository.save).not.toHaveBeenCalled();
+  });
+  
+  it('バリデーションエラーが適切に処理される', async () => {
+    // Arrange
+    const request: CreateUserRequest = {
+      name: 'テストユーザー',
+      email: 'invalid-email', // 無効なメールアドレス
+      password: 'password123'
+    };
+    
+    // Act
+    const result = await createUserUseCase.execute(request);
+    
+    // Assert - Email Value Object のバリデーションエラー
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+      expect(result.error.message).toBe('ユーザー作成に失敗しました');
+      expect(result.error.code).toBe('UNEXPECTED_ERROR');
+    }
   });
 });
 ```

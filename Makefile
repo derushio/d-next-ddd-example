@@ -7,6 +7,10 @@ down:
 reset:
 	docker compose -f docker/compose.yaml --env-file=".env" down -v
 
+seed:
+	pnpm db:migrate:dev
+	pnpm db:seed
+
 setup:
 	echo 'DB_USER="postgres"' > .env.example.dev
 	echo 'DB_PASSWORD="password"' >> .env.example.dev
@@ -32,12 +36,17 @@ setup:
 	# Install Playwright browsers for E2E testing
 	pnpm exec playwright install chromium firefox
 
-	# Replace d-next-ddd-example with project name from package.json
+	# Replace null with project name from package.json
 	PROJECT_NAME=$$(jq -r '.name' package.json) && \
 	command -v fd >/dev/null 2>&1 || { echo "Error: fd command is required but not found." >&2; exit 1; } && \
 	fd --hidden --no-ignore -t f \
 		-E node_modules -E .next -E dist -E .git \
-		-x sed -i "s/d-next-ddd-example/$${PROJECT_NAME}/g" {}
+		-x sed -i "s/null/$${PROJECT_NAME}/g" {}
+
+	# Setup Git hooks
+	@echo ""
+	@echo "🔧 Setting up Git hooks..."
+	$(MAKE) setup-git-hooks
 
 setup-electron: setup
 	pnpm add fs-extra @prisma/migrate
@@ -59,3 +68,73 @@ setup-electron: setup
 	rm -rf ./prisma/migrations
 
 	pnpm dotenvx run -- pnpm tsx ./src/tools/setupPackageJsonElectron.ts
+
+setup-hooks:
+	# Git hooks setup for pre-commit and pre-push
+	@echo "Setting up Git hooks..."
+	@if [ ! -d "./.git" ]; then \
+		echo "Error: Git repository not found at ./.git"; \
+		echo "Please run this command from a Git repository"; \
+		exit 1; \
+	fi
+	@mkdir -p ./.git/hooks
+	@echo "#!/bin/sh" > ./.git/hooks/pre-commit
+	@echo "# Auto-format before commit" >> ./.git/hooks/pre-commit
+	@echo "cd null" >> ./.git/hooks/pre-commit
+	@echo "pnpm format" >> ./.git/hooks/pre-commit
+	@echo "git add ." >> ./.git/hooks/pre-commit
+	@chmod +x ./.git/hooks/pre-commit
+	@echo "#!/bin/sh" > ./.git/hooks/pre-push
+	@echo "# Run tests before push" >> ./.git/hooks/pre-push
+	@echo "cd null" >> ./.git/hooks/pre-push
+	@echo "pnpm test:unit" >> ./.git/hooks/pre-push
+	@chmod +x ./.git/hooks/pre-push
+	@echo "✅ Git hooks setup completed!"
+	@echo "  - pre-commit: auto-format with 'pnpm format'"
+	@echo "  - pre-push: run unit tests with 'pnpm test:unit'"
+
+init-hooks: setup-hooks
+	# Initialize husky for current project (after git init)
+	@echo "Initializing husky for project..."
+	@if [ ! -d ".git" ]; then \
+		echo "Error: Git repository not found in current directory"; \
+		echo "Please run 'git init' first"; \
+		exit 1; \
+	fi
+	pnpm husky init
+	@echo "#!/bin/sh" > .husky/pre-commit
+	@echo "pnpm format" >> .husky/pre-commit
+	@echo "git add ." >> .husky/pre-commit
+	@echo "#!/bin/sh" > .husky/pre-push
+	@echo "pnpm test:unit" >> .husky/pre-push
+	@echo "✅ Husky hooks initialized for current project!"
+
+setup-git-hooks:
+	# Auto-detect environment and setup appropriate Git hooks
+	@echo "🔍 Detecting Git environment..."
+	@if [ -d "./.git" ]; then \
+		echo "📁 Found parent Git repository (./.git)"; \
+		echo "🔧 Setting up hooks for template project..."; \
+		$(MAKE) setup-hooks; \
+	elif [ -d ".git" ]; then \
+		echo "📁 Found local Git repository (.git)"; \
+		echo "🔧 Setting up husky for independent project..."; \
+		if ! command -v pnpm >/dev/null 2>&1; then \
+			echo "❌ Error: pnpm is required but not found"; \
+			exit 1; \
+		fi; \
+		if ! pnpm list husky >/dev/null 2>&1; then \
+			echo "📦 Installing husky..."; \
+			pnpm add -D husky; \
+		fi; \
+		$(MAKE) init-hooks; \
+	else \
+		echo "❌ Error: No Git repository found"; \
+		echo "💡 Please run 'git init' first, or ensure you're in a Git repository"; \
+		exit 1; \
+	fi
+	@echo ""
+	@echo "✅ Git hooks setup completed!"
+	@echo "📝 Configured hooks:"
+	@echo "   - pre-commit: Auto-format with 'pnpm format'"
+	@echo "   - pre-push: Run unit tests with 'pnpm test:unit'"

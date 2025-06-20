@@ -1,9 +1,10 @@
-import { Spinner } from 'flowbite-react';
+import { clsx } from 'clsx';
+import { Loading } from '@/components/ui-legacy/Loading';
 
 export function DivSpinner() {
   return (
-    <div>
-      <Spinner />
+    <div className={clsx('flex justify-center items-center p-4')}>
+      <Loading variant='spinner' size='md' color='blue' text='読み込み中...' />
     </div>
   );
 }

@@ -1,32 +1,576 @@
 @import 'tailwindcss';
-@plugin "flowbite-react/plugin/tailwindcss";
-@source "../../.flowbite-react/class-list.json";
+
+/* =================================
+   統一テーマシステム v2.0
+   美しいグラデーション復元 + shadcn/ui統合
+   ================================= */
 
 :root {
-  --background: #ede7f6;
+  /* =================================
+     1. 美しいカラーシステム復元（グラデーション用HEX変数）
+     ================================= */
+
+  /* 基本色 */
+  --background: #ffffff;
   --foreground: #171717;
-  --primary: #9575cd;
-  --primary2: #7e57c2;
-  --error: #f06292;
-  --error2: #ec407a;
-  --warn: #ffb74d;
-  --warn2: #ffa726;
-  --paper: rgb(248 250 252 / var(--tw-bg-opacity, 1));
+
+  /* 🌟 2024年トレンド：Aurora Gradient System（オーロラ風グラデーション） */
+
+  /* Aurora Primary - Purple to Pink to Blue */
+  --aurora-primary-start: #8b5cf6; /* violet-500 */
+  --aurora-primary-mid: #ec4899; /* pink-500 */
+  --aurora-primary-end: #06b6d4; /* cyan-500 */
+  --aurora-primary-light: #f3e8ff; /* violet-50 */
+
+  /* Sunset Secondary - Orange to Pink to Purple */
+  --sunset-secondary-start: #f97316; /* orange-500 */
+  --sunset-secondary-mid: #f472b6; /* pink-400 */
+  --sunset-secondary-end: #a855f7; /* purple-500 */
+  --sunset-secondary-light: #fff7ed; /* orange-50 */
+
+  /* Ocean Success - Teal to Green to Blue */
+  --ocean-success-start: #14b8a6; /* teal-500 */
+  --ocean-success-mid: #22c55e; /* green-500 */
+  --ocean-success-end: #3b82f6; /* blue-500 */
+  --ocean-success-light: #f0fdfa; /* teal-50 */
+
+  /* Cosmic Error - Red to Magenta to Purple */
+  --cosmic-error-start: #ef4444; /* red-500 */
+  --cosmic-error-mid: #ec4899; /* pink-500 */
+  --cosmic-error-end: #8b5cf6; /* violet-500 */
+  --cosmic-error-light: #fef2f2; /* red-50 */
+
+  /* Solar Warning - Yellow to Orange to Red */
+  --solar-warning-start: #eab308; /* yellow-500 */
+  --solar-warning-mid: #f97316; /* orange-500 */
+  --solar-warning-end: #ef4444; /* red-500 */
+  --solar-warning-light: #fefce8; /* yellow-50 */
+
+  /* 🎯 従来システム互換（Aurora Primary使用） */
+  --primary: var(--aurora-primary-start);
+  --primary-hover: #7c3aed; /* violet-600 */
+  --primary-light: var(--aurora-primary-light);
+  --primary-muted: #c4b5fd; /* violet-300 */
+
+  --secondary: var(--sunset-secondary-start);
+  --secondary-hover: #ea580c; /* orange-600 */
+  --secondary-light: var(--sunset-secondary-light);
+
+  /* 🌈 現代的ステートカラー（新グラデーションシステム使用） */
+  --success: var(--ocean-success-start);
+  --success-hover: #059669; /* teal-600 */
+  --success-light: var(--ocean-success-light);
+  --success-muted: #5eead4; /* teal-300 */
+
+  --error: var(--cosmic-error-start);
+  --error-hover: #dc2626; /* red-600 */
+  --error-light: var(--cosmic-error-light);
+  --error-muted: #fca5a5; /* red-300 */
+
+  --warning: var(--solar-warning-start);
+  --warning-hover: #d97706; /* amber-600 */
+  --warning-light: var(--solar-warning-light);
+  --warning-muted: #fcd34d; /* yellow-300 */
+
+  --info: var(--aurora-primary-end);
+  --info-hover: #0891b2; /* cyan-600 */
+  --info-light: #f0f9ff; /* cyan-50 */
+  --info-muted: #67e8f9; /* cyan-300 */
+
+  /* サーフェス（背景）カラー */
+  --surface: #ffffff;
+  --surface-50: #fafafa; /* gray-50 */
+  --surface-100: #f5f5f5; /* gray-100 */
+  --surface-200: #e5e5e5; /* gray-200 */
+  --surface-300: #d4d4d4; /* gray-300 */
+  --surface-600: #525252; /* gray-600 */
+  --surface-700: #404040; /* gray-700 */
+
+  /* テキストカラー */
+  --text-primary: #171717; /* gray-900 */
+  --text-secondary: #374151; /* gray-700 */
+  --text-muted: #6b7280; /* gray-500 */
+  --text-disabled: #9ca3af; /* gray-400 */
+  --text-inverse: #ffffff;
+
+  /* ボーダーカラー */
+  --border: #e5e7eb; /* gray-200 */
+  --border-light: #f3f4f6; /* gray-100 */
+  --border-dark: #d1d5db; /* gray-300 */
+
+  /* =================================
+     2. shadcn/ui 標準システム（HSL形式・分離）
+     ================================= */
+
+  /* shadcn/ui 標準変数（HSL形式・専用接頭辞） */
+  --shadcn-background: 0 0% 100%;
+  --shadcn-foreground: 0 0% 3.9%;
+  --shadcn-primary: 217 91% 60%; /* #2563eb のHSL変換 */
+  --shadcn-primary-foreground: 0 0% 98%;
+  --shadcn-secondary: 262 90% 60%; /* #9333ea のHSL変換 */
+  --shadcn-secondary-foreground: 0 0% 98%;
+  --shadcn-destructive: 0 84% 60%;
+  --shadcn-destructive-foreground: 0 0% 98%;
+  --shadcn-success: 142 76% 36%;
+  --shadcn-success-foreground: 0 0% 98%;
+  --shadcn-warning: 32 95% 44%;
+  --shadcn-warning-foreground: 0 0% 98%;
+  --shadcn-info: 199 89% 48%;
+  --shadcn-info-foreground: 0 0% 98%;
+  --shadcn-muted: 210 40% 96%;
+  --shadcn-muted-foreground: 215.4 16.3% 46.9%;
+  --shadcn-popover: 0 0% 100%;
+  --shadcn-popover-foreground: 0 0% 3.9%;
+  --shadcn-card: 0 0% 100%;
+  --shadcn-card-foreground: 0 0% 3.9%;
+  --shadcn-border: 214.3 31.8% 91.4%;
+  --shadcn-input: 214.3 31.8% 91.4%;
+  --shadcn-accent: 210 40% 96%;
+  --shadcn-accent-foreground: 215.4 16.3% 46.9%;
+  --shadcn-ring: 217 91% 60%;
+  --shadcn-radius: 0.5rem;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #ede7f6;
-    --foreground: #171717;
+    /* =================================
+       1. 美しいカラーシステム（ダークモード・グラデーション用HEX変数）
+       ================================= */
+
+    /* 基本色 */
+    --background: #0f0f0f;
+    --foreground: #f5f5f5;
+
+    /* サーフェス（背景）カラー */
+    --surface: #0f0f0f;
+    --surface-50: #262626; /* gray-800 */
+    --surface-100: #1c1c1c; /* gray-900 */
+    --surface-200: #404040; /* gray-700 */
+    --surface-300: #525252; /* gray-600 */
+    --surface-600: #d4d4d4; /* gray-300 */
+    --surface-700: #e5e5e5; /* gray-200 */
+
+    /* テキストカラー */
+    --text-primary: #f5f5f5; /* gray-100 */
+    --text-secondary: #d1d5db; /* gray-300 */
+    --text-muted: #9ca3af; /* gray-400 */
+    --text-disabled: #6b7280; /* gray-500 */
+    --text-inverse: #0f0f0f;
+
+    /* ボーダーカラー */
+    --border: #374151; /* gray-700 */
+    --border-light: #1f2937; /* gray-800 */
+    --border-dark: #4b5563; /* gray-600 */
+
+    /* プライマリカラー（美しいグラデーション用HEX変数・ダークモード） */
+    --primary: #3b82f6; /* blue-500 - ダークモードでは少し明るく */
+    --primary-hover: #2563eb; /* blue-600 */
+    --primary-light: #1e3a8a; /* blue-900 - ダークモード背景用 */
+    --primary-muted: #1d4ed8; /* blue-700 */
+    --primary-hex: #3b82f6; /* blue-500 - Enhanced Components用 */
+    --primary-hex-hover: #2563eb; /* blue-600 */
+    --primary-hex-light: #1e3a8a; /* blue-900 */
+    --primary-hex-muted: #1d4ed8; /* blue-700 */
+
+    /* セカンダリカラー（美しいグラデーション用HEX変数・ダークモード） */
+    --secondary: #a855f7; /* purple-500 - ダークモードでは少し明るく */
+    --secondary-hover: #9333ea; /* purple-600 */
+    --secondary-light: #581c87; /* purple-900 - ダークモード背景用 */
+    --secondary-hex: #a855f7; /* purple-500 - Enhanced Components用 */
+    --secondary-hex-hover: #9333ea; /* purple-600 */
+    --secondary-hex-light: #581c87; /* purple-900 */
+
+    /* ステートカラー（美しいグラデーション用HEX変数・ダークモード） */
+    --success: #22c55e; /* green-500 - ダークモードでは少し明るく */
+    --success-hover: #16a34a; /* green-600 */
+    --success-light: #14532d; /* green-900 - ダークモード背景用 */
+    --success-muted: #15803d; /* green-700 */
+    --success-hex: #22c55e; /* green-500 - Enhanced Components用 */
+    --success-hex-hover: #16a34a; /* green-600 */
+    --success-hex-light: #14532d; /* green-900 */
+    --success-hex-muted: #15803d; /* green-700 */
+
+    --error: #ef4444; /* red-500 - ダークモードでは少し明るく */
+    --error-hover: #dc2626; /* red-600 */
+    --error-light: #7f1d1d; /* red-900 - ダークモード背景用 */
+    --error-muted: #b91c1c; /* red-700 */
+    --error-hex: #ef4444; /* red-500 - Enhanced Components用 */
+    --error-hex-hover: #dc2626; /* red-600 */
+    --error-hex-light: #7f1d1d; /* red-900 */
+    --error-hex-muted: #b91c1c; /* red-700 */
+
+    --warning: #f59e0b; /* amber-500 - ダークモードでは少し明るく */
+    --warning-hover: #d97706; /* amber-600 */
+    --warning-light: #78350f; /* amber-900 - ダークモード背景用 */
+    --warning-muted: #b45309; /* amber-700 */
+    --warning-hex: #f59e0b; /* amber-500 - Enhanced Components用 */
+    --warning-hex-hover: #d97706; /* amber-600 */
+    --warning-hex-light: #78350f; /* amber-900 */
+    --warning-hex-muted: #b45309; /* amber-700 */
+
+    --info: #06b6d4; /* cyan-500 - ダークモードでは少し明るく */
+    --info-hover: #0891b2; /* cyan-600 */
+    --info-light: #164e63; /* cyan-900 - ダークモード背景用 */
+    --info-muted: #0e7490; /* cyan-700 */
+    --info-hex: #06b6d4; /* cyan-500 - Enhanced Components用 */
+    --info-hex-hover: #0891b2; /* cyan-600 */
+    --info-hex-light: #164e63; /* cyan-900 */
+    --info-hex-muted: #0e7490; /* cyan-700 */
+
+    /* =================================
+       2. shadcn/ui 標準システム（ダークモード・HSL形式・分離）
+       ================================= */
+
+    --shadcn-background: 0 0% 3.9%;
+    --shadcn-foreground: 0 0% 98%;
+    --shadcn-primary: 217 91% 60%;
+    --shadcn-primary-foreground: 0 0% 98%;
+    --shadcn-secondary: 262 90% 60%;
+    --shadcn-secondary-foreground: 0 0% 98%;
+    --shadcn-destructive: 0 84% 60%;
+    --shadcn-destructive-foreground: 0 0% 98%;
+    --shadcn-success: 142 76% 36%;
+    --shadcn-success-foreground: 0 0% 98%;
+    --shadcn-warning: 32 95% 44%;
+    --shadcn-warning-foreground: 0 0% 98%;
+    --shadcn-info: 199 89% 48%;
+    --shadcn-info-foreground: 0 0% 98%;
+    --shadcn-muted: 217.2 32.6% 17.5%;
+    --shadcn-muted-foreground: 215 20.2% 65.1%;
+    --shadcn-popover: 0 0% 3.9%;
+    --shadcn-popover-foreground: 0 0% 98%;
+    --shadcn-card: 0 0% 3.9%;
+    --shadcn-card-foreground: 0 0% 98%;
+    --shadcn-border: 217.2 32.6% 17.5%;
+    --shadcn-input: 217.2 32.6% 17.5%;
+    --shadcn-accent: 217.2 32.6% 17.5%;
+    --shadcn-accent-foreground: 0 0% 98%;
+    --shadcn-ring: 217 91% 60%;
   }
 }
 
+/* =================================
+   3. shadcn/ui Bridge System（マッピング）
+   ================================= */
+
+/* shadcn/ui標準変数への自動マッピング（別名でHSL変数をマッピング） */
+:root {
+  /* shadcn/ui標準変数名でHSL変数にアクセス可能に */
+  --primary: var(--shadcn-primary);
+  --primary-foreground: var(--shadcn-primary-foreground);
+  --secondary: var(--shadcn-secondary);
+  --secondary-foreground: var(--shadcn-secondary-foreground);
+  --destructive: var(--shadcn-destructive);
+  --destructive-foreground: var(--shadcn-destructive-foreground);
+  --success: var(--shadcn-success);
+  --success-foreground: var(--shadcn-success-foreground);
+  --warning: var(--shadcn-warning);
+  --warning-foreground: var(--shadcn-warning-foreground);
+  --info: var(--shadcn-info);
+  --info-foreground: var(--shadcn-info-foreground);
+  --muted: var(--shadcn-muted);
+  --muted-foreground: var(--shadcn-muted-foreground);
+  --popover: var(--shadcn-popover);
+  --popover-foreground: var(--shadcn-popover-foreground);
+  --card: var(--shadcn-card);
+  --card-foreground: var(--shadcn-card-foreground);
+  --border: var(--shadcn-border);
+  --input: var(--shadcn-input);
+  --accent: var(--shadcn-accent);
+  --accent-foreground: var(--shadcn-accent-foreground);
+  --ring: var(--shadcn-ring);
+  --radius: var(--shadcn-radius);
+}
+
+/* =================================
+   4. TailwindCSS v4 統合設定
+   ================================= */
+
+@theme inline {
+  /* 美しいグラデーション用HEX変数をTailwindで使用可能に */
+  --color-primary-hex: var(--primary-hex);
+  --color-secondary-hex: var(--secondary-hex);
+  --color-success-hex: var(--success-hex);
+  --color-error-hex: var(--error-hex);
+  --color-warning-hex: var(--warning-hex);
+  --color-info-hex: var(--info-hex);
+
+  /* 基本色（HEX形式） */
+  --color-background-hex: var(--background);
+  --color-foreground-hex: var(--foreground);
+  --color-surface: var(--surface);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-border-hex: var(--border);
+
+  /* shadcn/ui HSL変数をTailwindで使用可能に */
+  --color-background: hsl(var(--shadcn-background));
+  --color-foreground: hsl(var(--shadcn-foreground));
+  --color-primary: hsl(var(--shadcn-primary));
+  --color-primary-foreground: hsl(var(--shadcn-primary-foreground));
+  --color-secondary: hsl(var(--shadcn-secondary));
+  --color-secondary-foreground: hsl(var(--shadcn-secondary-foreground));
+  --color-destructive: hsl(var(--shadcn-destructive));
+  --color-destructive-foreground: hsl(var(--shadcn-destructive-foreground));
+  --color-success: hsl(var(--shadcn-success));
+  --color-success-foreground: hsl(var(--shadcn-success-foreground));
+  --color-warning: hsl(var(--shadcn-warning));
+  --color-warning-foreground: hsl(var(--shadcn-warning-foreground));
+  --color-info: hsl(var(--shadcn-info));
+  --color-info-foreground: hsl(var(--shadcn-info-foreground));
+  --color-muted: hsl(var(--shadcn-muted));
+  --color-muted-foreground: hsl(var(--shadcn-muted-foreground));
+  --color-popover: hsl(var(--shadcn-popover));
+  --color-popover-foreground: hsl(var(--shadcn-popover-foreground));
+  --color-card: hsl(var(--shadcn-card));
+  --color-card-foreground: hsl(var(--shadcn-card-foreground));
+  --color-border: hsl(var(--shadcn-border));
+  --color-input: hsl(var(--shadcn-input));
+  --color-accent: hsl(var(--shadcn-accent));
+  --color-accent-foreground: hsl(var(--shadcn-accent-foreground));
+  --color-ring: hsl(var(--shadcn-ring));
+  --radius: var(--shadcn-radius);
+}
+
 body {
-  color: var(--foreground);
-  background: var(--background);
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* 🌟 2024年トレンド：現代的グラデーションクラス */
+@layer utilities {
+  /* 🌌 Aurora Gradient - Purple to Pink to Blue */
+  .gradient-aurora {
+    background: linear-gradient(
+      135deg,
+      var(--aurora-primary-start) 0%,
+      var(--aurora-primary-mid) 50%,
+      var(--aurora-primary-end) 100%
+    );
+  }
+
+  .gradient-aurora-hover:hover {
+    background: linear-gradient(
+      135deg,
+      var(--aurora-primary-start) 0%,
+      var(--aurora-primary-mid) 30%,
+      var(--aurora-primary-end) 100%
+    );
+    transform: scale(1.02);
+    transition: all 0.3s ease;
+  }
+
+  /* 🌅 Sunset Gradient - Orange to Pink to Purple */
+  .gradient-sunset {
+    background: linear-gradient(
+      135deg,
+      var(--sunset-secondary-start) 0%,
+      var(--sunset-secondary-mid) 50%,
+      var(--sunset-secondary-end) 100%
+    );
+  }
+
+  .gradient-sunset-hover:hover {
+    background: linear-gradient(
+      135deg,
+      var(--sunset-secondary-start) 0%,
+      var(--sunset-secondary-mid) 40%,
+      var(--sunset-secondary-end) 100%
+    );
+    transform: scale(1.02);
+    transition: all 0.3s ease;
+  }
+
+  /* 🌊 Ocean Gradient - Teal to Green to Blue */
+  .gradient-ocean {
+    background: linear-gradient(
+      135deg,
+      var(--ocean-success-start) 0%,
+      var(--ocean-success-mid) 50%,
+      var(--ocean-success-end) 100%
+    );
+  }
+
+  .gradient-ocean-hover:hover {
+    background: linear-gradient(
+      135deg,
+      var(--ocean-success-start) 0%,
+      var(--ocean-success-mid) 40%,
+      var(--ocean-success-end) 100%
+    );
+    transform: scale(1.02);
+    transition: all 0.3s ease;
+  }
+
+  /* 🌌 Cosmic Gradient - Red to Magenta to Purple */
+  .gradient-cosmic {
+    background: linear-gradient(
+      135deg,
+      var(--cosmic-error-start) 0%,
+      var(--cosmic-error-mid) 50%,
+      var(--cosmic-error-end) 100%
+    );
+  }
+
+  .gradient-cosmic-hover:hover {
+    background: linear-gradient(
+      135deg,
+      var(--cosmic-error-start) 0%,
+      var(--cosmic-error-mid) 40%,
+      var(--cosmic-error-end) 100%
+    );
+    transform: scale(1.02);
+    transition: all 0.3s ease;
+  }
+
+  /* ☀️ Solar Gradient - Yellow to Orange to Red */
+  .gradient-solar {
+    background: linear-gradient(
+      135deg,
+      var(--solar-warning-start) 0%,
+      var(--solar-warning-mid) 50%,
+      var(--solar-warning-end) 100%
+    );
+  }
+
+  .gradient-solar-hover:hover {
+    background: linear-gradient(
+      135deg,
+      var(--solar-warning-start) 0%,
+      var(--solar-warning-mid) 40%,
+      var(--solar-warning-end) 100%
+    );
+    transform: scale(1.02);
+    transition: all 0.3s ease;
+  }
+
+  /* 🎨 Special Effects - Animated Gradients */
+  .gradient-animated {
+    background: linear-gradient(
+      -45deg,
+      var(--aurora-primary-start),
+      var(--sunset-secondary-mid),
+      var(--ocean-success-start),
+      var(--aurora-primary-end)
+    );
+    background-size: 400% 400%;
+    animation: gradientShift 6s ease infinite;
+  }
+
+  @keyframes gradientShift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  /* 💎 Glass Morphism Gradient */
+  .gradient-glass {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.05) 100%
+    );
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  /* 🌈 Compatibility - Legacy gradient names */
+  .gradient-brand {
+    background: linear-gradient(
+      135deg,
+      var(--aurora-primary-start) 0%,
+      var(--aurora-primary-mid) 50%,
+      var(--aurora-primary-end) 100%
+    );
+  }
+
+  .gradient-brand-hover:hover {
+    background: linear-gradient(
+      135deg,
+      var(--aurora-primary-start) 0%,
+      var(--aurora-primary-mid) 30%,
+      var(--aurora-primary-end) 100%
+    );
+    transform: scale(1.02);
+    transition: all 0.3s ease;
+  }
+
+  .gradient-danger {
+    background: linear-gradient(
+      135deg,
+      var(--cosmic-error-start) 0%,
+      var(--cosmic-error-mid) 50%,
+      var(--cosmic-error-end) 100%
+    );
+  }
+
+  .gradient-danger-hover:hover {
+    background: linear-gradient(
+      135deg,
+      var(--cosmic-error-start) 0%,
+      var(--cosmic-error-mid) 40%,
+      var(--cosmic-error-end) 100%
+    );
+    transform: scale(1.02);
+    transition: all 0.3s ease;
+  }
+
+  .gradient-success {
+    background: linear-gradient(
+      135deg,
+      var(--ocean-success-start) 0%,
+      var(--ocean-success-mid) 50%,
+      var(--ocean-success-end) 100%
+    );
+  }
+
+  .gradient-success-hover:hover {
+    background: linear-gradient(
+      135deg,
+      var(--ocean-success-start) 0%,
+      var(--ocean-success-mid) 40%,
+      var(--ocean-success-end) 100%
+    );
+    transform: scale(1.02);
+    transition: all 0.3s ease;
+  }
+}
+
+/* カスタムコンポーネント */
+@layer components {
+  /* カスタムスクロールバー */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted)) hsl(var(--background));
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted));
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+}
+
+/* カスタムユーティリティ */
 @layer utilities {
   .hidden-scrollbar {
     -ms-overflow-style: none; /* IE, Edge 対応 */
@@ -35,6 +579,33 @@ body {
   .hidden-scrollbar::-webkit-scrollbar {
     /* Chrome, Safari 対応 */
     display: none;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* アクセシビリティ */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* フォーカス可視化 */
+  .focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
 }
 

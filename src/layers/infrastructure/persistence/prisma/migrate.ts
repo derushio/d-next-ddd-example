@@ -1,12 +1,14 @@
+import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
+
+import { Env } from '@/app/server-actions/env/Env';
 import { prisma } from '@/layers/infrastructure/persistence/prisma';
 import { createMigrationTable } from '@/layers/infrastructure/persistence/prisma/generated/sql/createMigrationTable';
 import { insertFinishedMigration } from '@/layers/infrastructure/persistence/prisma/generated/sql/insertFinishedMigration';
 import { queryFinishedMigrations } from '@/layers/infrastructure/persistence/prisma/generated/sql/queryFinishedMigrations';
-import { Env } from '@/app/server-actions/env/Env';
 import { uuidv4 } from '@/utils/uuidv4';
-import crypto from 'crypto';
-import fs from 'fs';
-import path from 'path';
+
 import touch from 'touch';
 
 const migdir = path.join('prisma', 'migrations');

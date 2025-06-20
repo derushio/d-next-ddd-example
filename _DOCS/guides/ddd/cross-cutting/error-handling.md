@@ -1,6 +1,40 @@
 # エラーハンドリング実装ガイド 🚨
 
-このドキュメントでは、全レイヤーを横断するエラーハンドリングの実装方針、パターン、ベストプラクティスについて解説します。
+このドキュメントでは、Result型パターンを中心とした全レイヤーを横断するエラーハンドリングの実装方針、パターン、ベストプラクティスについて解説します。
+
+## 🚀 Result型パターン採用について
+
+**本プロジェクトでは、例外処理の代わりにResult型パターンを採用しています。**
+
+### メリット
+
+- **型安全性**: 成功・失敗が型レベルで表現される
+- **明示的エラーハンドリング**: エラー処理が必須となり、見落としを防止
+- **パフォーマンス**: 例外スローのオーバーヘッド削減
+- **一貫性**: 全UseCaseで統一されたエラーハンドリング
+
+---
+
+## Result型の基本構造 📝
+
+```typescript
+// 統一的なResult型定義
+export type Result<T> = Success<T> | Failure;
+
+export interface Success<T> {
+  readonly success: true;
+  readonly data: T;
+}
+
+export interface Failure {
+  readonly success: false;
+  readonly error: {
+    readonly message: string;
+    readonly code: string;
+    readonly details?: Record<string, unknown>;
+  };
+}
+```
 
 ---
 
@@ -74,7 +108,7 @@ export class InsufficientPointsError extends DomainError {
   }
 }
 
-// ✅ Domain Layerでの使用例
+// ✅ Domain Layerでの使用例（例外型）
 export class User {
   promote(): void {
     if (!this.canPromote()) {
@@ -83,13 +117,149 @@ export class User {
     
     this.level += 1;
   }
-  
-  subtractPoints(points: number): void {
-    if (this.experiencePoints < points) {
-      throw new InsufficientPointsError(points, this.experiencePoints);
+}
+```
+
+---
+
+## 🎯 Result型パターンの実装例
+
+### UseCase層での実装
+
+```typescript
+// ✅ SignInUseCase: Result型でエラーハンドリング
+@injectable()
+export class SignInUseCase {
+  async execute({ email, password }: SignInRequest): Promise<Result<SignInResponse>> {
+    this.logger.info('サインイン試行開始', { email });
+
+    try {
+      // Email Value Objectを作成（バリデーション込み）
+      const emailVO = new Email(email);
+
+      // パスワードの基本バリデーション
+      if (!password || password.trim().length === 0) {
+        return failure('パスワードを入力してください', 'EMPTY_PASSWORD');
+      }
+
+      // ユーザー検索
+      const user = await this.userRepository.findByEmail(emailVO);
+      if (!user) {
+        return failure('メールアドレスまたはパスワードが正しくありません', 'INVALID_CREDENTIALS');
+      }
+
+      // パスワード検証
+      const isPasswordValid = await this.hashService.compareHash(
+        password,
+        user.getPasswordHash(),
+      );
+
+      if (!isPasswordValid) {
+        return failure('メールアドレスまたはパスワードが正しくありません', 'INVALID_CREDENTIALS');
+      }
+
+      // 成功時のレスポンス
+      return success({
+        user: {
+          id: user.getId().toString(),
+          name: user.getName(),
+          email: user.getEmail().toString(),
+        },
+      });
+    } catch (error) {
+      this.logger.error('サインイン処理中に予期しないエラーが発生', {
+        email,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+
+      // DomainErrorの場合は適切なエラーコードで返す
+      if (error instanceof DomainError) {
+        return failure(error.message, error.code);
+      }
+
+      // その他の予期しないエラー
+      return failure('サインイン処理中にエラーが発生しました', 'UNEXPECTED_ERROR');
     }
-    
-    this.experiencePoints -= points;
+  }
+}
+```
+
+### Server Action層での実装
+
+```typescript
+// ✅ Server Action: Result型のパターンマッチング
+export async function signIn(formData: FormData) {
+  try {
+    const logger = resolve('Logger');
+    const signInUseCase = resolve('SignInUseCase');
+
+    const result = await signInUseCase.execute({
+      email,
+      password,
+    });
+
+    // Result型のパターンマッチング
+    if (isSuccess(result)) {
+      logger.info('サインイン成功', {
+        userId: result.data.user.id,
+        email: result.data.user.email,
+      });
+
+      return {
+        success: true,
+        user: result.data.user,
+      };
+    } else {
+      logger.warn('サインイン失敗', {
+        error: result.error.message,
+        code: result.error.code,
+      });
+
+      return {
+        error: result.error.message,
+        code: result.error.code,
+      };
+    }
+  } catch (error) {
+    // 予期しないエラー（UseCaseで処理されなかった例外）
+    const logger = resolve('Logger');
+    logger.error('サインイン処理中に予期しないエラーが発生', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+
+    return {
+      error: 'システムエラーが発生しました',
+      code: 'SYSTEM_ERROR',
+    };
+  }
+}
+```
+
+### Repository層でのエラーハンドリング
+
+```typescript
+// ✅ Repository: DomainErrorに変換して返す
+@injectable()
+export class PrismaUserRepository implements IUserRepository {
+  async save(user: User): Promise<void> {
+    try {
+      const data = this.toPersistenceObject(user);
+      await this.prisma.user.upsert({
+        where: { id: data.id },
+        update: { name: data.name, email: data.email },
+        create: data,
+      });
+    } catch (error) {
+      // Prismaエラーを適切なドメインエラーに変換
+      if (error instanceof Error) {
+        if (error.message.includes('Unique constraint')) {
+          if (error.message.includes('email')) {
+            throw new DomainError('メールアドレスが既に使用されています', 'EMAIL_DUPLICATE');
+          }
+        }
+      }
+      throw new DomainError('ユーザーの保存に失敗しました', 'USER_SAVE_FAILED');
+    }
   }
 }
 ```

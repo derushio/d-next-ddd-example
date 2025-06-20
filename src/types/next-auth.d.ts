@@ -1,4 +1,5 @@
 import { User as PrismaUser } from '@/layers/infrastructure/persistence/prisma/generated';
+
 import { DefaultSession } from 'next-auth';
 
 declare module 'next-auth' {

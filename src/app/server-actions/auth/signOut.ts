@@ -2,7 +2,9 @@
 
 import 'reflect-metadata';
 
+import { isFailure, isSuccess } from '@/layers/application/types/Result';
 import { resolve } from '@/layers/infrastructure/di/resolver';
+
 import { signOut as nextAuthSignOut } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 
@@ -29,27 +31,53 @@ export async function signOut(userId?: string) {
     // SignOutUseCaseでビジネスロジック実行
     if (userId) {
       const signOutUseCase = resolve('SignOutUseCase');
-      await signOutUseCase.execute({ userId });
+      const result = await signOutUseCase.execute({ userId });
+
+      // Result型のパターンマッチング
+      if (isFailure(result)) {
+        logger.warn('サインアウト失敗', {
+          userId,
+          error: result.error.message,
+          code: result.error.code,
+        });
+
+        return {
+          error: result.error.message,
+          code: result.error.code,
+        };
+      }
+
+      logger.info('サインアウト成功', {
+        userId,
+        message: result.data.message,
+      });
+
+      // NextAuthのセッション無効化は呼び出し元で行う
+      return {
+        success: true,
+        message: result.data.message,
+      };
+    } else {
+      logger.info('ユーザーIDなしでサインアウト完了');
+
+      return {
+        success: true,
+        message: 'サインアウトしました',
+      };
     }
-
-    logger.info('サインアウト成功', { userId });
-
-    // NextAuthのセッション無効化は呼び出し元で行う
-    return {
-      success: true,
-      message: 'サインアウトしました',
-    };
   } catch (error) {
+    // 予期しないエラー（UseCaseで処理されなかった例外）
     const logger = resolve('Logger');
 
-    logger.error('サインアウトエラー', {
+    logger.error('サインアウト処理中に予期しないエラーが発生', {
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
       userId,
     });
 
     return {
-      error: 'サインアウトに失敗しました',
+      error: 'システムエラーが発生しました',
+      code: 'SYSTEM_ERROR',
     };
   }
 }

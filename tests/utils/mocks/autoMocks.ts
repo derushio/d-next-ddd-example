@@ -1,3 +1,4 @@
+import type { ISessionRepository } from '@/layers/domain/repositories/ISessionRepository';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import type { UserDomainService } from '@/layers/domain/services/UserDomainService';
 import type { PrismaClient } from '@/layers/infrastructure/persistence/prisma/generated';
@@ -13,6 +14,9 @@ import { MockProxy, mock } from 'vitest-mock-extended';
 // Repository層
 export const createAutoMockUserRepository = (): MockProxy<IUserRepository> =>
   mock<IUserRepository>();
+
+export const createAutoMockSessionRepository = (): MockProxy<ISessionRepository> =>
+  mock<ISessionRepository>();
 
 // Domain Service層
 export const createAutoMockUserDomainService =

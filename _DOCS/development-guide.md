@@ -48,9 +48,9 @@ pnpm build        # 本番ビルド
 新しい機能は UseCase から始めます。
 
 ```typescript
-// src/usecases/[feature]/[Action]UseCase.ts
+// src/layers/application/usecases/[feature]/[Action]UseCase.ts
 import { injectable, inject } from 'tsyringe';
-import { resolve } from '@/di/container';
+import { resolve } from '@/layers/infrastructure/di/container';
 
 @injectable()
 export class CreateProductUseCase {
@@ -78,9 +78,9 @@ export class CreateProductUseCase {
 ビジネスロジックがある場合はDomain Serviceを作成します。
 
 ```typescript
-// src/services/domain/ProductDomainService.ts
+// src/layers/domain/services/ProductDomainService.ts
 import { injectable, inject } from 'tsyringe';
-import { INJECTION_TOKENS } from '@/di/tokens';
+import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
 import type { IHashService } from '@/services/infrastructure/HashService';
 
 @injectable()
@@ -106,16 +106,16 @@ export class ProductDomainService {
 データアクセスが必要な場合はRepositoryを作成します。
 
 ```typescript
-// src/repositories/interfaces/IProductRepository.ts
+// src/layers/domain/repositories/IProductRepository.ts
 export interface IProductRepository {
   create(data: CreateProductData): Promise<Product>;
   findById(id: string): Promise<Product | null>;
 }
 
-// src/repositories/implementations/PrismaProductRepository.ts
+// src/layers/infrastructure/repositories/implementations/PrismaProductRepository.ts
 import { injectable, inject } from 'tsyringe';
-import { INJECTION_TOKENS } from '@/di/tokens';
-import type { PrismaClient } from '@/data-accesses/infra/prisma/generated';
+import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
+import type { PrismaClient } from '@/layers/infrastructure/persistence/prisma/generated';
 
 @injectable()
 export class PrismaProductRepository implements IProductRepository {
@@ -204,9 +204,9 @@ Core Container (基盤層)
 フロントエンドとの連携にはServer Actionを作成します。
 
 ```typescript
-// src/data-accesses/mutations/product/createProduct.ts
+// src/app/server-actions/product/createProduct.ts
 'use server';
-import { resolve } from '@/di/container';
+import { resolve } from '@/layers/infrastructure/di/container';
 
 export async function createProduct(formData: FormData) {
   const createProductUseCase = resolve('CreateProductUseCase');
@@ -232,7 +232,7 @@ export async function createProduct(formData: FormData) {
 
 ```typescript
 // src/components/ProductList.tsx
-import { resolve } from '@/di/container';
+import { resolve } from '@/layers/infrastructure/di/container';
 
 export async function ProductList() {
   const productRepository = resolve('ProductRepository');

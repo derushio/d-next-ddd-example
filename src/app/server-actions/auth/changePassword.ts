@@ -2,6 +2,7 @@
 
 import 'reflect-metadata';
 
+import { isFailure, isSuccess } from '@/layers/application/types/Result';
 import { resolve } from '@/layers/infrastructure/di/resolver';
 
 import { z } from 'zod';
@@ -40,8 +41,20 @@ export async function changePassword(formData: FormData) {
 
     // 認証チェック（DDD/Clean Architecture パターン）
     const getCurrentUserUseCase = resolve('GetCurrentUserUseCase');
-    const user = await getCurrentUserUseCase.requireAuthentication();
+    const authResult = await getCurrentUserUseCase.requireAuthentication();
 
+    if (isFailure(authResult)) {
+      logger.warn('パスワード変更: 認証失敗', {
+        error: authResult.error.message,
+        code: authResult.error.code,
+      });
+      return {
+        error: authResult.error.message,
+        code: authResult.error.code,
+      };
+    }
+
+    const user = authResult.data;
     logger.info('認証済みユーザーによるパスワード変更', {
       userId: user.id,
     });
@@ -74,23 +87,38 @@ export async function changePassword(formData: FormData) {
       newPassword,
     });
 
-    logger.info('パスワード変更成功', { userId: user.id });
+    // Result型のパターンマッチング
+    if (isSuccess(result)) {
+      logger.info('パスワード変更成功', { userId: user.id });
 
-    return {
-      success: true,
-      message: result.message,
-    };
+      return {
+        success: true,
+        message: result.data.message,
+      };
+    } else {
+      logger.warn('パスワード変更失敗', {
+        userId: user.id,
+        error: result.error.message,
+        code: result.error.code,
+      });
+
+      return {
+        error: result.error.message,
+        code: result.error.code,
+      };
+    }
   } catch (error) {
+    // 予期しないエラー（UseCaseで処理されなかった例外）
     const logger = resolve('Logger');
 
-    logger.error('パスワード変更エラー', {
+    logger.error('パスワード変更処理中に予期しないエラーが発生', {
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
     });
 
     return {
-      error:
-        error instanceof Error ? error.message : 'パスワード変更に失敗しました',
+      error: 'システムエラーが発生しました',
+      code: 'SYSTEM_ERROR',
     };
   }
 }

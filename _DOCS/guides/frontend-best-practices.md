@@ -1,6 +1,7 @@
-# フロントエンド開発ベストプラクティス 🎨
+# フロントエンド開発ベストプラクティス 🎨 - shadcn/ui統合版
 
-このドキュメントでは、Next.js App Router + Flowbite-React + TailwindCSS v4 での開発におけるベストプラクティスと最適化ルールについて説明します。
+このドキュメントでは、Next.js App Router + shadcn/ui + TailwindCSS v4 での開発におけるベストプラクティスと最適化ルールについて説明します。
+shadcn/ui統合により、Enhanced Components、Bridge System、HSL変数システムを活用した次世代開発手法を提供します。
 
 ---
 
@@ -208,63 +209,195 @@ graph LR
     style result3 fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
 ```
 
-### Flowbite-React との統合
+### テーマカラーシステム統合 🎨
 
-**テーマカスタマイズパターン**
+**統一されたカラーパレットの活用**
 
 ```typescript
-// src/app/layout.tsx
-import { Flowbite } from 'flowbite-react';
-import { createTheme } from 'flowbite-react';
+// ✅ 推奨：CSS変数を使用したテーマカラー
+<Button className="bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-[var(--text-inverse)]">
+  プライマリボタン
+</Button>
 
-const customTheme = createTheme({
-  button: {
-    color: {
-      primary: 'bg-blue-600 hover:bg-blue-700 text-white',
-      secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-900',
-    },
-  },
-  modal: {
-    content: {
-      base: 'bg-white rounded-lg shadow-lg',
-    },
-  },
-});
+<Alert className="bg-[var(--error-light)] text-[var(--error)] border-[var(--error-muted)]">
+  エラーメッセージ
+</Alert>
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+// ✅ グラデーション効果
+<div className="bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)]">
+  ブランドグラデーション
+</div>
+
+// ❌ 非推奨：ハードコードされた色
+<Button className="bg-blue-600 hover:bg-blue-700 text-white">
+  ハードコードボタン
+</Button>
+```
+
+**ダークモード自動対応**
+
+```typescript
+// ✅ テーマ変数により自動でダークモード対応
+<Card className="bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)]">
+  <Card.Header>
+    <h2 className="text-[var(--text-primary)]">タイトル</h2>
+  </Card.Header>
+  <Card.Content>
+    <p className="text-[var(--text-secondary)]">コンテンツ</p>
+  </Card.Content>
+</Card>
+```
+
+**参考：** 詳細な色設計・使用方法は [`theme-system.md`](../theme-system.md) を参照
+
+### shadcn/ui との統合
+
+**Enhanced Components活用パターン**
+
+```typescript
+// Bridge System経由での最適なコンポーネント使用
+import { Button, Card, Alert, Dialog } from '@/components/ui-bridge';
+
+// shadcn/ui Enhanced Button（既存機能統合）
+export function ActionButtons() {
   return (
-    <html>
-      <body>
-        <Flowbite theme={{ theme: customTheme }}>
-          {children}
-        </Flowbite>
-      </body>
-    </html>
+    <div className="space-x-4">
+      {/* 基本的なshadcn/uiボタン */}
+      <Button variant="default">標準ボタン</Button>
+      
+      {/* 既存システム機能統合（gradient + loading） */}
+      <Button 
+        variant="primary" 
+        gradient={true} 
+        loading={isLoading}
+        fullWidth={false}
+      >
+        拡張機能ボタン
+      </Button>
+      
+      {/* shadcn/ui標準variants */}
+      <Button variant="destructive">削除</Button>
+      <Button variant="outline">アウトライン</Button>
+      <Button variant="ghost">ゴースト</Button>
+    </div>
   );
 }
 ```
 
-**コンポーネントでの使用例**
+**Form統合パターン（react-hook-form + shadcn/ui）**
 
 ```typescript
-import { Button, Modal } from 'flowbite-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription,
+} from '@/components/ui-bridge';
+import { Input } from '@/components/ui-bridge';
+import { Button } from '@/components/ui-bridge';
 
-export function CustomModal() {
+const formSchema = z.object({
+  username: z.string().min(2, {
+    message: "ユーザー名は2文字以上で入力してください。",
+  }),
+  email: z.string().email({
+    message: "有効なメールアドレスを入力してください。",
+  }),
+});
+
+export function UserForm() {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      username: "",
+      email: "",
+    },
+  });
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log(values);
+  }
+
   return (
-    <Modal show={isOpen} onClose={() => setIsOpen(false)}>
-      <Modal.Header>タイトル</Modal.Header>
-      <Modal.Body>
-        <div className="space-y-4">
-          <p className="text-gray-700/90">コンテンツ</p>
-        </div>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button color="primary">保存</Button>
-        <Button color="secondary" onClick={() => setIsOpen(false)}>
-          キャンセル
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <FormField
+          control={form.control}
+          name="username"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>ユーザー名</FormLabel>
+              <FormControl>
+                <Input placeholder="ユーザー名を入力" {...field} />
+              </FormControl>
+              <FormDescription>
+                これは公開表示名として使用されます。
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>メールアドレス</FormLabel>
+              <FormControl>
+                <Input placeholder="email@example.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" variant="primary" gradient={true}>
+          送信
         </Button>
-      </Modal.Footer>
-    </Modal>
+      </form>
+    </Form>
+  );
+}
+```
+
+**Dialog/Modalパターン**
+
+```typescript
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui-bridge';
+import { Button } from '@/components/ui-bridge';
+
+export function ConfirmDialog() {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="destructive">削除</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>削除の確認</DialogTitle>
+          <DialogDescription>
+            この操作は取り消すことができません。本当に削除しますか？
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline">キャンセル</Button>
+          <Button variant="destructive">削除する</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 ```
@@ -366,53 +499,164 @@ export function DashboardPage() {
 
 ## コンポーネント設計パターン 🏗️
 
-### Compound Pattern（複合パターン）
+### Compound Pattern（複合パターン）- shadcn/ui統合版
 
-**関連する複数のコンポーネントをグループ化**
+**shadcn/ui Enhanced Components でのCompound Pattern活用**
 
 ```typescript
-// ✅ 推奨：Compound Pattern
-interface CardProps {
-  children: React.ReactNode;
-  className?: string;
+// ✅ 推奨：shadcn/ui Enhanced Card（Compound Pattern統合）
+import { Card } from '@/components/ui-bridge';
+
+// 既存システムのCompound Patternサポート
+export function ProductCard({ product }: { product: Product }) {
+  return (
+    <Card variant="elevated" padding="lg" className="hover:shadow-xl transition-shadow">
+      <Card.Header>
+        <Card.Title className="bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] bg-clip-text text-transparent">
+          {product.name}
+        </Card.Title>
+      </Card.Header>
+      <Card.Content>
+        <div className="space-y-4">
+          <p className="text-[var(--text-secondary)]">{product.description}</p>
+          <div className="flex items-center justify-between">
+            <span className="text-2xl font-bold text-[var(--primary)]">
+              ¥{product.price.toLocaleString()}
+            </span>
+            <Badge variant="secondary">{product.category}</Badge>
+          </div>
+        </div>
+      </Card.Content>
+      <Card.Footer>
+        <div className="flex gap-2 w-full">
+          <Button variant="outline" className="flex-1">
+            詳細
+          </Button>
+          <Button variant="primary" gradient={true} className="flex-1">
+            カートに追加
+          </Button>
+        </div>
+      </Card.Footer>
+    </Card>
+  );
 }
 
-function Card({ children, className = '' }: CardProps) {
+// shadcn/ui標準パターンとの併用
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@/components/ui-bridge';
+
+export function NewsCard({ article }: { article: Article }) {
   return (
-    <div className={`bg-white rounded-lg shadow-md p-6 ${className}`}>
-      {children}
+    <Card className="w-full max-w-md">
+      <CardHeader>
+        <CardTitle>{article.title}</CardTitle>
+        <CardDescription>{article.summary}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-muted-foreground">
+          {article.content}
+        </p>
+      </CardContent>
+      <CardFooter className="flex justify-between">
+        <p className="text-sm text-muted-foreground">
+          {new Date(article.publishedAt).toLocaleDateString()}
+        </p>
+        <Button size="sm" variant="ghost">
+          続きを読む
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
+```
+
+### Enhanced Pattern（拡張パターン）
+
+**既存機能とshadcn/ui機能の統合活用**
+
+```typescript
+// ✅ Enhanced Button活用パターン
+import { Button } from '@/components/ui-bridge';
+
+export function ActionButtonGroup() {
+  const [isLoading, setIsLoading] = useState(false);
+  
+  return (
+    <div className="flex flex-col sm:flex-row gap-4">
+      {/* shadcn/ui標準機能 */}
+      <Button variant="default" size="lg">
+        標準アクション
+      </Button>
+      
+      {/* 既存システム機能統合 */}
+      <Button 
+        variant="primary"
+        gradient={true}
+        loading={isLoading}
+        fullWidth={false}
+        size="lg"
+        onClick={() => setIsLoading(true)}
+      >
+        グラデーション＋ローディング
+      </Button>
+      
+      {/* ステート色活用 */}
+      <Button variant="success" size="lg">
+        成功アクション
+      </Button>
+      
+      <Button variant="destructive" size="lg">
+        危険アクション
+      </Button>
     </div>
   );
 }
 
-function CardHeader({ children }: { children: React.ReactNode }) {
-  return <div className="mb-4 border-b border-gray-200 pb-4">{children}</div>;
+// ✅ 統合Alert活用パターン
+import { Alert, AlertDescription } from '@/components/ui-bridge';
+import { AlertCircle, CheckCircle, Info, AlertTriangle } from 'lucide-react';
+
+export function StatusAlerts() {
+  return (
+    <div className="space-y-4">
+      {/* shadcn/ui標準 */}
+      <Alert>
+        <Info className="h-4 w-4" />
+        <AlertDescription>
+          標準的な情報メッセージです。
+        </AlertDescription>
+      </Alert>
+      
+      {/* 既存システムステート色統合 */}
+      <Alert variant="success">
+        <CheckCircle className="h-4 w-4" />
+        <AlertDescription>
+          操作が正常に完了しました。
+        </AlertDescription>
+      </Alert>
+      
+      <Alert variant="error">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          エラーが発生しました。もう一度お試しください。
+        </AlertDescription>
+      </Alert>
+      
+      <Alert variant="warning">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>
+          この操作には注意が必要です。
+        </AlertDescription>
+      </Alert>
+    </div>
+  );
 }
-
-function CardTitle({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-xl font-semibold text-gray-900">{children}</h2>;
-}
-
-function CardContent({ children }: { children: React.ReactNode }) {
-  return <div className="text-gray-700">{children}</div>;
-}
-
-// Compound Patternの設定
-Card.Header = CardHeader;
-Card.Title = CardTitle;
-Card.Content = CardContent;
-
-export { Card };
-
-// 使用例
-<Card>
-  <Card.Header>
-    <Card.Title>タイトル</Card.Title>
-  </Card.Header>
-  <Card.Content>
-    コンテンツ
-  </Card.Content>
-</Card>
 ```
 
 ### Render Props パターン
@@ -536,14 +780,72 @@ class ErrorBoundary extends React.Component<
 
 ### 開発効率化のコツ
 
-- **Flowbite-React活用** - 既製コンポーネントで開発速度向上
-- **TailwindCSS v4** - 新しい記法で簡潔なスタイリング
+- **shadcn/ui Enhanced Components活用** - 既存機能＋shadcn/ui標準機能で開発速度向上
+- **Bridge System活用** - 段階的移行による無理のない開発
+- **TailwindCSS v4** - 新しい記法とHSL変数システムで簡潔なスタイリング
 - **TypeScript活用** - 型安全性による開発体験向上
+- **react-hook-form + zod統合** - フォーム開発の効率化と型安全性
+
+### shadcn/ui統合開発のベストプラクティス
+
+1. **Bridge System優先使用**
+
+   ```typescript
+   // ✅ 推奨：Bridge経由でコンポーネント使用
+   import { Button, Card, Alert } from '@/components/ui-bridge';
+   ```
+
+2. **Enhanced Components活用**
+
+   ```typescript
+   // ✅ 既存機能（gradient, loading）+ shadcn/ui機能の統合
+   <Button variant="primary" gradient={true} loading={isLoading}>
+   ```
+
+3. **適切な変数システム選択**
+
+   ```typescript
+   // shadcn/ui標準：HSL変数
+   <div className="bg-primary text-primary-foreground">
+   
+   // 既存システム：HEX変数（グラデーション等）
+   <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)]">
+   ```
+
+4. **Form統合パターン活用**
+
+   ```typescript
+   // react-hook-form + zod + shadcn/ui Form統合
+   <Form {...form}>
+     <FormField>
+       <FormControl>
+         <Input {...field} />
+       </FormControl>
+     </FormField>
+   </Form>
+   ```
 
 ---
 
 ## 関連ドキュメント 📚
 
+### 🎨 UI・デザインシステム
+
+- [テーマカラーシステム v2.0](../theme-system.md) - shadcn/ui統合カラーパレット・HSL変数・ダークモード対応
+- [Next.js統合パターン](../nextjs-integration-patterns.md) - App Router + shadcn/ui統合パターン
+
+### 🏗️ 開発・アーキテクチャ
+
 - [プロジェクト構造](../project-structure.md) - 全体のファイル配置
 - [開発ガイド](../development-guide.md) - 開発フロー全般
-- [テスト戦略](../testing-strategy.md) - コンポーネントテスト手法
+- [テスト戦略](../testing-strategy.md) - Enhanced Componentsテスト手法
+
+### 🔄 shadcn/ui移行関連
+
+- [shadcn/ui移行計画](../../shadcn-ui-migration-plan.md) - 段階的移行戦略詳細
+- [Bridge Systemガイド](../ddd/layers/components/ui-bridge-system.md) - コンポーネント統合システム
+
+### 📋 DDD・Clean Architecture
+
+- [Presentation Layer](../ddd/layers/presentation-layer.md) - UI層設計・Server Actions
+- [Frontend Architecture](../ddd/concepts/frontend-architecture.md) - フロントエンド設計原則

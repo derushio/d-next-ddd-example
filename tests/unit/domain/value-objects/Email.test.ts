@@ -1,3 +1,4 @@
+import { DomainError } from '@/layers/domain/errors/DomainError';
 import { Email } from '@/layers/domain/value-objects/Email';
 
 import { describe, expect, it } from 'vitest';
@@ -27,9 +28,20 @@ describe('Email Value Object', () => {
       });
     });
 
-    it('無効なメールアドレスでエラーが発生する', () => {
-      const invalidEmails = [
-        '',
+    it('空のメールアドレスでDomainError（EMAIL_REQUIRED）が発生する', () => {
+      expect(() => new Email('')).toThrow(DomainError);
+      expect(() => new Email('')).toThrow('メールアドレスは必須です');
+      
+      try {
+        new Email('');
+      } catch (error) {
+        expect(error).toBeInstanceOf(DomainError);
+        expect((error as DomainError).code).toBe('EMAIL_REQUIRED');
+      }
+    });
+
+    it('無効な形式のメールアドレスでDomainError（EMAIL_INVALID_FORMAT）が発生する', () => {
+      const invalidFormats = [
         'invalid',
         'invalid@',
         '@invalid.com',
@@ -42,8 +54,55 @@ describe('Email Value Object', () => {
         'user@domain..com',
       ];
 
-      invalidEmails.forEach((emailStr) => {
-        expect(() => new Email(emailStr)).toThrow();
+      invalidFormats.forEach((emailStr) => {
+        try {
+          new Email(emailStr);
+          fail(`Expected DomainError for: ${emailStr}`);
+        } catch (error) {
+          expect(error).toBeInstanceOf(DomainError);
+          expect((error as DomainError).code).toBe('EMAIL_INVALID_FORMAT');
+          expect((error as DomainError).message).toBe(
+            'メールアドレスの形式が正しくありません',
+          );
+        }
+      });
+    });
+
+    it('長すぎるメールアドレスでDomainError（EMAIL_TOO_LONG）が発生する', () => {
+      const longEmail = 'a'.repeat(250) + '@example.com'; // 254文字を超える
+
+      try {
+        new Email(longEmail);
+        fail('Expected DomainError for too long email');
+      } catch (error) {
+        expect(error).toBeInstanceOf(DomainError);
+        expect((error as DomainError).code).toBe('EMAIL_TOO_LONG');
+        expect((error as DomainError).message).toBe(
+          'メールアドレスが長すぎます（254文字以内である必要があります）',
+        );
+      }
+    });
+
+    it('禁止文字を含むメールアドレスでDomainError（EMAIL_INVALID_CHARACTERS）が発生する', () => {
+      const forbiddenCharEmails = [
+        'user<script>@example.com',
+        'user>test@example.com',
+        'user"test@example.com',
+        "user'test@example.com",
+        'user&test@example.com',
+      ];
+
+      forbiddenCharEmails.forEach((emailStr) => {
+        try {
+          new Email(emailStr);
+          fail(`Expected DomainError for forbidden char email: ${emailStr}`);
+        } catch (error) {
+          expect(error).toBeInstanceOf(DomainError);
+          expect((error as DomainError).code).toBe('EMAIL_INVALID_CHARACTERS');
+          expect((error as DomainError).message).toBe(
+            'メールアドレスに使用できない文字が含まれています',
+          );
+        }
       });
     });
   });

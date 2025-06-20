@@ -2,7 +2,9 @@
 
 import 'reflect-metadata';
 
+import { isFailure, isSuccess } from '@/layers/application/types/Result';
 import { resolve } from '@/layers/infrastructure/di/resolver';
+
 import { z } from 'zod';
 
 // バリデーションスキーマ
@@ -53,14 +55,26 @@ export async function refreshToken(formData: FormData) {
       refreshToken: token,
     });
 
-    logger.info('トークンリフレッシュ成功');
+    if (isSuccess(result)) {
+      logger.info('トークンリフレッシュ成功');
 
-    return {
-      success: true,
-      accessToken: result.accessToken,
-      refreshToken: result.refreshToken,
-      expiresIn: result.expiresIn,
-    };
+      return {
+        success: true,
+        accessToken: result.data.accessToken,
+        refreshToken: result.data.refreshToken,
+        expiresIn: result.data.expiresIn,
+      };
+    } else {
+      logger.warn('トークンリフレッシュ失敗', {
+        error: result.error.message,
+        code: result.error.code,
+      });
+      return {
+        errors: {
+          _form: [result.error.message],
+        },
+      };
+    }
   } catch (error) {
     const logger = resolve('Logger');
 

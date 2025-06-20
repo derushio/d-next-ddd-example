@@ -2,6 +2,23 @@
 
 このドキュメントでは、Application Layer（アプリケーション層）での実装ルール、許可される処理、禁止される処理について詳しく解説します。
 
+## 🚀 Result型パターンの採用
+
+**本プロジェクトでは、Application LayerのUseCaseにおいてResult型パターンを採用しています。**
+
+```typescript
+// 必要なimport
+import { Result, success, failure } from '@/layers/application/types/Result';
+import { DomainError } from '@/layers/domain/errors/DomainError';
+```
+
+### メリット
+
+- **型安全性**: 成功・失敗が型レベルで表現される
+- **明示的エラーハンドリング**: エラー処理が必須となり、見落としを防止  
+- **一貫性**: 全UseCaseで統一されたエラーハンドリング
+- **テスタビリティ**: エラーケースのテストが容易
+
 ---
 
 ## Application Layer の責務 🎯
@@ -43,58 +60,61 @@ graph LR
 **ビジネスフローの制御**
 
 ```typescript
-// ✅ 許可：Use Case実装
+// ✅ 許可：Use Case実装（Result型パターン）
 export class CreateUserUseCase {
   constructor(
     private userRepository: IUserRepository,
     private userDomainService: UserDomainService,
-    private emailService: IEmailService,
+    private hashService: IHashService,
     private logger: ILogger
   ) {}
   
-  async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
+  async execute(request: CreateUserRequest): Promise<Result<CreateUserResponse>> {
     this.logger.info('ユーザー作成開始', { email: request.email });
     
     try {
-      // 1. ドメインサービスでビジネスルール検証
+      // 1. Email Value Objectを作成（バリデーション込み）
+      const emailVO = new Email(request.email);
+      
+      // 2. ドメインサービスでビジネスルール検証
       await this.userDomainService.validateUserData(request.name, request.email);
       
-      // 2. Repository使用（実装詳細はInfrastructure Layerを参照）
-      const existingUser = await this.userRepository.findByEmail(request.email);
-      if (existingUser) {
-        throw new DomainError('このメールアドレスは既に使用されています', 'EMAIL_ALREADY_EXISTS');
-      }
+      // 3. パスワードハッシュ化
+      const hashedPassword = await this.hashService.generateHash(request.password);
       
-      // 3. ドメインオブジェクト作成
-      const user = User.create(
-        generateUserId(),
-        new Email(request.email),
-        request.name
-      );
+      // 4. ドメインオブジェクト作成
+      const user = User.create(emailVO, request.name, hashedPassword);
       
-      // 4. 永続化
+      // 5. 永続化
       await this.userRepository.save(user);
       
-      // 5. 外部サービス連携（実装詳細はInfrastructure Layerを参照）
-      await this.emailService.sendWelcomeEmail(
-        user.getEmail().toString(),
-        user.getName()
-      );
+      this.logger.info('ユーザー作成完了', { 
+        userId: user.getId().toString(),
+        email: request.email 
+      });
       
-      this.logger.info('ユーザー作成完了', { userId: user.getId().toString() });
-      
-      // 6. レスポンス変換
-      return {
+      // 6. 成功レスポンス
+      return success({
         id: user.getId().toString(),
         name: user.getName(),
         email: user.getEmail().toString(),
-        level: user.getLevel(),
-        createdAt: user.getCreatedAt()
-      };
+        createdAt: user.getCreatedAt(),
+        updatedAt: user.getUpdatedAt()
+      });
       
     } catch (error) {
-      this.logger.error('ユーザー作成失敗', { email: request.email, error: error.message });
-      throw error;
+      this.logger.error('ユーザー作成失敗', { 
+        email: request.email, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+      
+      // DomainErrorの場合は適切なエラーコードで返す
+      if (error instanceof DomainError) {
+        return failure(error.message, error.code);
+      }
+      
+      // その他の予期しないエラー
+      return failure('ユーザー作成に失敗しました', 'UNEXPECTED_ERROR');
     }
   }
 }
@@ -111,7 +131,7 @@ export class CreateUserUseCase {
 **レイヤー間のデータ変換**
 
 ```typescript
-// ✅ 許可：Request/Response DTO
+// ✅ 許可：Request/Response DTO（Result型対応）
 export interface CreateUserRequest {
   name: string;
   email: string;
@@ -122,15 +142,28 @@ export interface CreateUserResponse {
   id: string;
   name: string;
   email: string;
-  level: number;
   createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface UpdateUserRequest {
+  userId: string;
+  name?: string;
+  email?: string;
+}
+
+export interface UpdateUserResponse {
+  id: string;
+  name: string;
+  email: string;
+  updatedAt: Date;
 }
 
 export interface GetUsersRequest {
   page?: number;
   limit?: number;
   searchQuery?: string;
-  sortBy?: 'name' | 'createdAt' | 'level';
+  sortBy?: 'name' | 'createdAt' | 'updatedAt';
   sortOrder?: 'asc' | 'desc';
 }
 
@@ -145,8 +178,8 @@ export interface UserSummary {
   id: string;
   name: string;
   email: string;
-  level: number;
-  lastLoginAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 ```
 
@@ -227,7 +260,7 @@ export class TransferUserPointsUseCase {
 **ユーザー権限の検証**
 
 ```typescript
-// ✅ 許可：認可処理
+// ✅ 許可：認可処理（Result型パターン）
 export class DeleteUserUseCase {
   constructor(
     private userRepository: IUserRepository,
@@ -235,42 +268,61 @@ export class DeleteUserUseCase {
     private logger: ILogger
   ) {}
   
-  async execute(request: DeleteUserRequest, currentUserId: string): Promise<void> {
-    // 1. 認証チェック
-    const currentUser = await this.userRepository.findById(currentUserId);
-    if (!currentUser) {
-      throw new DomainError('認証が必要です', 'AUTHENTICATION_REQUIRED');
+  async execute(request: DeleteUserRequest, currentUserId: string): Promise<Result<void>> {
+    try {
+      // 1. 認証チェック
+      const currentUser = await this.userRepository.findById(new UserId(currentUserId));
+      if (!currentUser) {
+        return failure('認証が必要です', 'AUTHENTICATION_REQUIRED');
+      }
+      
+      // 2. 権限チェック
+      const hasPermission = await this.authService.hasPermission(
+        currentUserId, 
+        'DELETE_USER'
+      );
+      
+      if (!hasPermission && currentUserId !== request.targetUserId) {
+        return failure('この操作を実行する権限がありません', 'INSUFFICIENT_PERMISSION');
+      }
+      
+      // 3. 対象ユーザーの取得
+      const targetUser = await this.userRepository.findById(new UserId(request.targetUserId));
+      if (!targetUser) {
+        return failure('対象ユーザーが見つかりません', 'USER_NOT_FOUND');
+      }
+      
+      // 4. ビジネスルール検証（Domain Serviceに委譲）
+      const canDelete = targetUser.canBeDeleted();
+      if (!canDelete) {
+        return failure('このユーザーは削除できません', 'USER_CANNOT_BE_DELETED');
+      }
+      
+      // 5. 削除実行
+      await this.userRepository.delete(new UserId(request.targetUserId));
+      
+      this.logger.info('ユーザー削除完了', { 
+        targetUserId: request.targetUserId,
+        deletedBy: currentUserId 
+      });
+      
+      return success(undefined);
+      
+    } catch (error) {
+      this.logger.error('ユーザー削除失敗', {
+        targetUserId: request.targetUserId,
+        currentUserId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      
+      // DomainErrorの場合は適切なエラーコードで返す
+      if (error instanceof DomainError) {
+        return failure(error.message, error.code);
+      }
+      
+      // その他の予期しないエラー
+      return failure('ユーザー削除に失敗しました', 'UNEXPECTED_ERROR');
     }
-    
-    // 2. 権限チェック
-    const hasPermission = await this.authService.hasPermission(
-      currentUserId, 
-      'DELETE_USER'
-    );
-    
-    if (!hasPermission && currentUserId !== request.targetUserId) {
-      throw new DomainError('この操作を実行する権限がありません', 'INSUFFICIENT_PERMISSION');
-    }
-    
-    // 3. 対象ユーザーの取得・削除
-    const targetUser = await this.userRepository.findById(request.targetUserId);
-    if (!targetUser) {
-      throw new DomainError('対象ユーザーが見つかりません', 'USER_NOT_FOUND');
-    }
-    
-    // 4. ビジネスルール検証（Domain Serviceに委譲）
-    const canDelete = targetUser.canBeDeleted();
-    if (!canDelete) {
-      throw new DomainError('このユーザーは削除できません', 'USER_CANNOT_BE_DELETED');
-    }
-    
-    // 5. 削除実行
-    await this.userRepository.delete(request.targetUserId);
-    
-    this.logger.info('ユーザー削除完了', { 
-      targetUserId: request.targetUserId,
-      deletedBy: currentUserId 
-    });
   }
 }
 ```
@@ -280,7 +332,7 @@ export class DeleteUserUseCase {
 **Domain Service + Repository + 外部サービスの組み合わせ**
 
 ```typescript
-// ✅ 許可：複数レイヤー間調整
+// ✅ 許可：複数レイヤー間調整（Result型パターン）
 export class PromoteUserUseCase {
   constructor(
     private userRepository: IUserRepository,
@@ -289,45 +341,62 @@ export class PromoteUserUseCase {
     private logger: ILogger
   ) {}
   
-  async execute(userId: string): Promise<PromoteUserResponse> {
-    // 1. ユーザー取得
-    const user = await this.userRepository.findById(userId);
-    if (!user) {
-      throw new DomainError('ユーザーが見つかりません', 'USER_NOT_FOUND');
+  async execute(userId: string): Promise<Result<PromoteUserResponse>> {
+    try {
+      // 1. ユーザー取得
+      const user = await this.userRepository.findById(new UserId(userId));
+      if (!user) {
+        return failure('ユーザーが見つかりません', 'USER_NOT_FOUND');
+      }
+      
+      // 2. 昇格可能性チェック（Domain Serviceに委譲）
+      const canPromote = await this.userDomainService.canPromoteUser(user);
+      if (!canPromote) {
+        return failure('昇格条件を満たしていません', 'PROMOTION_NOT_ALLOWED');
+      }
+      
+      // 3. ドメインオブジェクトで昇格実行
+      const oldLevel = user.getLevel();
+      user.promote();
+      const newLevel = user.getLevel();
+      
+      // 4. 永続化
+      await this.userRepository.save(user);
+      
+      // 5. 通知送信（外部サービス）
+      await this.notificationService.sendPromotionNotification(
+        user.getEmail().toString(),
+        user.getName(),
+        newLevel
+      );
+      
+      this.logger.info('ユーザー昇格完了', { 
+        userId,
+        oldLevel,
+        newLevel 
+      });
+      
+      return success({
+        userId: user.getId().toString(),
+        newLevel,
+        oldLevel,
+        promotedAt: new Date()
+      });
+      
+    } catch (error) {
+      this.logger.error('ユーザー昇格失敗', {
+        userId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      
+      // DomainErrorの場合は適切なエラーコードで返す
+      if (error instanceof DomainError) {
+        return failure(error.message, error.code);
+      }
+      
+      // その他の予期しないエラー
+      return failure('ユーザー昇格に失敗しました', 'UNEXPECTED_ERROR');
     }
-    
-    // 2. 昇格可能性チェック（Domain Serviceに委譲）
-    const canPromote = this.userDomainService.canPromoteUser(user);
-    if (!canPromote) {
-      throw new DomainError('昇格条件を満たしていません', 'PROMOTION_NOT_ALLOWED');
-    }
-    
-    // 3. ドメインオブジェクトで昇格実行
-    const oldLevel = user.getLevel();
-    user.promote();
-    const newLevel = user.getLevel();
-    
-    // 4. 永続化
-    await this.userRepository.save(user);
-    
-    // 5. 通知送信（外部サービス）
-    await this.notificationService.sendPromotionNotification(
-      user.getEmail().toString(),
-      user.getName(),
-      newLevel
-    );
-    
-    this.logger.info('ユーザー昇格完了', { 
-      userId,
-      oldLevel,
-      newLevel 
-    });
-    
-    return {
-      userId: user.getId().toString(),
-      newLevel,
-      promotedAt: new Date()
-    };
   }
 }
 ```
@@ -341,10 +410,10 @@ export class PromoteUserUseCase {
 ```typescript
 // ❌ 禁止：ビジネスロジックの実装
 export class CreateUserUseCase {
-  async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
+  async execute(request: CreateUserRequest): Promise<Result<CreateUserResponse>> {
     // ❌ ビジネスルール判定はDomain Layerの責務
     if (request.name.length < 2) {
-      throw new Error('名前は2文字以上必要です');
+      return failure('名前は2文字以上必要です', 'INVALID_NAME');
     }
     
     // ❌ 経験値計算ロジックはDomain Layerの責務
@@ -352,20 +421,35 @@ export class CreateUserUseCase {
     
     const user = new User(/* ... */);
     await this.userRepository.save(user);
+    
+    return success({ id: user.getId(), /* ... */ });
   }
 }
 
-// ✅ 正しい実装：Domain Layerに委譲
+// ✅ 正しい実装：Domain Layerに委譲（Result型パターン）
 export class CreateUserUseCase {
-  async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
-    // Domain Layerのファクトリーメソッドを使用
-    const user = User.create(
-      generateUserId(),
-      new Email(request.email), // Value Objectでバリデーション
-      request.name // Entityでバリデーション
-    );
-    
-    await this.userRepository.save(user);
+  async execute(request: CreateUserRequest): Promise<Result<CreateUserResponse>> {
+    try {
+      // Domain Layerのファクトリーメソッドを使用
+      const emailVO = new Email(request.email); // Value Objectでバリデーション
+      const user = User.create(emailVO, request.name, hashedPassword); // Entityでバリデーション
+      
+      await this.userRepository.save(user);
+      
+      return success({
+        id: user.getId().toString(),
+        name: user.getName(),
+        email: user.getEmail().toString(),
+        createdAt: user.getCreatedAt(),
+        updatedAt: user.getUpdatedAt()
+      });
+      
+    } catch (error) {
+      if (error instanceof DomainError) {
+        return failure(error.message, error.code);
+      }
+      return failure('ユーザー作成に失敗しました', 'UNEXPECTED_ERROR');
+    }
   }
 }
 ```
@@ -375,7 +459,7 @@ export class CreateUserUseCase {
 ```typescript
 // ❌ 禁止：技術的実装詳細
 export class GetUsersUseCase {
-  async execute(request: GetUsersRequest): Promise<GetUsersResponse> {
+  async execute(request: GetUsersRequest): Promise<Result<GetUsersResponse>> {
     // ❌ SQLクエリの直接記述
     const users = await this.prisma.$queryRaw`
       SELECT * FROM users 
@@ -383,32 +467,48 @@ export class GetUsersUseCase {
       ORDER BY created_at DESC
     `;
     
-    return { users };
+    return success({ users });
   }
 }
 
-// ✅ 正しい実装：Repositoryに委譲
+// ✅ 正しい実装：Repositoryに委譲（Result型パターン）
 export class GetUsersUseCase {
-  async execute(request: GetUsersRequest): Promise<GetUsersResponse> {
-    const criteria = new UserSearchCriteria(
-      request.searchQuery,
-      request.page,
-      request.limit,
-      request.sortBy,
-      request.sortOrder
-    );
-    
-    const users = await this.userRepository.findByCriteria(criteria);
-    
-    return {
-      users: users.map(user => ({
-        id: user.getId().toString(),
-        name: user.getName(),
-        email: user.getEmail().toString(),
-        level: user.getLevel(),
-        lastLoginAt: user.getLastLoginAt()
-      }))
-    };
+  async execute(request: GetUsersRequest): Promise<Result<GetUsersResponse>> {
+    try {
+      const criteria = new UserSearchCriteria(
+        request.searchQuery,
+        request.page,
+        request.limit,
+        request.sortBy,
+        request.sortOrder
+      );
+      
+      const { users, totalCount } = await this.userRepository.findByCriteria(criteria);
+      
+      return success({
+        users: users.map(user => ({
+          id: user.getId().toString(),
+          name: user.getName(),
+          email: user.getEmail().toString(),
+          createdAt: user.getCreatedAt(),
+          updatedAt: user.getUpdatedAt()
+        })),
+        totalCount,
+        currentPage: request.page || 1,
+        totalPages: Math.ceil(totalCount / (request.limit || 10))
+      });
+      
+    } catch (error) {
+      this.logger.error('ユーザー検索失敗', {
+        searchQuery: request.searchQuery,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      
+      if (error instanceof DomainError) {
+        return failure(error.message, error.code);
+      }
+      return failure('ユーザー検索に失敗しました', 'UNEXPECTED_ERROR');
+    }
   }
 }
 ```
@@ -418,8 +518,8 @@ export class GetUsersUseCase {
 ```typescript
 // ❌ 禁止：UI関連処理
 export class GetUserProfileUseCase {
-  async execute(userId: string): Promise<UserProfileResponse> {
-    const user = await this.userRepository.findById(userId);
+  async execute(userId: string): Promise<Result<UserProfileResponse>> {
+    const user = await this.userRepository.findById(new UserId(userId));
     
     // ❌ 表示フォーマットはPresentation Layerの責務
     const displayName = user.getName().length > 20 
@@ -428,28 +528,42 @@ export class GetUserProfileUseCase {
     
     const levelBadge = user.getLevel() >= 10 ? '🏆' : '⭐';
     
-    return {
+    return success({
       displayName,
       levelBadge,
       formattedJoinDate: user.getCreatedAt().toLocaleDateString('ja-JP')
-    };
+    });
   }
 }
 
-// ✅ 正しい実装：生データのみ返却
+// ✅ 正しい実装：生データのみ返却（Result型パターン）
 export class GetUserProfileUseCase {
-  async execute(userId: string): Promise<UserProfileResponse> {
-    const user = await this.userRepository.findById(userId);
-    
-    return {
-      id: user.getId().toString(),
-      name: user.getName(),
-      email: user.getEmail().toString(),
-      level: user.getLevel(),
-      experiencePoints: user.getExperiencePoints(),
-      createdAt: user.getCreatedAt(),
-      lastLoginAt: user.getLastLoginAt()
-    };
+  async execute(userId: string): Promise<Result<UserProfileResponse>> {
+    try {
+      const user = await this.userRepository.findById(new UserId(userId));
+      if (!user) {
+        return failure('ユーザーが見つかりません', 'USER_NOT_FOUND');
+      }
+      
+      return success({
+        id: user.getId().toString(),
+        name: user.getName(),
+        email: user.getEmail().toString(),
+        createdAt: user.getCreatedAt(),
+        updatedAt: user.getUpdatedAt()
+      });
+      
+    } catch (error) {
+      this.logger.error('ユーザープロフィール取得失敗', {
+        userId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      
+      if (error instanceof DomainError) {
+        return failure(error.message, error.code);
+      }
+      return failure('ユーザープロフィールの取得に失敗しました', 'UNEXPECTED_ERROR');
+    }
   }
 }
 ```
@@ -553,16 +667,23 @@ export class ProcessOrderUseCase {
 **Application Layerの成功パターン：**
 
 1. **UseCase中心設計** - 1つのUseCaseが1つのビジネスフローを制御
-2. **適切な依存関係** - Domain/Infrastructure Layerへの適切な委譲
-3. **トランザクション管理** - データ整合性の確保
-4. **DTO活用** - レイヤー間の結合度最小化
-5. **適切なエラーハンドリング** - ビジネス例外とシステム例外の分離
+2. **Result型パターン** - 統一されたエラーハンドリングによる型安全性
+3. **適切な依存関係** - Domain/Infrastructure Layerへの適切な委譲
+4. **トランザクション管理** - データ整合性の確保
+5. **DTO活用** - レイヤー間の結合度最小化
+6. **構造化ログ** - デバッグ・監視に必要な情報の記録
 
 **避けるべきアンチパターン：**
 
 1. **Fat UseCase** - 複数のビジネスフローを1つのUseCaseに詰め込む
-2. **技術的詳細の漏出** - SQLクエリや外部API仕様への直接依存
-3. **ビジネスロジックの実装** - Domain Layerの責務を奪う
-4. **UI関連処理** - Presentation Layerの責務を奪う
+2. **例外による制御フロー** - Result型パターンを使わない不統一なエラーハンドリング
+3. **技術的詳細の漏出** - SQLクエリや外部API仕様への直接依存
+4. **ビジネスロジックの実装** - Domain Layerの責務を奪う
+5. **UI関連処理** - Presentation Layerの責務を奪う
+
+**関連ドキュメント 📚**
+
+- **[エラーハンドリング実装ガイド](../cross-cutting/error-handling.md)** - Result型パターンの詳細実装
+- **[Use Cases](./components/use-cases.md)** - UseCaseの詳細実装パターン
 
 **Application Layerはオーケストレーター役に徹すること！** 🎭✨

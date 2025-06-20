@@ -282,6 +282,27 @@ import React, { useState } from 'react';
 
 ---
 
+## モジュール・インポート規約 📦
+
+**基本ルール**
+
+- **index.ts ファイル作成禁止**
+- **個別インポート必須**
+- **@/* alias使用必須**
+- **相対パス禁止**
+
+```typescript
+// ✅ 推奨
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+
+// ❌ 禁止
+import { Button, Input } from '@/components/ui';  // index.ts経由
+import { Button } from '../../ui/Button';          // 相対パス
+```
+
+---
+
 ## ファイル・ディレクトリ命名規則 📁
 
 ### コンポーネントファイル

@@ -1,4 +1,3 @@
-import withFlowbiteReact from 'flowbite-react/plugin/nextjs';
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
@@ -10,11 +9,27 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Turbopack設定（Next.js 15対応）
+  turbopack: {
+    // エイリアス設定（tsconfig.jsonと統一）
+    resolveAlias: {
+      '@/*': './src/*',
+      '@prisma/generated/*': './src/layers/infrastructure/persistence/prisma/generated/*',
+      '@tests/*': './tests/*',
+    },
+  },
+  // 外部パッケージ最適化
+  serverExternalPackages: ['reflect-metadata', 'tsyringe'],
   /**
-   * TSyringe DI Container対応のWebpack設定
-   * reflect-metadataがServer Side Renderingで確実に初期化されるよう設定
+   * TSyringe DI Container対応のWebpack設定（Webpack使用時のフォールバック）
+   * Turbopackで処理できない場合のWebpack設定
    */
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, dev }) => {
+    // Turbopackが有効な場合はスキップ
+    if (dev && process.env.TURBOPACK) {
+      return config;
+    }
+
     if (isServer) {
       // Server側で別のentrypoint追加してreflect-metadataを先に読み込み
       const originalEntry = config.entry;
@@ -41,4 +56,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withFlowbiteReact(nextConfig);
+export default nextConfig;

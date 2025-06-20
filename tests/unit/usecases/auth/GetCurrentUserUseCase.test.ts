@@ -1,3 +1,4 @@
+import { isFailure, isSuccess } from '@/layers/application/types/Result';
 import { GetCurrentUserUseCase } from '@/layers/application/usecases/auth/GetCurrentUserUseCase';
 import { container } from '@/layers/infrastructure/di/container';
 import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
@@ -58,11 +59,14 @@ describe('GetCurrentUserUseCase', () => {
       const result = await getCurrentUserUseCase.execute();
 
       // Assert
-      expect(result).toEqual({
-        id: 'user-123',
-        email: 'test@example.com',
-        name: 'Test User',
-      });
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        expect(result.data).toEqual({
+          id: 'user-123',
+          email: 'test@example.com',
+          name: 'Test User',
+        });
+      }
 
       expect(mockLogger.info).toHaveBeenCalledWith(
         '現在のユーザー情報取得開始',
@@ -82,7 +86,7 @@ describe('GetCurrentUserUseCase', () => {
       );
     });
 
-    it('正常系: 未認証の場合はnullを返す', async () => {
+    it('正常系: 未認証の場合は失敗結果を返す', async () => {
       // Arrange - 共通モックのヘルパーメソッドを使用
       const authData = getAuthHelpers.getUnauthenticatedData();
       mockGetAuth.mockResolvedValue(authData);
@@ -91,7 +95,11 @@ describe('GetCurrentUserUseCase', () => {
       const result = await getCurrentUserUseCase.execute();
 
       // Assert
-      expect(result).toBeNull();
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.message).toBe('認証が必要です');
+        expect(result.error.code).toBe('UNAUTHENTICATED');
+      }
 
       expect(mockLogger.info).toHaveBeenCalledWith(
         'ユーザー未認証または必要な情報が不足',
@@ -102,7 +110,7 @@ describe('GetCurrentUserUseCase', () => {
       );
     });
 
-    it('正常系: ユーザー情報が不完全な場合はnullを返す', async () => {
+    it('正常系: ユーザー情報が不完全な場合は失敗結果を返す', async () => {
       // Arrange - 共通モックのヘルパーメソッドを使用
       const authData = getAuthHelpers.getIncompleteUserData({
         email: 'test@example.com',
@@ -114,7 +122,11 @@ describe('GetCurrentUserUseCase', () => {
       const result = await getCurrentUserUseCase.execute();
 
       // Assert
-      expect(result).toBeNull();
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.message).toBe('認証が必要です');
+        expect(result.error.code).toBe('UNAUTHENTICATED');
+      }
 
       expect(mockLogger.info).toHaveBeenCalledWith(
         'ユーザー未認証または必要な情報が不足',
@@ -125,7 +137,7 @@ describe('GetCurrentUserUseCase', () => {
       );
     });
 
-    it('異常系: getAuthでエラーが発生した場合はnullを返す', async () => {
+    it('異常系: getAuthでエラーが発生した場合は失敗結果を返す', async () => {
       // Arrange - 共通モックのヘルパーメソッドを使用
       const error = getAuthHelpers.getErrorInstance('認証エラー');
       mockGetAuth.mockRejectedValue(error);
@@ -134,7 +146,11 @@ describe('GetCurrentUserUseCase', () => {
       const result = await getCurrentUserUseCase.execute();
 
       // Assert
-      expect(result).toBeNull();
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.message).toBe('ユーザー情報の取得に失敗しました');
+        expect(result.error.code).toBe('USER_INFO_FETCH_ERROR');
+      }
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         'ユーザー情報取得エラー',
@@ -161,41 +177,55 @@ describe('GetCurrentUserUseCase', () => {
       const result = await getCurrentUserUseCase.requireAuthentication();
 
       // Assert
-      expect(result).toEqual({
-        id: 'user-123',
-        email: 'test@example.com',
-        name: 'Test User',
-      });
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        expect(result.data).toEqual({
+          id: 'user-123',
+          email: 'test@example.com',
+          name: 'Test User',
+        });
+      }
     });
 
-    it('異常系: 未認証の場合はエラーをスローする', async () => {
+    it('異常系: 未認証の場合は失敗結果を返す', async () => {
       // Arrange - 共通モックのヘルパーメソッドを使用
       const authData = getAuthHelpers.getUnauthenticatedData();
       mockGetAuth.mockResolvedValue(authData);
 
-      // Act & Assert
-      await expect(
-        getCurrentUserUseCase.requireAuthentication(),
-      ).rejects.toThrow('認証が必要です');
+      // Act
+      const result = await getCurrentUserUseCase.requireAuthentication();
+
+      // Assert
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.message).toBe('認証が必要です');
+        expect(result.error.code).toBe('UNAUTHENTICATED');
+      }
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
         '認証が必要な処理で未認証ユーザーがアクセス',
         expect.objectContaining({
           action: 'requireAuthentication',
           timestamp: expect.any(String),
+          error: '認証が必要です',
         }),
       );
     });
 
-    it('異常系: getAuthでエラーが発生した場合はエラーをスローする', async () => {
+    it('異常系: getAuthでエラーが発生した場合は失敗結果を返す', async () => {
       // Arrange - 共通モックのヘルパーメソッドを使用
       const error = getAuthHelpers.getErrorInstance('認証エラー');
       mockGetAuth.mockRejectedValue(error);
 
-      // Act & Assert
-      await expect(
-        getCurrentUserUseCase.requireAuthentication(),
-      ).rejects.toThrow('認証が必要です');
+      // Act
+      const result = await getCurrentUserUseCase.requireAuthentication();
+
+      // Assert
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.message).toBe('ユーザー情報の取得に失敗しました');
+        expect(result.error.code).toBe('USER_INFO_FETCH_ERROR');
+      }
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         'ユーザー情報取得エラー',

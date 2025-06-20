@@ -2,6 +2,7 @@ import { container } from '@/layers/infrastructure/di/container';
 import { resolve } from '@/layers/infrastructure/di/resolver';
 import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
 import { PrismaSessionRepository } from '@/layers/infrastructure/repositories/implementations/PrismaSessionRepository';
+import type { ILogger } from '@/layers/infrastructure/services/Logger';
 
 import {
   createTestSession,
@@ -9,12 +10,15 @@ import {
   setupMockReturnValues,
   setupTestEnvironment,
 } from '@tests/utils/helpers/testHelpers';
+import { createAutoMockLogger } from '@tests/utils/mocks/autoMocks';
 import { createMockPrismaClient } from '@tests/utils/mocks/commonMocks';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { MockProxy } from 'vitest-mock-extended';
 
 describe('PrismaSessionRepository', () => {
   let sessionRepository: PrismaSessionRepository;
   let mockPrismaClient: ReturnType<typeof createMockPrismaClient>;
+  let mockLogger: MockProxy<ILogger>;
 
   beforeEach(() => {
     // テスト間でコンテナをクリア
@@ -22,9 +26,10 @@ describe('PrismaSessionRepository', () => {
 
     // モックの作成
     mockPrismaClient = createMockPrismaClient();
+    mockLogger = createAutoMockLogger();
 
     // PrismaSessionRepositoryを直接インスタンス化してテストする
-    sessionRepository = new PrismaSessionRepository(mockPrismaClient);
+    sessionRepository = new PrismaSessionRepository(mockPrismaClient, mockLogger);
   });
 
   describe('create', () => {
@@ -73,7 +78,7 @@ describe('PrismaSessionRepository', () => {
 
       // Act & Assert
       await expect(sessionRepository.create(sessionData)).rejects.toThrow(
-        'Database connection failed',
+        'セッションの作成に失敗しました',
       );
     });
 
@@ -96,7 +101,7 @@ describe('PrismaSessionRepository', () => {
 
       // Act & Assert
       await expect(sessionRepository.create(sessionData)).rejects.toThrow(
-        'Foreign key constraint failed',
+        '存在しないユーザーです',
       );
     });
   });
@@ -173,10 +178,11 @@ describe('PrismaSessionRepository', () => {
         findFirst: dbError,
       });
 
-      // Act & Assert
-      await expect(sessionRepository.findFirst(condition)).rejects.toThrow(
-        'Database query failed',
-      );
+      // Act
+      const result = await sessionRepository.findFirst(condition);
+
+      // Assert - findFirstでエラーが発生した場合はnullを返す
+      expect(result).toBeNull();
     });
   });
 });

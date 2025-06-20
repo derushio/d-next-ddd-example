@@ -64,10 +64,10 @@ graph TB
 
 | クリーンアーキテクチャ層 | 本プロジェクト | パス例 |
 |---------------------|---------------|-------|
-| **Enterprise Business Rules** | Domain Layer | `src/services/domain/` |
-| **Application Business Rules** | Application Layer | `src/usecases/` |
-| **Interface Adapters** | Infrastructure Layer | `src/repositories/` |
-| **Frameworks & Drivers** | Presentation + External | `src/app/`, `src/data-accesses/infra/` |
+| **Enterprise Business Rules** | Domain Layer | `src/layers/domain/services/` |
+| **Application Business Rules** | Application Layer | `src/layers/application/usecases/` |
+| **Interface Adapters** | Infrastructure Layer | `src/layers/infrastructure/repositories/` |
+| **Frameworks & Drivers** | Presentation + External | `src/app/`, `src/layers/infrastructure/persistence/` |
 
 ---
 

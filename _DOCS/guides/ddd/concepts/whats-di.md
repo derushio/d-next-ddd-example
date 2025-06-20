@@ -24,43 +24,46 @@ DI（依存性注入）の概念を理解していない開発者のための、
 
 まず、「依存関係」を理解しましょう。
 
-```typescript
-// ❌ 悪い例：強い依存関係
-class UserService {
-  private repository = new PrismaUserRepository(); // ←直接作成している
-  
-  async createUser(name: string) {
-    return await this.repository.save(name);
-  }
-}
+```mermaid
+graph TB
+    subgraph "❌ 悪い例：直接依存（強い結合）"
+        A[UserService] -->|直接作成| B[PrismaUserRepository]
+        A -->|new PrismaUserRepository| B
+        B --> C[PostgreSQL]
+    end
+    
+    subgraph "問題点"
+        D[🚫 テストが困難]
+        E[🚫 変更に弱い]
+        F[🚫 再利用性が低い]
+    end
+    
+    subgraph "✅ 良い例：依存性注入（疎結合）"
+        G[UserService] -->|インターフェース経由| H[IUserRepository]
+        I[PrismaUserRepository] -->|implements| H
+        J[外部] -->|注入| G
+        I --> K[PostgreSQL]
+    end
+    
+    subgraph "メリット"
+        L[✅ テスト可能]
+        M[✅ 変更に強い]
+        N[✅ 再利用性が高い]
+    end
+    
+    style A fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style B fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style D fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style E fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style F fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    
+    style G fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style H fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style I fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style L fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style M fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style N fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
 ```
-
-この例では、`UserService`が`PrismaUserRepository`に**直接依存**しています。これは以下の問題があります：
-
-- **テストが困難**: モックに差し替えできない
-- **変更に弱い**: 別のDBを使いたい時に修正が大変
-- **再利用性が低い**: 他の実装と組み合わせできない
-
-### ✅ DIを使った良い例
-
-```typescript
-// ✅ 良い例：依存性注入
-class UserService {
-  constructor(
-    private repository: IUserRepository // ←外から注入される
-  ) {}
-  
-  async createUser(name: string) {
-    return await this.repository.save(name);
-  }
-}
-
-// 使用時
-const repository = new PrismaUserRepository();
-const userService = new UserService(repository); // ←注入！
-```
-
-これにより`UserService`は具体的な実装に依存することなく動作できます。
 
 ---
 
@@ -156,22 +159,61 @@ graph TD
 
 ### 💭 手動 vs 自動の比較
 
-```typescript
-// ❌ 手動で依存関係を管理（大変...）
-function createUserService(): UserService {
-  const config = new ConfigService();
-  const logger = new Logger(config);
-  const hashService = new HashService(config);
-  const prismaClient = new PrismaClient();
-  const userRepository = new PrismaUserRepository(prismaClient, logger);
-  const userDomainService = new UserDomainService(logger);
-  
-  return new UserService(userRepository, userDomainService, hashService, logger);
-}
+#### ❌ 手動管理：複雑で依存関係が絡み合う
 
-// ✅ DIコンテナを使用（簡潔）
-const userService = resolve('UserService'); // 1行で完了
+```mermaid
+flowchart TD
+    A[🧑‍💻 開発者] --> B[1. ConfigService作成]
+    B --> C[2. Logger作成]
+    C --> D[3. HashService作成]
+    D --> E[4. PrismaClient作成]
+    E --> F[5. Repository作成]
+    F --> G[6. DomainService作成]
+    G --> H[7. UserService作成]
+    
+    I[依存関係管理] --> J["Config → Logger"]
+    I --> K["Config → HashService"]
+    I --> L["Prisma → Repository"]
+    I --> M["Logger → Repository"]
+    I --> N["Logger → DomainService"]
+    I --> O["Repository → UserService"]
+    I --> P["DomainService → UserService"]
+    I --> Q["HashService → UserService"]
+    I --> R["Logger → UserService"]
+    
+    style A fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style H fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style I fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
 ```
+
+#### ✅ DI自動管理：シンプルで安全
+
+```mermaid
+flowchart TD
+    A[🧑‍💻 開発者] --> B["resolve('UserService')"]
+    B --> C[📦 DIコンテナ]
+    C --> D[🔄 自動依存関係解決]
+    D --> E[✨ 完成したUserService]
+    
+    F[DIコンテナの働き] --> G[依存関係を自動検出]
+    F --> H[正しい順序で初期化]
+    F --> I[循環依存をチェック]
+    F --> J[エラー時は起動時に失敗]
+    
+    style A fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style C fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style E fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style F fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+```
+
+#### 📊 効果の比較
+
+| 項目 | 手動管理 | DI自動管理 |
+|---|---|---|
+| **作業量** | 7ステップ + 依存管理 | 1行のみ |
+| **エラー率** | 高い（依存順序ミス等） | 低い（起動時チェック） |
+| **保守性** | 低い（変更時に全箇所修正） | 高い（DI設定のみ修正） |
+| **テスト性** | 困難（モック差し込み複雑） | 簡単（モック自動注入） |
 
 ---
 
@@ -215,13 +257,16 @@ graph TD
 
 ### 📁 ファイル構成
 
-```
+```text
 src/
-├── di/
-│   ├── core.container.ts          # 基本サービス
-│   ├── infrastructure.container.ts # Repository実装
-│   ├── domain.container.ts         # Domain Services
-│   └── application.container.ts    # Use Cases
+└── layers/
+    └── infrastructure/
+        └── di/
+            └── containers/
+                ├── core.container.ts          # 基本サービス
+                ├── infrastructure.container.ts # Repository実装
+                ├── domain.container.ts         # Domain Services
+                └── application.container.ts    # Use Cases
 └── types/
     └── injection-tokens.ts         # 型安全なトークン
 ```
@@ -329,86 +374,75 @@ DIの最大のメリットの一つが**テストのしやすさ**です。具�
 
 ### 🚫 DI なしの場合（テストが困難）
 
-```typescript
-// ❌ テストが困難なコード
-class UserService {
-  private repository = new PrismaUserRepository(); // 直接依存
-  private emailService = new SendGridEmailService(); // 直接依存
-  
-  async createUser(name: string, email: string) {
-    const user = await this.repository.save({ name, email });
-    await this.emailService.sendWelcomeEmail(user.email); // 実際にメール送信！
-    return user;
-  }
-}
-
-// テスト時の問題
-describe('UserService', () => {
-  test('ユーザー作成', async () => {
-    const service = new UserService();
+```mermaid
+graph TB
+    subgraph "❌ DI なしのテスト実行"
+        A[テスト開始] --> B[UserService インスタンス化]
+        B --> C[PrismaUserRepository 直接作成]
+        B --> D[SendGridEmailService 直接作成]
+        C --> E[実際のPostgreSQL接続]
+        D --> F[実際のSendGrid API呼び出し]
+        E --> G[DBにテストデータ挿入]
+        F --> H[顧客にメール送信！]
+        G --> I[テスト完了 6秒後]
+        H --> I
+    end
     
-    // 😱 問題：
-    // 1. 実際のDBに接続してしまう
-    // 2. 実際にメールが送信されてしまう
-    // 3. 外部サービスに依存するため、テストが不安定
-    // 4. テスト実行が遅い（DB接続、メール送信）
+    subgraph "問題点"
+        J[🔥 実際のメール送信]
+        K[💸 課金発生]
+        L[🐌 6秒の実行時間]
+        M[🔄 ネットワーク依存で不安定]
+    end
     
-    const result = await service.createUser('テスト', 'test@example.com');
-    expect(result.name).toBe('テスト');
-  });
-});
+    style E fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style F fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style H fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style J fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style K fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style L fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style M fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
 ```
-
-**問題点**：
-
-- 🔥 **実際のメールが送信される** → 顧客に迷惑メールが！
-- 💸 **実際の課金が発生する** → SendGridの料金が！
-- 🐌 **テストが遅い** → DB接続で6秒、メール送信で3秒
-- 🔄 **テストが不安定** → ネットワークエラーで失敗することも
 
 ### ✅ DI ありの場合（テストが簡単）
 
-```typescript
-// ✅ テストしやすいコード
-class UserService {
-  constructor(
-    private repository: IUserRepository, // 注入される
-    private emailService: IEmailService  // 注入される
-  ) {}
-  
-  async createUser(name: string, email: string) {
-    const user = await this.repository.save({ name, email });
-    await this.emailService.sendWelcomeEmail(user.email);
-    return user;
-  }
-}
-
-// テスト時は簡単
-describe('UserService', () => {
-  test('ユーザー作成', async () => {
-    // 🎭 モックを作成（実際の処理は行わない）
-    const mockRepository = createMockProxy<IUserRepository>();
-    const mockEmailService = createMockProxy<IEmailService>();
+```mermaid
+graph TB
+    subgraph "✅ DI ありのテスト実行"
+        N[テスト開始] --> O[Mock Repository 作成]
+        N --> P[Mock EmailService 作成]
+        O --> Q[UserService にモック注入]
+        P --> Q
+        Q --> R[モック動作設定]
+        R --> S[テスト実行]
+        S --> T[モック呼び出し検証]
+        T --> U[テスト完了 0.01秒後]
+    end
     
-    // 期待する戻り値を設定
-    mockRepository.save.mockResolvedValue({ id: 1, name: 'テスト', email: 'test@example.com' });
-    mockEmailService.sendWelcomeEmail.mockResolvedValue();
+    subgraph "メリット"
+        V[✅ メール送信なし]
+        W[✅ 課金なし]
+        X[✅ 0.01秒の実行時間]
+        Y[✅ 外部依存なしで安定]
+    end
     
-    // モックを注入してテスト
-    const service = new UserService(mockRepository, mockEmailService);
-    const result = await service.createUser('テスト', 'test@example.com');
+    subgraph "速度比較"
+        Z[DI なし: 6秒]
+        AA[DI あり: 0.01秒]
+        BB[🚀 600倍高速！]
+    end
     
-    // ✅ 利点：
-    // 1. 実際のDBに接続しない → 高速
-    // 2. 実際にメールを送信しない → 安全
-    // 3. 外部サービスに依存しない → 安定
-    // 4. テスト実行が超高速（0.01秒）
-    
-    expect(result.name).toBe('テスト');
-    expect(mockRepository.save).toHaveBeenCalledWith({ name: 'テスト', email: 'test@example.com' });
-    expect(mockEmailService.sendWelcomeEmail).toHaveBeenCalledWith('test@example.com');
-  });
-});
+    style O fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style P fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style Q fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style U fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style V fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style W fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style X fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style Y fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style Z fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style AA fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style BB fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#d97706
 ```
 
 ### 🔧 実際のテストコード比較
@@ -585,60 +619,60 @@ graph TD
 
 #### 実際のVibe Coding例
 
-```typescript
-// 🎯 開発者の自然言語指示
-「ユーザー作成機能を作ってください。
-- Clean Architecture で設計
-- 依存性注入を使用
-- Repository パターンで実装
-- テストしやすい構造にして」
-
-// ✨ AIが自動生成するコード
-// インターフェース定義
-export interface IUserRepository {
-  save(user: User): Promise<User>;
-  findByEmail(email: string): Promise<User | null>;
-}
-
-export interface IHashService {
-  hash(password: string): Promise<string>;
-  compare(password: string, hash: string): Promise<boolean>;
-}
-
-// Use Case実装（DIを活用）
-@injectable()
-export class CreateUserUseCase {
-  constructor(
-    @inject(INJECTION_TOKENS.UserRepository) private userRepository: IUserRepository,
-    @inject(INJECTION_TOKENS.HashService) private hashService: IHashService,
-    @inject(INJECTION_TOKENS.Logger) private logger: ILogger
-  ) {}
-
-  async execute(request: CreateUserRequest): Promise<User> {
-    this.logger.info('ユーザー作成開始');
+```mermaid
+graph TD
+    subgraph "🎯 開発者の自然言語指示"
+        A["「ユーザー作成機能を作ってください。<br/>- Clean Architecture で設計<br/>- 依存性注入を使用<br/>- Repository パターンで実装<br/>- テストしやすい構造にして」"]
+    end
     
-    // バリデーション
-    const existingUser = await this.userRepository.findByEmail(request.email);
-    if (existingUser) {
-      throw new DomainError('メールアドレスが既に使用されています');
-    }
-
-    // パスワードハッシュ化
-    const hashedPassword = await this.hashService.hash(request.password);
+    subgraph "✨ AIが自動生成（約2分で完了）"
+        B[IUserRepository<br/>インターフェース]
+        C[IHashService<br/>インターフェース]
+        D[CreateUserUseCase<br/>@injectable()]
+        E[DIコンテナ設定<br/>container.register()]
+        F[テストコード<br/>vitest + mock]
+    end
     
-    // ユーザー作成
-    const user = new User(request.name, request.email, hashedPassword);
-    return await this.userRepository.save(user);
-  }
-}
-
-// DIコンテナ設定も自動生成
-container.register(INJECTION_TOKENS.UserRepository, PrismaUserRepository);
-container.register(INJECTION_TOKENS.HashService, BcryptHashService);
-container.register(INJECTION_TOKENS.Logger, WinstonLogger);
+    A --> B
+    A --> C
+    A --> D
+    A --> E
+    A --> F
+    
+    subgraph "生成内容の特徴"
+        G[✅ 型安全なDI設計]
+        H[✅ 完全なインターフェース分離]
+        I[✅ テスト可能な構造]
+        J[✅ ベストプラクティス準拠]
+    end
+    
+    B --> G
+    C --> H
+    D --> I
+    E --> J
+    
+    style A fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style B fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style C fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style D fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style E fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style F fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style G fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style H fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style I fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style J fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
 ```
 
 #### 工数比較：圧倒的な効率化
+
+```mermaid
+xychart-beta
+    title "従来開発 vs Vibe Coding 工数比較"
+    x-axis ["インターフェース設計", "DIコンテナ設定", "UseCase実装", "テストコード作成"]
+    y-axis "時間（分）" 0 --> 180
+    bar [45, 30, 90, 120]
+    bar [0.5, 0.17, 1, 0.5]
+```
 
 | 作業内容 | 従来の手動作業 | Vibe Coding | 効率化率 |
 |----------|---------------|------------|----------|
@@ -647,6 +681,12 @@ container.register(INJECTION_TOKENS.Logger, WinstonLogger);
 | Use Case実装 | 1-2時間 | **1分** | **95%削減** |
 | テストコード作成 | 1-3時間 | **30秒** | **98%削減** |
 | **合計** | **3-6時間** | **2分** | **99%削減** |
+
+```mermaid
+pie title 開発時間の内訳比較
+    "従来開発" : 285
+    "Vibe Coding" : 2.17
+```
 
 ### 🎯 AIがDI設計を得意とする理由
 
@@ -823,39 +863,23 @@ graph TD
 
 **テストコード**は、AIに対して「どのような依存関係が必要か」を明確に示すため、自然にDI設計を促進します。
 
-```typescript
-// ✅ テスト要件がDI構造を決定する例
-describe('ユーザー作成機能', () => {
-  test('パスワードハッシュ化とログ出力が実行される', async () => {
-    // Arrange: テストがDI構造を要求
-    const mockHashService = createMockProxy<IHashService>();
-    const mockLogger = createMockProxy<ILogger>();
-    const mockUserRepository = createMockProxy<IUserRepository>();
+```mermaid
+graph LR
+    subgraph "テストコードがDI設計を誘導"
+        A[テスト作成] --> B[必要なインターフェース明確化]
+        B --> C[IHashService]
+        B --> D[ILogger]
+        B --> E[IUserRepository]
+        C --> F[AIがDI構造自動生成]
+        D --> F
+        E --> F
+        F --> G[完全なDI実装]
+    end
     
-    // この時点でAIは以下を理解する：
-    // 1. IHashService インターフェースが必要
-    // 2. ILogger インターフェースが必要  
-    // 3. IUserRepository インターフェースが必要
-    // 4. これらはDIで注入される必要がある
-    
-    mockHashService.hash.mockResolvedValue('hashed_password');
-    mockUserRepository.save.mockResolvedValue(expectedUser);
-    
-    // DIコンテナでモック注入
-    container.register(TOKENS.HashService, { useValue: mockHashService });
-    container.register(TOKENS.Logger, { useValue: mockLogger });
-    container.register(TOKENS.UserRepository, { useValue: mockUserRepository });
-    
-    const useCase = container.resolve(CreateUserUseCase);
-    
-    // Act & Assert
-    const result = await useCase.execute(userRequest);
-    
-    expect(mockHashService.hash).toHaveBeenCalledWith('password123');
-    expect(mockLogger.info).toHaveBeenCalledWith('ユーザー作成開始');
-    expect(result.name).toBe('テストユーザー');
-  });
-});
+    style A fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style B fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style F fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style G fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
 ```
 
 #### **テストコードがVibe Codingの品質と効率を劇的に向上させる**

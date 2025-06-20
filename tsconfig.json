@@ -23,7 +23,11 @@
       "@prisma/generated/*": [
         "./src/layers/infrastructure/persistence/prisma/generated/*"
       ],
-      "@tests/*": ["./tests/*"]
+      "@tests/*": ["./tests/*"],
+      "@/components/ui/*": ["./src/components/ui-shadcn/*"],
+      "@/components/ui-shadcn/*": ["./src/components/ui-shadcn/*"],
+      "@/components/ui-legacy/*": ["./src/components/ui-legacy/*"],
+      "@/lib/utils-shadcn": ["./src/lib/utils-shadcn"]
     },
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
@@ -39,6 +43,7 @@
   "exclude": [
     "node_modules",
     "docker",
-    "src/layers/infrastructure/persistence/prisma/generated"
+    "src/layers/infrastructure/persistence/prisma/generated",
+    "tests/**/*"
   ]
 }

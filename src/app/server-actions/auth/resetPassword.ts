@@ -2,7 +2,9 @@
 
 import 'reflect-metadata';
 
+import { isFailure, isSuccess } from '@/layers/application/types/Result';
 import { resolve } from '@/layers/infrastructure/di/resolver';
+
 import { z } from 'zod';
 
 // バリデーションスキーマ
@@ -52,11 +54,23 @@ export async function resetPassword(formData: FormData) {
 
     logger.info('パスワードリセット成功', { email });
 
-    return {
-      success: true,
-      message: result.message,
-      // 実際の実装ではresetTokenは返さない（メールに含める）
-    };
+    if (isSuccess(result)) {
+      return {
+        success: true,
+        message: result.data.message,
+        // 実際の実装ではresetTokenは返さない（メールに含める）
+      };
+    } else {
+      logger.warn('パスワードリセット失敗', {
+        error: result.error.message,
+        code: result.error.code,
+      });
+      return {
+        errors: {
+          _form: [result.error.message],
+        },
+      };
+    }
   } catch (error) {
     const logger = resolve('Logger');
 

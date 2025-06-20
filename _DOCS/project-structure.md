@@ -45,7 +45,7 @@
 
 ## ディレクトリ構造
 
-```
+```text
 src/
 ├── app/                          # Next.js App Router
 │   ├── layout.tsx               # ルートレイアウト
@@ -75,12 +75,12 @@ src/
 │       ├── services/            # アプリケーションサービス
 │       └── usecases/            # ユースケース
 │
-├── data-accesses/              # データアクセス層
-│   ├── infra/                  # インフラストラクチャ
-│   ├── mutations/              # データ変更処理
-│   └── queries/                # データ取得処理
-│
-└── types/                      # 型定義
+├── hooks/                     # Reactカスタムフック
+├── middleware.ts              # Next.js ミドルウェア
+├── tools/                     # 開発ツール
+├── types/                     # 型定義
+│   └── next-auth.d.ts         # NextAuth型拡張
+└── utils/                     # ユーティリティ関数
     ├── api/                    # API型定義
     ├── domain/                 # ドメイン型定義
     └── infrastructure/         # インフラ型定義
@@ -99,17 +99,17 @@ src/
 ### アーキテクチャ関連
 
 - `src/layers/infrastructure/di/container.ts` - DIコンテナ設定
-- `src/data-accesses/infra/DatabaseFactory.ts` - データベース接続管理
+- `src/layers/infrastructure/persistence/DatabaseFactory.ts` - データベース接続管理
 
 ### 認証関連  
 
-- `src/data-accesses/infra/nextAuth.ts` - NextAuth.js設定
+- `src/layers/infrastructure/persistence/nextAuth.ts` - NextAuth.js設定
 
 参考実装:
 
 - [DIコンテナ](../../src/layers/infrastructure/di/container.ts)
-- [DatabaseFactory](../../src/data-accesses/infra/DatabaseFactory.ts)
-- [NextAuth設定](../../src/data-accesses/infra/nextAuth.ts)
+- [DatabaseFactory](../../src/layers/infrastructure/persistence/DatabaseFactory.ts)
+- [NextAuth設定](../../src/layers/infrastructure/persistence/nextAuth.ts)
 
 ---
 

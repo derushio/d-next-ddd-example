@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 
+import { isSuccess } from '@/layers/application/types/Result';
 import { resolve } from '@/layers/infrastructure/di/resolver';
 // Prisma Client
 import { prisma } from '@/layers/infrastructure/persistence/prisma';
@@ -10,7 +11,7 @@ import {
   NextApiRequest,
   NextApiResponse,
 } from 'next';
-import { NextAuthOptions, getServerSession } from 'next-auth';
+import { getServerSession, NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { z } from 'zod';
 
@@ -84,15 +85,23 @@ export const authOptions: NextAuthOptions = {
             password,
           });
 
+          if (!isSuccess(result)) {
+            console.log('⚠️ NextAuth SignInUseCase失敗', {
+              error: result.error.message,
+              code: result.error.code,
+            });
+            return null;
+          }
+
           console.log('✅ NextAuth SignInUseCase成功', {
-            userId: result.user.id,
+            userId: result.data.user.id,
           });
 
           // NextAuth用のユーザー情報を返却
           return {
-            id: result.user.id,
-            email: result.user.email,
-            name: result.user.name,
+            id: result.data.user.id,
+            email: result.data.user.email,
+            name: result.data.user.name,
           };
         } catch (error) {
           console.error('❌ NextAuth認証処理エラー', {

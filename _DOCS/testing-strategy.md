@@ -33,6 +33,25 @@ pnpm test:watch
 pnpm test:coverage
 ```
 
+### 🎬 E2Eテスト - グラフィカル表示モード
+
+```bash
+# 🎯 UI Mode（最もおすすめ）- ブラウザでテスト実行・結果確認
+pnpm test:e2e:ui
+
+# 📊 HTMLレポート表示 - 実行済みテストの詳細レポート
+pnpm test:e2e:report  
+
+# 🐛 デバッグモード - ステップバイステップ実行
+pnpm test:e2e:debug
+
+# 👀 ヘッド表示モード - ブラウザウィンドウを見ながら実行
+pnpm test:e2e:headed
+
+# 🎬 トレース付き実行 - 詳細なトレース情報付きで実行
+pnpm test:e2e:trace
+```
+
 ---
 
 ## テスト方針
@@ -50,11 +69,13 @@ pnpm test:coverage
 ビジネスロジック・単体機能
 ```
 
-### 📊 現在のテスト状況
+### 📊 現在のテスト状況 (実装済み状態)
 
-- **ユニットテスト**: 122件 (100%成功)
-- **E2Eテスト**: 14件 (100%成功)
-- **総実行時間**: 約25秒
+- **テストファイル数**: 23ファイル (包括的テスト実装)
+- **E2Eテスト**: 8シナリオ (セキュリティ監視含む)
+- **Result型統一率**: 100% (全UseCase対応)
+- **vitest-mock-extended採用率**: 100% (新規テスト)
+- **カバレッジ目標**: Application 94%+ / Domain 90%+ / Infrastructure 85%+
 
 ---
 
@@ -188,7 +209,117 @@ export const createMockUserRepository = () => ({
 
 ---
 
-## ユニットテスト実装
+## 🎆 Result型パターンテスト戦略 (実装済み)
+
+### 🏆 統一的エラーハンドリングテスト
+
+本プロジェクトでは例外処理を排除し、**Result型パターン**で統一的なエラーハンドリングを実現しています。
+
+#### 基本パターン
+
+```typescript
+import { isSuccess, isFailure } from '@/layers/application/types/Result';
+import { createAutoMockUserRepository } from '@tests/utils/mocks/autoMocks';
+
+// 🎉 成功ケーステスト
+it('should successfully create user', async () => {
+  const result = await useCase.execute(validInput);
+  
+  // 型安全なパターンマッチング
+  expect(isSuccess(result)).toBe(true);
+  if (isSuccess(result)) {
+    expect(result.data).toEqual({ user: expect.any(Object) });
+  }
+});
+
+// ⚠️ 失敗ケーステスト
+it('should return failure when validation fails', async () => {
+  const result = await useCase.execute(invalidInput);
+  
+  expect(isFailure(result)).toBe(true);
+  if (isFailure(result)) {
+    expect(result.error.message).toBe('バリデーションエラー');
+    expect(result.error.code).toBe('VALIDATION_ERROR');
+  }
+});
+```
+
+#### 🛡️ 包括的エラーケーステスト
+
+各UseCaseで必須実装するテストパターン:
+
+```typescript
+describe('ChangePasswordUseCase', () => {
+  // ✅ 成功ケース
+  it('should successfully change password', async () => { /* ... */ });
+  
+  // ❌ バリデーションエラー
+  it('should return failure when current password is empty', async () => { /* ... */ });
+  it('should return failure when new password is too short', async () => { /* ... */ });
+  
+  // ❌ ビジネスルールエラー  
+  it('should return failure when user not found', async () => { /* ... */ });
+  it('should return failure when current password is incorrect', async () => { /* ... */ });
+  it('should return failure when new password is same as current', async () => { /* ... */ });
+  
+  // ❌ インフラストラクチャエラー
+  it('should return failure when repository throws error', async () => { /* ... */ });
+});
+```
+
+#### 🔒 セキュリティテスト (実装済み)
+
+```typescript
+// 機密情報のマスク処理テスト
+it('should mask sensitive data in logs', async () => {
+  await refreshTokenUseCase.execute({ refreshToken: 'sensitive_token' });
+  
+  // 機密情報のマスク確認
+  expect(mockLogger.info).toHaveBeenCalledWith(
+    'リフレッシュトークン処理開始',
+    { refreshToken: '***' }
+  );
+  
+  // 実際の値がログに出力されていないことを確認
+  expect(mockLogger.info).not.toHaveBeenCalledWith(
+    expect.anything(),
+    { refreshToken: 'sensitive_token' }
+  );
+});
+```
+
+#### 📊 カバレッジ品質基準
+
+| レイヤー | カバレッジ目標 | 重要度 | テスト観点 |
+|---------|-------------|--------|-------------|
+| **Application Layer (UseCases)** | **94%以上** | ⭐⭐⭐ | エラーケース網羅・Result型変換 |
+| **Domain Layer** | **90%以上** | ⭐⭐⭐ | 不変条件・バリデーション・ドメインロジック |
+| **Infrastructure Layer** | **85%以上** | ⭐⭐ | モック設定・データ変換・エラーハンドリング |
+| **Presentation Layer** | **80%以上** | ⭐ | Server Actions・エラー表示・ユーザビリティ |
+
+### 🔄 DI Container とテスト環境
+
+```typescript
+import { setupTestEnvironment } from '@tests/utils/helpers/testHelpers';
+
+describe('UseCase Tests', () => {
+  // 🚀 テスト環境の自動セットアップ
+  setupTestEnvironment();
+
+  beforeEach(() => {
+    // DIコンテナにモックを自動登録
+    container.registerInstance(INJECTION_TOKENS.UserRepository, mockUserRepository);
+    container.registerInstance(INJECTION_TOKENS.Logger, mockLogger);
+    
+    // UseCaseインスタンスをDIコンテナから取得
+    useCase = container.resolve(ChangePasswordUseCase);
+  });
+});
+```
+
+---
+
+## 🧪 ユニットテスト実装
 
 ### UseCase層テスト
 
@@ -228,9 +359,11 @@ describe('CreateUserUseCase', () => {
       password: 'password123',
     });
     
-    // Assert
-    expect(result).toBeDefined();
-    expect(result.name).toBe('テストユーザー');
+    // 🎆 Result型パターンテスト (実装済み)
+    expect(isSuccess(result)).toBe(true);
+    if (isSuccess(result)) {
+      expect(result.data).toEqual({ user: expect.any(Object) });
+    }
     expect(mockUserRepository.save).toHaveBeenCalledWith(expect.any(User));
   });
 
@@ -241,14 +374,19 @@ describe('CreateUserUseCase', () => {
     
     const useCase = container.resolve(CreateUserUseCase);
     
-    // Act & Assert
-    await expect(
-      useCase.execute({
-        name: '',
-        email: 'invalid-email',
-        password: '123',
-      })
-    ).rejects.toThrow(validationError);
+    // Act
+    const result = await useCase.execute({
+      name: '',
+      email: 'invalid-email',
+      password: '123',
+    });
+    
+    // 🎆 Result型パターンテスト (実装済み)
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+      expect(result.error.message).toBe('バリデーションエラー');
+      expect(result.error.code).toBe('VALIDATION_ERROR');
+    }
   });
 });
 ```
@@ -315,6 +453,88 @@ describe('PrismaUserRepository', () => {
 
 ## E2Eテスト実装
 
+### 🚀 Playwrightの拡張設定
+
+プロジェクトでは視覚的なテスト実行のために、Playwrightを拡張設定しています：
+
+```typescript
+// playwright.config.ts - 拡張設定
+export default defineConfig({
+  // 複数レポーターで包括的な結果出力
+  reporter: [
+    ['html', { open: 'never' }],    // HTMLレポート生成
+    ['list'],                       // コンソールリスト表示
+    ['json', { outputFile: 'test-results/results.json' }] // JSON結果出力
+  ],
+  
+  use: {
+    trace: 'on',                    // 全テストでトレース記録
+    video: 'retain-on-failure',     // 失敗時にビデオ保存
+    screenshot: 'only-on-failure',  // 失敗時にスクリーンショット
+    
+    // 開発時はスローモーションで視覚的確認
+    launchOptions: {
+      slowMo: process.env.CI ? 0 : 500,
+    },
+  },
+});
+```
+
+### 🎯 UI Mode の活用
+
+**最も推奨される開発手法** - ブラウザでの視覚的テスト開発：
+
+```bash
+# PlaywrightのUI Modeでテスト開発
+pnpm test:e2e:ui
+```
+
+UI Modeでできること：
+
+- 🎬 **リアルタイム実行**: テスト実行中のブラウザ画面をリアルタイム確認
+- 📋 **テスト選択**: 特定のテストのみ選択実行
+- 🔍 **デバッグ機能**: ステップバイステップ実行とブレークポイント
+- 📊 **結果確認**: 成功・失敗・エラー内容の視覚的確認
+- 🎭 **ピッカー機能**: DOMセレクタの視覚的選択
+
+### 📊 HTMLレポートの活用
+
+```bash
+# テスト実行後にHTMLレポート確認
+pnpm test:e2e:report
+```
+
+HTMLレポートの特徴：
+
+- 📈 **実行サマリー**: 全テストの成功・失敗・実行時間
+- 🖼️ **スクリーンショット**: 失敗時の画面キャプチャ
+- 🎬 **ビデオ再生**: 失敗したテストの実行過程をビデオで確認
+- 🔍 **トレースビューア**: 詳細な実行トレースの確認
+- 📱 **レスポンシブ対応**: ブラウザ・デバイス別結果表示
+
+### 🐛 デバッグ手法
+
+#### 1. デバッグモード
+
+```bash
+# ステップバイステップ実行
+pnpm test:e2e:debug
+```
+
+#### 2. ヘッド表示モード
+
+```bash
+# ブラウザウィンドウを表示してテスト実行
+pnpm test:e2e:headed
+```
+
+#### 3. トレース詳細確認
+
+```bash
+# 詳細トレース付きで実行
+pnpm test:e2e:trace
+```
+
 ### 認証フローテスト
 
 ```typescript
@@ -341,9 +561,114 @@ test.describe('認証フロー', () => {
 });
 ```
 
+### 🛡️ セキュリティ監視E2Eテスト (実装済み)
+
+本プロジェクトではサインインフローの**セキュリティ品質監視**をE2Eテストで実装しています。
+
+#### 🔍 コンソールエラー監視
+
+```typescript
+// tests/e2e/auth/sign-in.spec.ts
+test('サインインページにNextエラーが発生しないことを確認', async ({ page }) => {
+  const consoleErrors: string[] = [];
+  const networkErrors: string[] = [];
+
+  // コンソールエラーをキャッチ
+  page.on('console', (msg) => {
+    if (msg.type() === 'error') {
+      const text = msg.text();
+      consoleErrors.push(text);
+      console.log('Console Error:', text);
+    }
+  });
+
+  // ネットワークエラーをキャッチ
+  page.on('response', (response) => {
+    if (response.status() >= 400) {
+      networkErrors.push(`${response.status()}: ${response.url()}`);
+    }
+  });
+
+  // ページエラーをキャッチ
+  const pageErrors: Error[] = [];
+  page.on('pageerror', (error) => {
+    pageErrors.push(error);
+    console.log('Page Error:', error.message);
+  });
+
+  // サインインページにアクセス
+  await page.goto('/auth/sign-in');
+
+  // Next.jsやNextAuthの特定のエラーがないことを確認
+  const criticalErrors = consoleErrors.filter(error => 
+    error.includes('JWT_SESSION_ERROR') ||
+    error.includes('NEXTAUTH_SECRET') ||
+    error.includes('decryption operation failed') ||
+    error.includes('Error:') ||
+    error.includes('TypeError:') ||
+    error.includes('ReferenceError:')
+  );
+
+  // クリティカルなコンソールエラーがないことを確認
+  expect(criticalErrors).toHaveLength(0);
+
+  // ページエラーがないことを確認
+  expect(pageErrors).toHaveLength(0);
+
+  // 5xx系のサーバーエラーがないことを確認
+  const serverErrors = networkErrors.filter(error => error.startsWith('5'));
+  expect(serverErrors).toHaveLength(0);
+});
+```
+
+#### 🔄 継続的品質監視
+
+```typescript
+// 複数回のページリロードでのNextエラー監視
+test('複数回のページリロードでもNextエラーが発生しないことを確認', async ({ page }) => {
+  const consoleErrors: string[] = [];
+
+  // コンソールエラーをキャッチ
+  page.on('console', (msg) => {
+    if (msg.type() === 'error') {
+      consoleErrors.push(msg.text());
+    }
+  });
+
+  // 3回連続でページにアクセス
+  for (let i = 0; i < 3; i++) {
+    await page.goto('/auth/sign-in');
+    await expect(page.locator('h2.text-3xl')).toContainText('アカウントにサインイン');
+    await page.waitForTimeout(1000);
+  }
+
+  // クリティカルなエラーがないことを確認
+  const criticalErrors = consoleErrors.filter(error => 
+    error.includes('JWT_SESSION_ERROR') ||
+    error.includes('NEXTAUTH_SECRET') ||
+    error.includes('decryption operation failed')
+  );
+
+  expect(criticalErrors).toHaveLength(0);
+});
+```
+
+#### 📋 E2Eテストシナリオ一覧 (実装済み)
+
+| シナリオ名 | 特徴 | 監視対象 |
+|-----------|------|----------|
+| **サインインページ表示** | 基本フォーム表示 | UI要素・ラベル・プレースホルダー |
+| **正常サインイン** | 認証成功フロー | リダイレクト・セッション作成・Cookie設定 |
+| **異常サインイン** | 認証失敗フロー | エラーメッセージ表示・セッション未作成 |
+| **バリデーションテスト** | メール形式・空フォーム | HTML5バリデーション・カスタムバリデーション |
+| **セッション維持** | ページ遷移後の状態保持 | セッション情報・ユーザー情報 |
+| **ログアウト** | セッション終了フロー | セッションクリア・リダイレクト |
+| **セキュリティ監視** | コンソールエラー監視 | Next.jsエラー・NextAuthエラー・サーバーエラー |
+| **継続的品質監視** | 複数回リロードテスト | メモリリーク・パフォーマンス劣化 |
+
 ---
 
-## テストヘルパー関数
+## 🧪 テストヘルパー関数
 
 ```typescript
 // tests/utils/helpers/testHelpers.ts

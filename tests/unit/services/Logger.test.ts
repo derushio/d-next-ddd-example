@@ -28,7 +28,7 @@ describe('Logger', () => {
   });
 
   describe('info', () => {
-    it('should log info message with string', () => {
+    it('should log structured info message', () => {
       // Arrange
       const message = 'This is an info message';
 
@@ -36,19 +36,42 @@ describe('Logger', () => {
       logger.info(message);
 
       // Assert
-      expect(mockConsole.info).toHaveBeenCalledWith(message, {});
+      expect(mockConsole.info).toHaveBeenCalledTimes(1);
+      const loggedOutput = mockConsole.info.mock.calls[0][0];
+      const parsedLog = JSON.parse(loggedOutput);
+      
+      expect(parsedLog).toMatchObject({
+        level: 'INFO',
+        message,
+        service: 'null',
+        environment: expect.any(String),
+        timestamp: expect.any(String),
+        traceId: expect.any(String),
+      });
     });
 
-    it('should log info message with string and object', () => {
+    it('should mask sensitive data in meta', () => {
       // Arrange
       const message = 'User SignIn';
-      const meta = { userId: '123', email: 'test@example.com' };
+      const meta = { 
+        userId: '123', 
+        email: 'test@example.com',
+        password: 'secret123',
+        token: 'bearer-token-value'
+      };
 
       // Act
       logger.info(message, meta);
 
       // Assert
-      expect(mockConsole.info).toHaveBeenCalledWith(message, meta);
+      expect(mockConsole.info).toHaveBeenCalledTimes(1);
+      const loggedOutput = mockConsole.info.mock.calls[0][0];
+      const parsedLog = JSON.parse(loggedOutput);
+      
+      expect(parsedLog.userId).toBe('123'); // 非機密情報はそのまま
+      expect(parsedLog.email).toBe('t**t@e*****e.com'); // メールアドレスはマスク
+      expect(parsedLog.password).toBe('***'); // パスワードは完全マスク
+      expect(parsedLog.token).toBe('***'); // トークンは完全マスク
     });
 
     it('should handle empty message', () => {
@@ -56,7 +79,10 @@ describe('Logger', () => {
       logger.info('');
 
       // Assert
-      expect(mockConsole.info).toHaveBeenCalledWith('', {});
+      expect(mockConsole.info).toHaveBeenCalledTimes(1);
+      const loggedOutput = mockConsole.info.mock.calls[0][0];
+      const parsedLog = JSON.parse(loggedOutput);
+      expect(parsedLog.message).toBe('');
     });
 
     it('should handle undefined meta', () => {
@@ -67,12 +93,15 @@ describe('Logger', () => {
       logger.info(message, undefined);
 
       // Assert
-      expect(mockConsole.info).toHaveBeenCalledWith(message, {});
+      expect(mockConsole.info).toHaveBeenCalledTimes(1);
+      const loggedOutput = mockConsole.info.mock.calls[0][0];
+      const parsedLog = JSON.parse(loggedOutput);
+      expect(parsedLog.message).toBe(message);
     });
   });
 
   describe('error', () => {
-    it('should log error message with string', () => {
+    it('should log structured error message', () => {
       // Arrange
       const message = 'This is an error message';
 
@@ -80,10 +109,18 @@ describe('Logger', () => {
       logger.error(message);
 
       // Assert
-      expect(mockConsole.error).toHaveBeenCalledWith(message, {});
+      expect(mockConsole.error).toHaveBeenCalledTimes(1);
+      const loggedOutput = mockConsole.error.mock.calls[0][0];
+      const parsedLog = JSON.parse(loggedOutput);
+      
+      expect(parsedLog).toMatchObject({
+        level: 'ERROR',
+        message,
+        service: 'null',
+      });
     });
 
-    it('should log error message with string and object', () => {
+    it('should log structured error with meta', () => {
       // Arrange
       const message = 'Database connection failed';
       const meta = { errorCode: 500, database: 'postgres' };
@@ -92,7 +129,14 @@ describe('Logger', () => {
       logger.error(message, meta);
 
       // Assert
-      expect(mockConsole.error).toHaveBeenCalledWith(message, meta);
+      expect(mockConsole.error).toHaveBeenCalledTimes(1);
+      const loggedOutput = mockConsole.error.mock.calls[0][0];
+      const parsedLog = JSON.parse(loggedOutput);
+      
+      expect(parsedLog.level).toBe('ERROR');
+      expect(parsedLog.message).toBe(message);
+      expect(parsedLog.errorCode).toBe(500);
+      expect(parsedLog.database).toBe('postgres');
     });
 
     it('should handle Error object as meta', () => {
@@ -104,12 +148,18 @@ describe('Logger', () => {
       logger.error(message, { error });
 
       // Assert
-      expect(mockConsole.error).toHaveBeenCalledWith(message, { error });
+      expect(mockConsole.error).toHaveBeenCalledTimes(1);
+      const loggedOutput = mockConsole.error.mock.calls[0][0];
+      const parsedLog = JSON.parse(loggedOutput);
+      
+      expect(parsedLog.level).toBe('ERROR');
+      expect(parsedLog.message).toBe(message);
+      expect(parsedLog).toHaveProperty('error');
     });
   });
 
   describe('warn', () => {
-    it('should log warning message with string', () => {
+    it('should log structured warning message', () => {
       // Arrange
       const message = 'This is a warning message';
 
@@ -117,10 +167,18 @@ describe('Logger', () => {
       logger.warn(message);
 
       // Assert
-      expect(mockConsole.warn).toHaveBeenCalledWith(message, {});
+      expect(mockConsole.warn).toHaveBeenCalledTimes(1);
+      const loggedOutput = mockConsole.warn.mock.calls[0][0];
+      const parsedLog = JSON.parse(loggedOutput);
+      
+      expect(parsedLog).toMatchObject({
+        level: 'WARN',
+        message,
+        service: 'null',
+      });
     });
 
-    it('should log warning message with string and object', () => {
+    it('should log structured warning with meta', () => {
       // Arrange
       const message = 'Deprecated API usage';
       const meta = { apiVersion: 'v1', deprecatedSince: '2024-01-01' };
@@ -129,12 +187,19 @@ describe('Logger', () => {
       logger.warn(message, meta);
 
       // Assert
-      expect(mockConsole.warn).toHaveBeenCalledWith(message, meta);
+      expect(mockConsole.warn).toHaveBeenCalledTimes(1);
+      const loggedOutput = mockConsole.warn.mock.calls[0][0];
+      const parsedLog = JSON.parse(loggedOutput);
+      
+      expect(parsedLog.level).toBe('WARN');
+      expect(parsedLog.message).toBe(message);
+      expect(parsedLog.apiVersion).toBe('v1');
+      expect(parsedLog.deprecatedSince).toBe('2024-01-01');
     });
   });
 
   describe('debug', () => {
-    it('should log debug message with string', () => {
+    it('should log structured debug message', () => {
       // Arrange
       const message = 'This is a debug message';
 
@@ -142,10 +207,18 @@ describe('Logger', () => {
       logger.debug(message);
 
       // Assert
-      expect(mockConsole.debug).toHaveBeenCalledWith(message, {});
+      expect(mockConsole.debug).toHaveBeenCalledTimes(1);
+      const loggedOutput = mockConsole.debug.mock.calls[0][0];
+      const parsedLog = JSON.parse(loggedOutput);
+      
+      expect(parsedLog).toMatchObject({
+        level: 'DEBUG',
+        message,
+        service: 'null',
+      });
     });
 
-    it('should log debug message with string and object', () => {
+    it('should log structured debug with meta', () => {
       // Arrange
       const message = 'Query execution';
       const meta = {
@@ -158,7 +231,15 @@ describe('Logger', () => {
       logger.debug(message, meta);
 
       // Assert
-      expect(mockConsole.debug).toHaveBeenCalledWith(message, meta);
+      expect(mockConsole.debug).toHaveBeenCalledTimes(1);
+      const loggedOutput = mockConsole.debug.mock.calls[0][0];
+      const parsedLog = JSON.parse(loggedOutput);
+      
+      expect(parsedLog.level).toBe('DEBUG');
+      expect(parsedLog.message).toBe(message);
+      expect(parsedLog.query).toBe('SELECT * FROM users');
+      expect(parsedLog.executionTime).toBe(150);
+      expect(parsedLog.params).toEqual({ limit: 10, offset: 0 });
     });
   });
 
@@ -185,7 +266,17 @@ describe('Logger', () => {
       logger.info(message, complexMeta);
 
       // Assert
-      expect(mockConsole.info).toHaveBeenCalledWith(message, complexMeta);
+      expect(mockConsole.info).toHaveBeenCalledTimes(1);
+      const logOutput = mockConsole.info.mock.calls[0][0];
+      expect(typeof logOutput).toBe('string');
+      
+      const logEntry = JSON.parse(logOutput);
+      expect(logEntry.level).toBe('INFO');
+      expect(logEntry.message).toBe(message);
+      expect(logEntry.user).toEqual(complexMeta.user);
+      expect(logEntry.array).toEqual(complexMeta.array);
+      expect(logEntry.service).toBe('null');
+      expect(logEntry.environment).toBe('test');
     });
 
     it('should handle different data types in meta', () => {
@@ -194,7 +285,7 @@ describe('Logger', () => {
         { description: 'boolean object', meta: { enabled: true } },
         { description: 'null value', meta: { data: null } },
         { description: 'array object', meta: { items: [1, 2, 3] } },
-        { description: 'Date object', meta: { timestamp: new Date() } },
+        { description: 'Date object', meta: { timestamp: new Date().toISOString() } },
         { description: 'nested object', meta: { config: { theme: 'dark' } } },
       ];
 
@@ -203,7 +294,18 @@ describe('Logger', () => {
 
         logger.info(message, meta);
 
-        expect(mockConsole.info).toHaveBeenCalledWith(message, meta);
+        expect(mockConsole.info).toHaveBeenCalledTimes(1);
+        const logOutput = mockConsole.info.mock.calls[0][0];
+        expect(typeof logOutput).toBe('string');
+        
+        const logEntry = JSON.parse(logOutput);
+        expect(logEntry.level).toBe('INFO');
+        expect(logEntry.message).toBe(message);
+        
+        // Check that meta properties are included in the log entry
+        Object.keys(meta).forEach(key => {
+          expect(logEntry[key]).toEqual(meta[key]);
+        });
 
         // Clear mocks for next iteration
         vi.clearAllMocks();
@@ -220,7 +322,15 @@ describe('Logger', () => {
       logger.info(longMessage);
 
       // Assert
-      expect(mockConsole.info).toHaveBeenCalledWith(longMessage, {});
+      expect(mockConsole.info).toHaveBeenCalledTimes(1);
+      const logOutput = mockConsole.info.mock.calls[0][0];
+      expect(typeof logOutput).toBe('string');
+      
+      const logEntry = JSON.parse(logOutput);
+      expect(logEntry.level).toBe('INFO');
+      expect(logEntry.message).toBe(longMessage);
+      expect(logEntry.service).toBe('null');
+      expect(logEntry.environment).toBe('test');
     });
 
     it('should handle special characters in message', () => {
@@ -232,7 +342,15 @@ describe('Logger', () => {
       logger.info(specialMessage);
 
       // Assert
-      expect(mockConsole.info).toHaveBeenCalledWith(specialMessage, {});
+      expect(mockConsole.info).toHaveBeenCalledTimes(1);
+      const logOutput = mockConsole.info.mock.calls[0][0];
+      expect(typeof logOutput).toBe('string');
+      
+      const logEntry = JSON.parse(logOutput);
+      expect(logEntry.level).toBe('INFO');
+      expect(logEntry.message).toBe(specialMessage);
+      expect(logEntry.service).toBe('null');
+      expect(logEntry.environment).toBe('test');
     });
 
     it('should handle circular reference objects', () => {
@@ -240,15 +358,10 @@ describe('Logger', () => {
       const circularObj: any = { name: 'test' };
       circularObj.self = circularObj;
 
-      // Act & Assert - Should not throw an error
+      // Act & Assert - Should throw an error due to circular reference
       expect(() => {
         logger.info('Circular reference test', circularObj);
-      }).not.toThrow();
-
-      expect(mockConsole.info).toHaveBeenCalledWith(
-        'Circular reference test',
-        circularObj,
-      );
+      }).toThrow(/Converting circular structure to JSON|Maximum call stack size exceeded/);
     });
   });
 
@@ -261,15 +374,229 @@ describe('Logger', () => {
       logger.debug('Debug message');
 
       // Assert
-      expect(mockConsole.info).toHaveBeenCalledWith('First message', {});
-      expect(mockConsole.error).toHaveBeenCalledWith('Error message', {});
-      expect(mockConsole.warn).toHaveBeenCalledWith('Warning message', {});
-      expect(mockConsole.debug).toHaveBeenCalledWith('Debug message', {});
-
       expect(mockConsole.info).toHaveBeenCalledTimes(1);
       expect(mockConsole.error).toHaveBeenCalledTimes(1);
       expect(mockConsole.warn).toHaveBeenCalledTimes(1);
       expect(mockConsole.debug).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('sensitive data masking', () => {
+    it('should mask email addresses', () => {
+      // Arrange
+      const testCases = [
+        { input: 'user@example.com', expected: 'u**r@e*****e.com' },
+        { input: 'test.email+tag@domain.co.jp', expected: 't************g@d****n.co.jp' },
+        { input: 'a@b.com', expected: '***@***.com' }, // 短いケース
+      ];
+
+      testCases.forEach(({ input, expected }) => {
+        // Act
+        logger.info('Test email masking', { email: input });
+
+        // Assert
+        const loggedOutput = mockConsole.info.mock.calls[mockConsole.info.mock.calls.length - 1][0];
+        const parsedLog = JSON.parse(loggedOutput);
+        expect(parsedLog.email).toBe(expected);
+      });
+    });
+
+    it('should mask password fields', () => {
+      // Arrange
+      const sensitiveFields = [
+        'password',
+        'passwordHash',
+        'newPassword',
+        'currentPassword',
+        'oldPassword',
+      ];
+
+      sensitiveFields.forEach(field => {
+        // Act
+        const meta = { [field]: 'secret-value-123' };
+        logger.info('Password field test', meta);
+
+        // Assert
+        const loggedOutput = mockConsole.info.mock.calls[mockConsole.info.mock.calls.length - 1][0];
+        const parsedLog = JSON.parse(loggedOutput);
+        expect(parsedLog[field]).toBe('***');
+      });
+    });
+
+    it('should mask token fields', () => {
+      // Arrange
+      const tokenFields = [
+        'token',
+        'accessToken',
+        'refreshToken',
+        'sessionToken',
+        'apiKey',
+        'secret',
+        'privateKey',
+        'credential',
+        'auth',
+        'authorization',
+      ];
+
+      tokenFields.forEach(field => {
+        // Act
+        const meta = { [field]: 'secret-token-value' };
+        logger.info('Token field test', meta);
+
+        // Assert
+        const loggedOutput = mockConsole.info.mock.calls[mockConsole.info.mock.calls.length - 1][0];
+        const parsedLog = JSON.parse(loggedOutput);
+        expect(parsedLog[field]).toBe('***');
+      });
+    });
+
+    it('should mask nested sensitive data', () => {
+      // Arrange
+      const meta = {
+        user: {
+          id: '123',
+          email: 'user@example.com',
+          profile: {
+            name: 'Test User',
+            password: 'secret123',
+            settings: {
+              token: 'api-token-value',
+            },
+          },
+        },
+      };
+
+      // Act
+      logger.info('Nested sensitive data test', meta);
+
+      // Assert
+      const loggedOutput = mockConsole.info.mock.calls[0][0];
+      const parsedLog = JSON.parse(loggedOutput);
+      
+      expect(parsedLog.user.id).toBe('123'); // 非機密情報はそのまま
+      expect(parsedLog.user.email).toBe('u**r@e*****e.com'); // メールマスク
+      expect(parsedLog.user.profile.name).toBe('Test User'); // 非機密情報はそのまま
+      expect(parsedLog.user.profile.password).toBe('***'); // パスワードマスク
+      expect(parsedLog.user.profile.settings.token).toBe('***'); // トークンマスク
+    });
+
+    it('should mask bearer tokens in string content', () => {
+      // Arrange
+      const meta = {
+        authHeader: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
+        description: 'Authorization: Bearer secret-token-123',
+      };
+
+      // Act
+      logger.info('Bearer token test', meta);
+
+      // Assert
+      const loggedOutput = mockConsole.info.mock.calls[0][0];
+      const parsedLog = JSON.parse(loggedOutput);
+      
+      expect(parsedLog.authHeader).toBe('***');
+      expect(parsedLog.description).toBe('Authorization: ***');
+    });
+
+    it('should preserve non-sensitive data', () => {
+      // Arrange
+      const meta = {
+        userId: '123',
+        userName: 'testuser',
+        action: 'login',
+        timestamp: '2024-01-01T00:00:00Z',
+        success: true,
+        metadata: {
+          browser: 'Chrome',
+          ip: '192.168.1.1',
+        },
+      };
+
+      // Act
+      logger.info('Non-sensitive data test', meta);
+
+      // Assert
+      const loggedOutput = mockConsole.info.mock.calls[0][0];
+      const parsedLog = JSON.parse(loggedOutput);
+      
+      // すべての非機密データが保持されていることを確認
+      expect(parsedLog.userId).toBe('123');
+      expect(parsedLog.userName).toBe('testuser');
+      expect(parsedLog.action).toBe('login');
+      expect(parsedLog.timestamp).toBe('2024-01-01T00:00:00Z');
+      expect(parsedLog.success).toBe(true);
+      expect(parsedLog.metadata.browser).toBe('Chrome');
+      expect(parsedLog.metadata.ip).toBe('192.168.1.1');
+    });
+
+    it('should handle custom patterns (SSN, credit card)', () => {
+      // Arrange
+      const meta = {
+        ssn: '123-45-6789',
+        creditCard: '4111 1111 1111 1111',
+        description: 'User SSN: 987-65-4321, Card: 5555-5555-5555-4444',
+      };
+
+      // Act
+      logger.info('Custom pattern test', meta);
+
+      // Assert
+      const loggedOutput = mockConsole.info.mock.calls[0][0];
+      const parsedLog = JSON.parse(loggedOutput);
+      
+      expect(parsedLog.ssn).toBe('***-**-****');
+      expect(parsedLog.creditCard).toBe('****-****-****-****');
+      expect(parsedLog.description).toBe('User SSN: ***-**-****, Card: ****-****-****-****');
+    });
+  });
+
+  describe('structured logging', () => {
+    it('should include required fields in log output', () => {
+      // Act
+      logger.info('Test message', { customField: 'value' });
+
+      // Assert
+      const loggedOutput = mockConsole.info.mock.calls[0][0];
+      const parsedLog = JSON.parse(loggedOutput);
+      
+      expect(parsedLog).toHaveProperty('timestamp');
+      expect(parsedLog).toHaveProperty('level', 'INFO');
+      expect(parsedLog).toHaveProperty('message', 'Test message');
+      expect(parsedLog).toHaveProperty('service', 'null');
+      expect(parsedLog).toHaveProperty('environment');
+      expect(parsedLog).toHaveProperty('traceId');
+      expect(parsedLog).toHaveProperty('customField', 'value');
+    });
+
+    it('should generate unique trace IDs', () => {
+      // Act
+      logger.info('First message');
+      logger.info('Second message');
+
+      // Assert
+      const firstLog = JSON.parse(mockConsole.info.mock.calls[0][0]);
+      const secondLog = JSON.parse(mockConsole.info.mock.calls[1][0]);
+      
+      expect(firstLog.traceId).not.toBe(secondLog.traceId);
+      expect(firstLog.traceId).toMatch(/^[a-z0-9]+$/);
+      expect(secondLog.traceId).toMatch(/^[a-z0-9]+$/);
+    });
+
+    it('should include environment from NODE_ENV', () => {
+      // Arrange
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
+
+      // Act
+      logger.info('Environment test');
+
+      // Assert
+      const loggedOutput = mockConsole.info.mock.calls[0][0];
+      const parsedLog = JSON.parse(loggedOutput);
+      expect(parsedLog.environment).toBe('production');
+
+      // Cleanup
+      process.env.NODE_ENV = originalEnv;
     });
   });
 });

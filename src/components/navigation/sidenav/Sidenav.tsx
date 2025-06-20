@@ -3,6 +3,7 @@
 import { SidenavClient } from '@/components/navigation/sidenav/SidenavClient';
 import { SidenavClientContainer } from '@/components/navigation/sidenav/SidenavClientContainer';
 import { resolve } from '@/layers/infrastructure/di/resolver';
+import { isSuccess } from '@/layers/application/types/Result';
 
 /**
  * サイドナビゲーション
@@ -15,15 +16,15 @@ import { resolve } from '@/layers/infrastructure/di/resolver';
 export async function Sidenav() {
   try {
     const getCurrentUserUseCase = resolve('GetCurrentUserUseCase');
-    const user = await getCurrentUserUseCase.execute();
+    const result = await getCurrentUserUseCase.execute();
 
     // 型を合わせるための変換（SidenavClientが既存のSession型を期待している場合）
-    const authData = user
+    const authData = isSuccess(result)
       ? {
           user: {
-            id: user.id,
-            email: user.email,
-            name: user.name,
+            id: result.data.id,
+            email: result.data.email,
+            name: result.data.name,
           },
           expires: new Date(
             Date.now() + 30 * 24 * 60 * 60 * 1000,

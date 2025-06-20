@@ -1,6 +1,8 @@
 'use client';
 
+import { clsx } from 'clsx';
 import { BodyStateContext } from '@/components/navigation/body/BodyContainerClient';
+
 import { ReactNode, useContext } from 'react';
 
 /**
@@ -21,7 +23,7 @@ export function SidenavClientContainer({ children }: { children: ReactNode }) {
       {/* サイドバー表示時に他の箇所をクリックしたときにサイドバーを閉じるための判定エリア */}
       {isSidenavOpen && !isSidenavHide && (
         <div
-          className='fixed top-0 left-0 h-full w-full z-40'
+          className={clsx('fixed top-0 left-0 h-full w-full z-40')}
           onClick={() => setIsSidenavOpen(false)}
         />
       )}

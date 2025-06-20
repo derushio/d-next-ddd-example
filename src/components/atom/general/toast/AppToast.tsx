@@ -1,17 +1,15 @@
 'use client';
 
+import { clsx } from 'clsx';
 import { useIsMountedCheck } from '@/hooks/useIsMountedCheck';
 import { useBreakpoint } from '@/hooks/useMediaQuery';
 import { useServices } from '@/hooks/useServices';
-import { Button, Toast } from 'flowbite-react';
-import {
-  ReactNode,
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
-import { IoCloseOutline } from 'react-icons/io5';
+import { useToast } from '@/components/providers/ToastProvider';
+
+import { Toast } from '@/components/ui-legacy/Toast';
+import { Button } from '@/components/ui-legacy/Button';
+import { ReactNode, useEffect, useState, memo } from 'react';
+import { HiXMark } from 'react-icons/hi2';
 import { useInterval } from 'usehooks-ts';
 
 /**
@@ -28,38 +26,25 @@ const animMaxCount = 6000 / frameper;
  */
 const animCount = 150 / frameper;
 
-export type ToastStateContextType = {
-  toasts: ReactNode[];
-};
-
-/**
- * トーストのステートコンテキスト
- */
-export const ToastStateContext = createContext<
-  ToastStateContextType & {
-    setToasts: (toasts: ReactNode[]) => void;
-    addToast: (toast: ReactNode) => void;
-  }
->({
-  toasts: [],
-  setToasts(toasts: ReactNode[]) {
-    return;
-  },
-  addToast(toast: ReactNode) {
-    return;
-  },
-});
+// 後方互換性のため（段階的移行用）
+export type { ToastStateContextType } from '@/components/providers/ToastProvider';
+export { ToastContext as ToastStateContext } from '@/components/providers/ToastProvider';
 
 /**
  * トーストコンポーネント
+ *
+ * 軽微な状態管理最適化:
+ * - 新しいToastProviderとuseToastフック使用
+ * - memo最適化による再レンダリング防止
+ * - Context分離による責務明確化
  *
  * DIサービス統合対応:
  * - useServices Hook統合による構造化ログ出力
  * - DI経由でのエラーハンドリング改善
  * - Client Component内でのサービス活用例示
  */
-export function AppToast() {
-  const { toasts, setToasts } = useContext(ToastStateContext);
+export const AppToast = memo(function AppToast() {
+  const { toasts, setToasts } = useToast();
   const { logger, utils } = useServices();
 
   const { isMounted } = useIsMountedCheck();
@@ -148,31 +133,32 @@ export function AppToast() {
   }
 
   return (
-    <div className='fixed z-30 top-0 left-0 right-0 h-full pointer-events-none ml-0 sm:ml-72'>
-      <div className='relative top-0 left-0 w-full h-full'>
-        {isMounted && isSm && (
+    <div
+      className={clsx(
+        'fixed z-50 top-0 left-0 right-0 h-full pointer-events-none ml-0 sm:ml-72',
+      )}
+    >
+      <div className={clsx('relative top-0 left-0 w-full h-full')}>
+        {isMounted && currentToast && (
           <div
-            className='absolute bottom-4 -translate-x-1/2 px-2 w-full sm:w-auto'
+            className={clsx(
+              'absolute bottom-6 left-1/2 -translate-x-1/2 px-4 w-full sm:w-auto max-w-md',
+            )}
             style={{
-              left: isSm ? 'calc(50% - 26px - 0.125rem - 0.5rem)' : '50%',
+              transform: `translateX(-50%) translateY(${toastTranslateY()})`,
             }}
           >
             <Toast
-              className='pointer-events-auto transition-transform w-full max-w-full'
-              style={{
-                transform: `translateY(${toastTranslateY()})`,
-              }}
+              variant='info'
+              className={clsx('pointer-events-auto w-full shadow-2xl')}
+              onClose={handleToastClose}
+              showCloseButton={true}
             >
-              <div className='w-full flex justify-between items-center gap-2'>
-                {currentToast}
-                <Button size='26px' color='gray'>
-                  <IoCloseOutline size='24px' onClick={handleToastClose} />
-                </Button>
-              </div>
+              <div className={clsx('w-full')}>{currentToast}</div>
             </Toast>
           </div>
         )}
       </div>
     </div>
   );
-}
+});

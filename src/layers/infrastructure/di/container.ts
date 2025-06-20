@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 
 import { applicationContainer } from '@/layers/infrastructure/di/containers/application.container';
+
 /**
  * 分離されたDIコンテナアーキテクチャ
  *

@@ -62,32 +62,34 @@ graph TD
     style UI1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
 ```
 
-**具体的な問題例：**
+**データ中心設計の問題例：**
 
-```typescript
-// ❌ データ中心設計の例
-class UserService {
-  async promoteUser(userId: string) {
-    // データベースの構造に依存したロジック
-    const user = await this.db.users.findById(userId);
+```mermaid
+graph TB
+    subgraph "❌ データ中心設計の問題"
+        A[UserService.promoteUser] --> B[データベース直接依存]
+        B --> C[user.experience_points >= 1000]
+        C --> D[level + 1]
+        C --> E[status = 'premium']
+        D --> F[DB更新]
+        E --> F
+        F --> G[メール送信]
+    end
     
-    // ビジネスルールがサービス層に散在
-    if (user.experience_points >= 1000) {
-      await this.db.users.update(userId, { 
-        level: user.level + 1,
-        status: 'premium' 
-      });
-      
-      // 副作用の処理も混在
-      await this.emailService.sendPromotion(user.email);
-    }
-  }
-}
-
-// 問題：
-// 1. "昇格"のビジネスルールがわからない
-// 2. データベース構造変更でロジックも変更必要
-// 3. ドメインエキスパートにとって理解困難
+    subgraph "問題点"
+        H[🚫 ビジネスルールが不明確]
+        I[🚫 DB構造変更で影響大]
+        J[🚫 ドメインエキスパート理解困難]
+        K[🚫 テストが困難]
+    end
+    
+    style A fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style B fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style F fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style H fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style I fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style J fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style K fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
 ```
 
 ### 解決：DDD アプローチの利点
@@ -116,42 +118,39 @@ graph LR
     style BENEFIT3 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
 ```
 
-**具体例：ユーザー昇格のDDD実装**
+**DDDアプローチの解決例：**
 
-```typescript
-// ✅ DDD アプローチ
-export class UserDomainService {
-  // ビジネスルールが明確
-  canPromoteUser(user: User): boolean {
-    // ドメインエキスパートと合意したルール
-    return user.experiencePoints >= 1000 && 
-           user.accountStatus === 'active' &&
-           user.membershipDuration >= 30; // 30日以上の利用
-  }
-  
-  promoteUser(user: User): PromotedUser {
-    if (!this.canPromoteUser(user)) {
-      throw new DomainError(
-        'ユーザーは昇格条件を満たしていません',
-        'PROMOTION_CRITERIA_NOT_MET'
-      );
-    }
+```mermaid
+graph TB
+    subgraph "✅ DDDアプローチ"
+        A[UserDomainService] --> B[canPromoteUser]
+        B --> C[experiencePoints >= 1000]
+        B --> D[accountStatus === 'active']
+        B --> E[membershipDuration >= 30]
+        C --> F{昇格可能？}
+        D --> F
+        E --> F
+        F -->|Yes| G[PromotedUser作成]
+        F -->|No| H[DomainError]
+        G --> I[level + 1]
+        G --> J[status = 'premium']
+        G --> K[promotedAt設定]
+    end
     
-    // ドメインの知識に基づいた昇格処理
-    return new PromotedUser({
-      ...user,
-      level: user.level + 1,
-      status: 'premium',
-      promotedAt: new Date(),
-    });
-  }
-}
-
-// メリット：
-// 1. ビジネスルールが一箇所に集約
-// 2. ドメインエキスパートが理解可能
-// 3. 昇格条件の変更が簡単
-// 4. ビジネスロジックのテストが独立して可能
+    subgraph "メリット"
+        L[✅ ビジネスルール集約]
+        M[✅ ドメインエキスパート理解可能]
+        N[✅ 変更容易]
+        O[✅ テスト独立]
+    end
+    
+    style A fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style B fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style G fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style L fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style M fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style N fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style O fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
 ```
 
 #### 2. 複雑性の管理 📊
@@ -278,16 +277,16 @@ graph TB
 graph TB
     subgraph "本プロジェクトの構造"
         subgraph "Domain Layer"
-            DS[Domain Services<br/>src/services/domain/]
-            DE[Domain Entities<br/>src/types/domain/]
+            DS[Domain Services<br/>src/layers/domain/services/]
+            DE[Domain Entities<br/>src/layers/domain/entities/]
         end
         
         subgraph "Application Layer"
-            UC[Use Cases<br/>src/usecases/]
+            UC[Use Cases<br/>src/layers/application/usecases/]
         end
         
         subgraph "Infrastructure Layer"
-            REPO[Repositories<br/>src/repositories/]
+            REPO[Repositories<br/>src/layers/infrastructure/repositories/]
         end
     end
     
@@ -311,269 +310,229 @@ graph TB
 
 ### 実装例：User ドメイン
 
-**1. Value Objects**
+**1. Value Objects 実装パターン**
 
-```typescript
-// src/types/domain/User.ts
-export class Email {
-  private readonly value: string;
-  
-  constructor(email: string) {
-    if (!this.isValid(email)) {
-      throw new DomainError('無効なメールアドレスです', 'INVALID_EMAIL');
-    }
-    this.value = email;
-  }
-  
-  private isValid(email: string): boolean {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  }
-  
-  toString(): string {
-    return this.value;
-  }
-  
-  equals(other: Email): boolean {
-    return this.value === other.value;
-  }
-}
-
-export class UserId {
-  constructor(private readonly value: string) {
-    if (!value || value.length === 0) {
-      throw new DomainError('ユーザーIDは必須です', 'INVALID_USER_ID');
-    }
-  }
-  
-  toString(): string {
-    return this.value;
-  }
-}
+```mermaid
+graph TB
+    subgraph "Email Value Object"
+        A[constructor] --> B{isValid?}
+        B -->|Yes| C[value設定]
+        B -->|No| D[DomainError]
+        C --> E[toString()]
+        C --> F[equals()]
+    end
+    
+    subgraph "UserId Value Object"
+        G[constructor] --> H{value有効？}
+        H -->|Yes| I[value設定]
+        H -->|No| J[DomainError]
+        I --> K[toString()]
+    end
+    
+    subgraph "Value Objectの特徴"
+        L[✅ 不変性]
+        M[✅ 等価性比較]
+        N[✅ バリデーション]
+        O[✅ 型安全性]
+    end
+    
+    style A fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style G fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
+    style C fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style I fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style L fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style M fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style N fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style O fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
 ```
 
-**2. Entity & Aggregate**
+**2. Entity & Aggregate 実装パターン**
 
-```typescript
-// src/types/domain/User.ts
-export class User {
-  constructor(
-    private readonly id: UserId,
-    private readonly email: Email,
-    private name: string,
-    private experiencePoints: number,
-    private level: number,
-    private readonly createdAt: Date
-  ) {}
-  
-  // ビジネスルールの実装
-  canLevelUp(): boolean {
-    const requiredPoints = this.level * 1000;
-    return this.experiencePoints >= requiredPoints;
-  }
-  
-  levelUp(): void {
-    if (!this.canLevelUp()) {
-      throw new DomainError(
-        '経験値が不足しています',
-        'INSUFFICIENT_EXPERIENCE'
-      );
-    }
+```mermaid
+graph TB
+    subgraph "User Entity（Aggregate Root）"
+        A[User] --> B[id: UserId]
+        A --> C[email: Email]
+        A --> D[name: string]
+        A --> E[experiencePoints: number]
+        A --> F[level: number]
+        A --> G[createdAt: Date]
+    end
     
-    this.level += 1;
-  }
-  
-  addExperience(points: number): void {
-    if (points <= 0) {
-      throw new DomainError(
-        '経験値は正の値である必要があります',
-        'INVALID_EXPERIENCE_POINTS'
-      );
-    }
+    subgraph "ビジネスルール"
+        H[canLevelUp] --> I{level * 1000 <= experiencePoints?}
+        I -->|Yes| J[昇格可能]
+        I -->|No| K[昇格不可]
+        
+        L[levelUp] --> H
+        J --> M[level += 1]
+        K --> N[DomainError]
+        
+        O[addExperience] --> P{points > 0?}
+        P -->|Yes| Q[experiencePoints += points]
+        P -->|No| R[DomainError]
+    end
     
-    this.experiencePoints += points;
-  }
-  
-  // Getters
-  getId(): UserId { return this.id; }
-  getEmail(): Email { return this.email; }
-  getName(): string { return this.name; }
-  getLevel(): number { return this.level; }
-  getExperiencePoints(): number { return this.experiencePoints; }
-}
+    subgraph "Entityの特徴"
+        S[✅ 一意なID]
+        T[✅ ライフサイクル]
+        U[✅ ビジネスルール内包]
+        V[✅ 不変条件保証]
+    end
+    
+    style A fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style M fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style Q fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style S fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style T fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style U fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style V fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
 ```
 
-**3. Domain Service**
+**3. Domain Service 実装パターン**
 
-```typescript
-// src/services/domain/UserDomainService.ts
-export class UserDomainService {
-  // 複数のエンティティにまたがるビジネスロジック
-  async canPromoteUser(user: User, membershipService: MembershipService): Promise<boolean> {
-    // ユーザー自身のルール
-    if (!user.canLevelUp()) {
-      return false;
-    }
+```mermaid
+graph TB
+    subgraph "UserDomainService"
+        A[canPromoteUser] --> B{user.canLevelUp?}
+        B -->|No| C[false]
+        B -->|Yes| D[membershipService.getMembership]
+        D --> E{membership.duration >= 30?}
+        E -->|No| F[false]
+        E -->|Yes| G{user.level < 10?}
+        G -->|Yes| H[true]
+        G -->|No| I[false]
+        
+        J[calculatePromotionBonus] --> K[baseBonus = 100]
+        K --> L[levelMultiplier = level * 0.1]
+        L --> M[bonus = baseBonus * (1 + multiplier)]
+        
+        N[validateUserData] --> O{name.length >= 2?}
+        O -->|No| P[DomainError]
+        O -->|Yes| Q[new Email(email)]
+        Q --> R{email valid?}
+        R -->|No| S[DomainError]
+        R -->|Yes| T[Validation OK]
+    end
     
-    // メンバーシップに関するルール
-    const membership = await membershipService.getMembership(user.getId());
-    if (membership.getDurationInDays() < 30) {
-      return false;
-    }
+    subgraph "Domain Serviceの特徴"
+        U[✅ 複数Entity協調]
+        V[✅ ステートレス]
+        W[✅ ビジネスルール実装]
+        X[✅ Entity間の調整]
+    end
     
-    // 昇格条件の判定
-    return user.getLevel() < 10; // 最大レベル制限
-  }
-  
-  calculatePromotionBonus(user: User): number {
-    // ビジネスルールに基づくボーナス計算
-    const baseBonus = 100;
-    const levelMultiplier = user.getLevel() * 0.1;
-    
-    return Math.floor(baseBonus * (1 + levelMultiplier));
-  }
-  
-  validateUserData(name: string, email: string): void {
-    // 統合バリデーション
-    if (name.length < 2) {
-      throw new DomainError(
-        'ユーザー名は2文字以上である必要があります',
-        'INVALID_USER_NAME'
-      );
-    }
-    
-    // EmailはValue Objectのコンストラクタでバリデーション
-    new Email(email);
-  }
-}
+    style A fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style J fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style N fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style H fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style M fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style T fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style U fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style V fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style W fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style X fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
 ```
 
-**4. Repository インターフェース**
+**4. Repository パターン**
 
-```typescript
-// src/repositories/interfaces/IUserRepository.ts
-export interface IUserRepository {
-  // ドメインオブジェクトを使用
-  save(user: User): Promise<void>;
-  findById(id: UserId): Promise<User | null>;
-  findByEmail(email: Email): Promise<User | null>;
-  delete(id: UserId): Promise<void>;
-}
-
-// 実装は Infrastructure層
-// src/repositories/implementations/PrismaUserRepository.ts
-export class PrismaUserRepository implements IUserRepository {
-  async save(user: User): Promise<void> {
-    // ドメインオブジェクトをデータベース形式に変換
-    const userData = {
-      id: user.getId().toString(),
-      email: user.getEmail().toString(),
-      name: user.getName(),
-      level: user.getLevel(),
-      experiencePoints: user.getExperiencePoints(),
-    };
+```mermaid
+graph TB
+    subgraph "Domain Layer"
+        A[IUserRepository<br/>Interface] --> B[save]
+        A --> C[findById]
+        A --> D[findByEmail]
+        A --> E[delete]
+    end
     
-    await this.prisma.user.upsert({
-      where: { id: userData.id },
-      create: userData,
-      update: userData,
-    });
-  }
-  
-  async findById(id: UserId): Promise<User | null> {
-    const userData = await this.prisma.user.findUnique({
-      where: { id: id.toString() }
-    });
+    subgraph "Infrastructure Layer"
+        F[PrismaUserRepository<br/>Implementation] --> G[Domain → DB変換]
+        F --> H[DB操作実行]
+        F --> I[DB → Domain変換]
+    end
     
-    if (!userData) return null;
+    subgraph "変換の流れ"
+        J[User Domain Object] --> K[userData JSON]
+        K --> L[Prisma操作]
+        L --> M[DB Result]
+        M --> N[User Domain Object]
+    end
     
-    // データベース形式からドメインオブジェクトに変換
-    return new User(
-      new UserId(userData.id),
-      new Email(userData.email),
-      userData.name,
-      userData.experiencePoints,
-      userData.level,
-      userData.createdAt
-    );
-  }
-}
+    F -.->|implements| A
+    B --> G
+    C --> I
+    
+    subgraph "Repositoryの特徴"
+        O[✅ ドメインオブジェクト使用]
+        P[✅ 技術詳細隠蔽]
+        Q[✅ テスト可能性]
+        R[✅ 実装交換可能]
+    end
+    
+    style A fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style F fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style G fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style I fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style O fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style P fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style Q fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style R fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
 ```
 
 ---
 
 ## DDD vs 従来手法の比較 ⚖️
 
-### コード比較例：ユーザー昇格機能
+### アプローチ比較：ユーザー昇格機能
 
-**従来のアプローチ**
-
-```typescript
-// ❌ 従来のサービス層中心設計
-class UserService {
-  async promoteUser(userId: string) {
-    // データベース中心の処理
-    const user = await this.userRepository.findById(userId);
+```mermaid
+graph TB
+    subgraph "❌ 従来のサービス層中心設計"
+        A1[UserService.promoteUser] --> A2[DB検索: findById]
+        A2 --> A3{experience_points >= level * 1000?}
+        A3 -->|Yes| A4[DB更新: level + 1]
+        A4 --> A5[通知送信]
+        A3 -->|No| A6[何もしない]
+    end
     
-    // ビジネスルールが散在
-    if (user.experience_points >= user.level * 1000) {
-      // データベース操作が中心
-      await this.userRepository.update(userId, {
-        level: user.level + 1,
-        updated_at: new Date()
-      });
-      
-      // 副作用の処理
-      await this.notificationService.sendLevelUpNotification(user);
-    }
-  }
-}
-
-// 問題：
-// 1. ビジネスルールがサービス層に散在
-// 2. データベースの構造がロジックを決定
-// 3. ドメインエキスパートには理解困難
-// 4. テストが複雑（DBモックが必要）
-```
-
-**DDD アプローチ**
-
-```typescript
-// ✅ DDD による設計
-// UseCase (Application Layer)
-export class PromoteUserUseCase {
-  async execute(userId: string): Promise<void> {
-    const user = await this.userRepository.findById(new UserId(userId));
+    subgraph "従来手法の問題"
+        P1[🚫 ビジネスルール散在]
+        P2[🚫 DB構造がロジック決定]
+        P3[🚫 ドメインエキスパート理解困難]
+        P4[🚫 テスト複雑]
+    end
     
-    if (!user) {
-      throw new DomainError('ユーザーが見つかりません', 'USER_NOT_FOUND');
-    }
+    subgraph "✅ DDDアプローチ"
+        B1[PromoteUserUseCase] --> B2[UserRepository.findById]
+        B2 --> B3[UserDomainService.canPromoteUser]
+        B3 --> B4{昇格可能？}
+        B4 -->|Yes| B5[User.levelUp]
+        B5 --> B6[UserRepository.save]
+        B6 --> B7[NotificationUseCase]
+        B4 -->|No| B8[DomainError]
+    end
     
-    // ドメインサービスでビジネスルール判定
-    const canPromote = await this.userDomainService.canPromoteUser(
-      user, 
-      this.membershipService
-    );
+    subgraph "DDDアプローチの利点"
+        M1[✅ ビジネスルール集約]
+        M2[✅ ドメインエキスパート理解可能]
+        M3[✅ 単体テスト容易]
+        M4[✅ 変更影響範囲明確]
+    end
     
-    if (!canPromote) {
-      throw new DomainError('昇格条件を満たしていません', 'PROMOTION_NOT_ALLOWED');
-    }
+    style A1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style A4 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
+    style P1 fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style P2 fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style P3 fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
+    style P4 fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
     
-    // ドメインオブジェクトでビジネスロジック実行
-    user.levelUp();
-    
-    // 永続化
-    await this.userRepository.save(user);
-    
-    // 副作用の処理
-    await this.notificationUseCase.sendLevelUpNotification(user);
-  }
-}
-
-// メリット：
-// 1. ビジネスルールがドメイン層に集約
-// 2. ドメインエキスパートが理解可能
-// 3. 単体テストが容易
-// 4. 変更の影響範囲が明確
+    style B1 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style B3 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style B5 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style M1 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style M2 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style M3 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
+    style M4 fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
 ```
 
 ---

@@ -5,13 +5,17 @@ import type { PrismaClient } from '@/layers/infrastructure/persistence/prisma/ge
 import { container } from '@/layers/infrastructure/di/container';
 import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
 import { PrismaUserRepository } from '@/layers/infrastructure/repositories/implementations/PrismaUserRepository';
+import type { ILogger } from '@/layers/infrastructure/services/Logger';
 
+import { createAutoMockLogger } from '@tests/utils/mocks/autoMocks';
 import { createMockPrismaClient } from '@tests/utils/mocks/commonMocks';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { MockProxy } from 'vitest-mock-extended';
 
 describe('PrismaUserRepository', () => {
   let userRepository: PrismaUserRepository;
   let mockPrismaClient: ReturnType<typeof createMockPrismaClient>;
+  let mockLogger: MockProxy<ILogger>;
 
   beforeEach(() => {
     // テスト間でコンテナをクリア
@@ -19,9 +23,10 @@ describe('PrismaUserRepository', () => {
 
     // PrismaClientは複雑な構造のため手動モックを使用
     mockPrismaClient = createMockPrismaClient();
+    mockLogger = createAutoMockLogger();
 
     // PrismaUserRepositoryを直接インスタンス化してテストする
-    userRepository = new PrismaUserRepository(mockPrismaClient);
+    userRepository = new PrismaUserRepository(mockPrismaClient, mockLogger);
   });
 
   describe('findById', () => {
@@ -199,7 +204,7 @@ describe('PrismaUserRepository', () => {
 
       // Act & Assert
       await expect(userRepository.update(user)).rejects.toThrow(
-        'Record to update not found',
+        '更新対象のユーザーが見つかりません',
       );
     });
   });

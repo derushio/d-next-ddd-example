@@ -1,5 +1,6 @@
 'use server';
 
+import { isSuccess } from '@/layers/application/types/Result';
 import { resolve } from '@/layers/infrastructure/di/resolver';
 import { HEADER_PATH } from '@/middleware';
 
@@ -25,7 +26,19 @@ export async function guardAuth(): Promise<{
   try {
     // DDD: Application層のUseCaseで認証チェック
     const getCurrentUserUseCase = resolve('GetCurrentUserUseCase');
-    return await getCurrentUserUseCase.requireAuthentication();
+    const result = await getCurrentUserUseCase.requireAuthentication();
+
+    if (!isSuccess(result)) {
+      // 認証失敗の場合：現在のパスを取得してリダイレクト
+      const headersList = await headers();
+      const pathname = headersList.get(HEADER_PATH) || '/';
+      const callbackUrl = encodeURIComponent(pathname);
+
+      // Next.js固有機能でリダイレクト（Presentation層の責務）
+      redirect(`/auth/sign-in?callbackUrl=${callbackUrl}`);
+    }
+
+    return result.data;
   } catch (error) {
     // 未認証の場合：現在のパスを取得してリダイレクト
     const headersList = await headers();
@@ -49,7 +62,13 @@ export async function checkAuth(): Promise<{
 } | null> {
   try {
     const getCurrentUserUseCase = resolve('GetCurrentUserUseCase');
-    return await getCurrentUserUseCase.execute();
+    const result = await getCurrentUserUseCase.execute();
+
+    if (!isSuccess(result)) {
+      return null;
+    }
+
+    return result.data;
   } catch (error) {
     return null;
   }

@@ -2,14 +2,17 @@ import {
   UpdateUserRequest,
   UpdateUserUseCase,
 } from '@/layers/application/usecases/UpdateUserUseCase';
+import { isFailure, isSuccess } from '@/layers/application/types/Result';
 import { User } from '@/layers/domain/entities/User';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import { UserDomainService } from '@/layers/domain/services/UserDomainService';
 import { Email } from '@/layers/domain/value-objects/Email';
 import { UserId } from '@/layers/domain/value-objects/UserId';
+import type { ILogger } from '@/layers/infrastructure/services/Logger';
 
 import {
+  createAutoMockLogger,
   createAutoMockUserDomainService,
   createAutoMockUserRepository,
 } from '@tests/utils/mocks/autoMocks';
@@ -20,15 +23,18 @@ describe('UpdateUserUseCase', () => {
   let updateUserUseCase: UpdateUserUseCase;
   let mockUserRepository: MockProxy<IUserRepository>;
   let mockUserDomainService: MockProxy<UserDomainService>;
+  let mockLogger: MockProxy<ILogger>;
 
   beforeEach(() => {
     // 🚀 自動モック生成（vitest-mock-extended）
     mockUserRepository = createAutoMockUserRepository();
     mockUserDomainService = createAutoMockUserDomainService();
+    mockLogger = createAutoMockLogger();
 
     updateUserUseCase = new UpdateUserUseCase(
       mockUserRepository,
       mockUserDomainService,
+      mockLogger,
     );
   });
 
@@ -58,10 +64,12 @@ describe('UpdateUserUseCase', () => {
       const result = await updateUserUseCase.execute(request);
 
       // Assert
-      expect(result.success).toBe(true);
-      expect(result.user).toBeDefined();
-      expect(result.user?.email).toBe('new@example.com');
-      expect(result.user?.name).toBe('New Name');
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        expect(result.data.email).toBe('new@example.com');
+        expect(result.data.name).toBe('New Name');
+        expect(result.data.id).toBe('existing-user-id');
+      }
       expect(mockUserRepository.findById).toHaveBeenCalledWith(
         new UserId('existing-user-id'),
       );
@@ -94,9 +102,11 @@ describe('UpdateUserUseCase', () => {
       const result = await updateUserUseCase.execute(request);
 
       // Assert
-      expect(result.success).toBe(true);
-      expect(result.user?.email).toBe('test@example.com'); // 変更されない
-      expect(result.user?.name).toBe('New Name');
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        expect(result.data.email).toBe('test@example.com'); // 変更されない
+        expect(result.data.name).toBe('New Name');
+      }
       expect(mockUserDomainService.isEmailDuplicate).not.toHaveBeenCalled();
     });
 
@@ -124,9 +134,11 @@ describe('UpdateUserUseCase', () => {
       const result = await updateUserUseCase.execute(request);
 
       // Assert
-      expect(result.success).toBe(true);
-      expect(result.user?.email).toBe('new@example.com');
-      expect(result.user?.name).toBe('Test Name'); // 変更されない
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        expect(result.data.email).toBe('new@example.com');
+        expect(result.data.name).toBe('Test Name'); // 変更されない
+      }
     });
 
     it('存在しないユーザーIDでエラーを返す', async () => {
@@ -142,9 +154,11 @@ describe('UpdateUserUseCase', () => {
       const result = await updateUserUseCase.execute(request);
 
       // Assert
-      expect(result.success).toBe(false);
-      expect(result.error?.message).toBe('ユーザーが見つかりません');
-      expect(result.error?.code).toBe('USER_NOT_FOUND');
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.message).toBe('ユーザーが見つかりません');
+        expect(result.error.code).toBe('USER_NOT_FOUND');
+      }
     });
 
     it('重複するメールアドレスでエラーを返す', async () => {
@@ -170,11 +184,13 @@ describe('UpdateUserUseCase', () => {
       const result = await updateUserUseCase.execute(request);
 
       // Assert
-      expect(result.success).toBe(false);
-      expect(result.error?.message).toBe(
-        'このメールアドレスは既に使用されています',
-      );
-      expect(result.error?.code).toBe('EMAIL_DUPLICATE');
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.message).toBe(
+          'このメールアドレスは既に使用されています',
+        );
+        expect(result.error.code).toBe('EMAIL_DUPLICATE');
+      }
       expect(mockUserRepository.update).not.toHaveBeenCalled();
     });
 
@@ -200,9 +216,11 @@ describe('UpdateUserUseCase', () => {
       const result = await updateUserUseCase.execute(request);
 
       // Assert
-      expect(result.success).toBe(false);
-      expect(result.error?.message).toBe('名前は空文字列にできません');
-      expect(result.error?.code).toBe('INVALID_NAME');
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.message).toBe('名前は空文字列にできません');
+        expect(result.error.code).toBe('INVALID_NAME');
+      }
       expect(mockUserRepository.update).not.toHaveBeenCalled();
     });
 
@@ -228,9 +246,11 @@ describe('UpdateUserUseCase', () => {
       const result = await updateUserUseCase.execute(request);
 
       // Assert
-      expect(result.success).toBe(false);
-      expect(result.error?.message).toBe('ユーザー更新に失敗しました');
-      expect(result.error?.code).toBe('UNEXPECTED_ERROR');
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.message).toBe('メールアドレスの形式が正しくありません');
+        expect(result.error.code).toBe('EMAIL_INVALID_FORMAT');
+      }
       expect(mockUserRepository.update).not.toHaveBeenCalled();
     });
 
@@ -257,9 +277,11 @@ describe('UpdateUserUseCase', () => {
       const result = await updateUserUseCase.execute(request);
 
       // Assert
-      expect(result.success).toBe(false);
-      expect(result.error?.message).toBe('ユーザー更新に失敗しました');
-      expect(result.error?.code).toBe('UNEXPECTED_ERROR');
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.message).toBe('ユーザー更新に失敗しました');
+        expect(result.error.code).toBe('UNEXPECTED_ERROR');
+      }
     });
   });
 });

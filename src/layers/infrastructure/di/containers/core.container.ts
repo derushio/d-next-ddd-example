@@ -1,8 +1,9 @@
 import 'reflect-metadata';
 
-import { DatabaseFactory } from '@/layers/infrastructure/persistence/DatabaseFactory';
 import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
+import { DatabaseFactory } from '@/layers/infrastructure/persistence/DatabaseFactory';
 import { ConfigService } from '@/layers/infrastructure/services/ConfigService';
+
 import { container } from 'tsyringe';
 
 /**

@@ -1,6 +1,10 @@
 // 分離されたDIコンテナアーキテクチャから最上位コンテナを直接インポート
 import { applicationContainer } from '@/layers/infrastructure/di/containers/application.container';
-import { INJECTION_TOKENS, ServiceType, ServiceTypeMap } from '@/layers/infrastructure/di/tokens';
+import {
+  INJECTION_TOKENS,
+  ServiceType,
+  ServiceTypeMap,
+} from '@/layers/infrastructure/di/tokens';
 
 /**
  * 型推論機能付きDIサービス取得関数

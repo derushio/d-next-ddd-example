@@ -1,4 +1,5 @@
 import { authOptions } from '@/layers/infrastructure/persistence/nextAuth';
+
 import NextAuth from 'next-auth';
 
 /**
