@@ -1,6 +1,6 @@
 'use server';
 
-import { ClientServiceExample } from '@/components/examples/ClientServiceExample';
+import { ClientServiceExample } from '@/components/common/ClientServiceExample';
 
 import Image from 'next/image';
 
@@ -20,8 +20,8 @@ export default async function Home() {
       </div>
 
       {/* Main content */}
-      <div className='relative z-10 grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-full p-8 pb-20 gap-16 sm:p-20'>
-        <main className='flex flex-col gap-12 row-start-2 items-center sm:items-start max-w-6xl mx-auto'>
+      <div className='relative z-10 grid grid-rows-[auto_1fr_auto] items-center justify-items-center min-h-full py-12 gap-8 sm:py-16 lg:py-20'>
+        <main className='flex flex-col gap-8 row-start-2 items-center sm:items-start w-full max-w-6xl mx-auto sm:gap-12'>
           {/* 🎨 Hero Section */}
           <div className='text-center sm:text-left'>
             <div className='mb-8 flex justify-center sm:justify-start'>
@@ -51,20 +51,24 @@ export default async function Home() {
             </p>
           </div>
 
-          {/* 🌟 DI統合デモ */}
-          <section className='w-full max-w-4xl'>
-            <div className='bg-white/30 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/30 mb-12'>
-              <h2 className='text-3xl font-bold mb-6 text-center'>
-                <span className='bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent'>
-                  DI統合デモンストレーション
-                </span>
-              </h2>
-              <ClientServiceExample />
+          {/* 🌟 DI統合デモ - 視覚的バランス重視 */}
+          <section className='w-full max-w-none'>
+            <div className='bg-white/25 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden'>
+              <div className='px-6 py-6 text-center border-b border-white/15'>
+                <h2 className='text-2xl sm:text-3xl font-bold'>
+                  <span className='bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent'>
+                    DI統合デモンストレーション
+                  </span>
+                </h2>
+              </div>
+              <div className='p-6'>
+                <ClientServiceExample />
+              </div>
             </div>
           </section>
 
           {/* 💎 Getting Started */}
-          <div className='bg-white/20 backdrop-blur-xl rounded-3xl p-8 shadow-xl border border-white/30 max-w-4xl'>
+          <div className='bg-white/20 backdrop-blur-xl rounded-3xl p-6 sm:p-8 shadow-xl border border-white/30 w-full'>
             <h3 className='text-2xl font-bold mb-6'>
               <span className='bg-gradient-to-r from-pink-600 to-orange-600 bg-clip-text text-transparent'>
                 Getting Started
@@ -85,7 +89,7 @@ export default async function Home() {
           </div>
 
           {/* ✨ Action Buttons */}
-          <div className='flex gap-6 items-center flex-col sm:flex-row mt-12'>
+          <div className='flex gap-4 sm:gap-6 items-center flex-col sm:flex-row w-full justify-center sm:justify-start'>
             <a
               className='bg-gradient-to-r from-violet-600 to-cyan-600 text-white rounded-full px-8 py-4 font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl flex items-center gap-3 group'
               href='https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app'

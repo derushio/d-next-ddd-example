@@ -1,4 +1,4 @@
-import { SignInFormClient } from '@/components/auth/SignInFormClient';
+import { SignInFormClient } from '@/components/features/auth/SignInFormClient';
 
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
@@ -30,7 +30,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   const { callbackUrl, error } = await searchParams;
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden'>
+    <div className='min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center py-12 relative overflow-hidden'>
       {/* 🌟 Background decoration - 落ち着いたデザイン */}
       <div className='absolute inset-0 opacity-30'>
         <div className='absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-200 to-indigo-200 rounded-full blur-3xl'></div>

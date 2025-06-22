@@ -253,9 +253,11 @@
    3. shadcn/ui Bridge System（マッピング）
    ================================= */
 
-/* shadcn/ui標準変数への自動マッピング（別名でHSL変数をマッピング） */
+/* shadcn/ui標準変数への自動マッピング（shadcn/ui標準変数名を使用） */
 :root {
   /* shadcn/ui標準変数名でHSL変数にアクセス可能に */
+  --background: var(--shadcn-background);
+  --foreground: var(--shadcn-foreground);
   --primary: var(--shadcn-primary);
   --primary-foreground: var(--shadcn-primary-foreground);
   --secondary: var(--shadcn-secondary);

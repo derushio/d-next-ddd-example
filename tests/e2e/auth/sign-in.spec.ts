@@ -213,7 +213,7 @@ test.describe('NextAuth サインイン機能 E2E', () => {
     await page.goto('/auth/sign-in');
 
     // ページが正常にロードされるまで待機
-    await expect(page.locator('h2.text-3xl')).toContainText('アカウントにサインイン');
+    await expect(page.locator('h3.text-xl')).toContainText('アカウントにサインイン');
 
     // 少し待ってエラーが発生するか確認
     await page.waitForTimeout(3000);
@@ -257,7 +257,7 @@ test.describe('NextAuth サインイン機能 E2E', () => {
     // 3回連続でページにアクセス
     for (let i = 0; i < 3; i++) {
       await page.goto('/auth/sign-in');
-      await expect(page.locator('h2.text-3xl')).toContainText('アカウントにサインイン');
+      await expect(page.locator('h3.text-xl')).toContainText('アカウントにサインイン');
       await page.waitForTimeout(1000);
     }
 

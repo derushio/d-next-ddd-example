@@ -8,9 +8,9 @@ import 'reflect-metadata';
 
 import { geistMonoFont, geistSansFont } from '@/app/fonts';
 import '@/app/globals.css';
-import { AppToast } from '@/components/atom/general/toast/AppToast';
-import { BodyContainer } from '@/components/navigation/body/BodyContainer';
-import { BodyContainerClient } from '@/components/navigation/body/BodyContainerClient';
+import { AppToast } from '@/components/common/toast/AppToast';
+import { BodyContainer } from '@/components/layout/container/BodyContainer';
+import { BodyContainerClient } from '@/components/layout/container/BodyContainerClient';
 import { SessionProvider } from '@/components/providers/SessionProvider';
 import '@/layers/infrastructure/di/container';
 

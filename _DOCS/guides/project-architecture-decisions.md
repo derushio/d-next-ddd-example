@@ -162,7 +162,7 @@ graph TD
     COMP[Client Components] --> HOOK[useServices]
     HOOK --> DI[DI Container]
     
-    note1[Next.jsのパフォーマンス最適化のため<br/>Presentationでresolve()を使用]
+    note1["Next.jsのパフォーマンス最適化のため<br/>Presentationでresolve関数を使用"]
 ```
 
 **判断理由**: Server Actionsの特性を活かし、サーバーサイドでの効率的なDIを実現

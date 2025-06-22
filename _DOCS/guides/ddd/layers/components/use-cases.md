@@ -23,7 +23,9 @@ import { DomainError } from '@/layers/domain/errors/DomainError';
 
 ## Use Cases とは？ 🎯
 
-Use Case（ユースケース）は、**特定のビジネスシナリオを実現するアプリケーション固有のフロー**を実装するコンポーネントです。Presentation Layer からの要求を受け取り、Domain Layer のビジネスロジックと Infrastructure Layer の技術実装を組み合わせて、具体的なユースケースを実現します。
+Use Case（ユースケース）は、**特定のビジネスシナリオを実現するアプリケーション固有のフロー**を実装するコンポーネントです。
+Presentation Layer からの要求を受け取り、Domain Layer のビジネスロジックと Infrastructure Layer の技術実装を組み合わせて、
+具体的なユースケースを実現します。
 
 ### Use Case の特徴 📋
 

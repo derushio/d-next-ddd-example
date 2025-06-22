@@ -24,9 +24,7 @@
         "./src/layers/infrastructure/persistence/prisma/generated/*"
       ],
       "@tests/*": ["./tests/*"],
-      "@/components/ui/*": ["./src/components/ui-shadcn/*"],
-      "@/components/ui-shadcn/*": ["./src/components/ui-shadcn/*"],
-      "@/components/ui-legacy/*": ["./src/components/ui-legacy/*"],
+      "@/components/ui/*": ["./src/components/ui/*"],
       "@/lib/utils-shadcn": ["./src/lib/utils-shadcn"]
     },
     "experimentalDecorators": true,

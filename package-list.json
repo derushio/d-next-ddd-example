@@ -81,7 +81,7 @@
     "format:markdown": "pnpm markdownlint --fix '**/*.md'",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf .next out dist coverage",
-    "test": "pnpm run-s test:unit test:e2e",
+    "test": "pnpm run-s mermaid:validate-all test:unit test:e2e",
     "test:unit": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
@@ -108,6 +108,7 @@
     "hash:generate": "pnpm dotenvx run -- pnpm tsx ./src/tools/generateHash.ts",
     "mermaid:validate": "pnpm tsx scripts/validate-mermaid.ts",
     "mermaid:validate-all": "pnpm tsx scripts/validate-mermaid.ts --all",
+    "mermaid:check-patterns": "pnpm tsx scripts/check-mermaid-patterns.ts",
     "ui:add": "npx shadcn@latest add",
     "ui:update": "npx shadcn@latest diff",
     "ui:list": "npx shadcn@latest list"

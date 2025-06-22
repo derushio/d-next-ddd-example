@@ -50,8 +50,8 @@ function layoutReducer(state: LayoutState, action: LayoutAction): LayoutState {
       return {
         ...state,
         isSidenavHide: action.payload,
-        // マージンも同時に更新
-        sidenavMargin: action.payload ? 'sm:ml-0' : 'sm:ml-72',
+        // デスクトップ時のマージン制御（モバイル時は常にml-0）
+        sidenavMargin: action.payload ? 'ml-0' : 'ml-0 sm:ml-72',
       };
 
     case 'UPDATE_MARGIN':
@@ -72,7 +72,7 @@ function layoutReducer(state: LayoutState, action: LayoutAction): LayoutState {
 export const LayoutContext = createContext<LayoutContextType>({
   isSidenavOpen: false,
   isSidenavHide: false,
-  sidenavMargin: 'sm:ml-72',
+  sidenavMargin: 'ml-0 sm:ml-72',
   dispatch: () => {},
   setIsSidenavOpen: () => {},
   setIsSidenavHide: () => {},
@@ -86,6 +86,7 @@ export const LayoutContext = createContext<LayoutContextType>({
  * - レイアウト状態のみに責務を限定
  * - useCallback による function 参照安定化
  * - memo による不必要な再レンダリング防止
+ * - モバイル対応強化
  */
 export const LayoutProvider = memo(function LayoutProvider({
   children,
@@ -95,8 +96,22 @@ export const LayoutProvider = memo(function LayoutProvider({
   const [state, dispatch] = useReducer(layoutReducer, {
     isSidenavOpen: false,
     isSidenavHide: false,
-    sidenavMargin: 'sm:ml-72',
+    sidenavMargin: 'ml-0 sm:ml-72',
   });
+
+  // モバイル時の初期設定：サイドナビを閉じた状態で開始
+  useEffect(() => {
+    const checkMobile = () => {
+      const isMobile = window.innerWidth < 640; // sm breakpoint
+      if (isMobile) {
+        dispatch({ type: 'SET_SIDENAV_OPEN', payload: false });
+      }
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // 便利なヘルパー関数
   const setIsSidenavOpen = useCallback((value: boolean) => {
