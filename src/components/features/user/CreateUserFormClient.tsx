@@ -1,13 +1,13 @@
 'use client';
 
-import { clsx } from 'clsx';
-import { Card } from '@/components/ui/Card';
+import { createUser } from '@/app/server-actions/user/createUser';
+import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
-import { Alert } from '@/components/ui/Alert';
 
-import { createUser } from '@/app/server-actions/user/createUser';
+import { clsx } from 'clsx';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 

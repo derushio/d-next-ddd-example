@@ -1,14 +1,15 @@
 'use server';
 
-import { getUserById } from '@/app/server-actions/user/getUserById';
 import { deleteUser } from '@/app/server-actions/user/deleteUser';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { getUserById } from '@/app/server-actions/user/getUserById';
 import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 import { Separator } from '@/components/ui/Separator';
-import { notFound, redirect } from 'next/navigation';
-import Link from 'next/link';
+
 import { clsx } from 'clsx';
+import Link from 'next/link';
+import { notFound, redirect } from 'next/navigation';
 
 interface UserDetailPageProps {
   params: { id: string };

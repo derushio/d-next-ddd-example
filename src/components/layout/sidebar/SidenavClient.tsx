@@ -1,22 +1,22 @@
 'use client';
 
-import { clsx } from 'clsx';
+import { NavigationItem } from '@/components/features/navigation/NavigationItem';
 import { useLayout } from '@/components/providers/LayoutProvider';
 import { useIsMountedCheck } from '@/hooks/useIsMountedCheck';
 import { getAuth } from '@/layers/infrastructure/persistence/nextAuth';
-import { NavigationItem } from '@/components/features/navigation/NavigationItem';
 
-import { memo } from 'react';
+import { clsx } from 'clsx';
 import { usePathname } from 'next/navigation';
+import { memo } from 'react';
 import {
-  HiHome,
-  HiUser,
-  HiCog6Tooth,
-  HiArrowRightOnRectangle,
   HiArrowLeftOnRectangle,
-  HiSparkles,
-  HiDocumentText,
+  HiArrowRightOnRectangle,
   HiChartBarSquare,
+  HiCog6Tooth,
+  HiDocumentText,
+  HiHome,
+  HiSparkles,
+  HiUser,
 } from 'react-icons/hi2';
 
 /**

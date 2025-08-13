@@ -1,11 +1,11 @@
 'use server';
 
-import { clsx } from 'clsx';
+import { DivSpinner } from '@/components/common/DivSpinner';
 import { UserEmail } from '@/components/common/UserEmail';
 import { HeaderClient } from '@/components/layout/header/HeaderClient';
 import { Sidenav } from '@/components/layout/sidebar/Sidenav';
 
-import { DivSpinner } from '@/components/common/DivSpinner';
+import { clsx } from 'clsx';
 import { ReactNode, Suspense } from 'react';
 
 /**

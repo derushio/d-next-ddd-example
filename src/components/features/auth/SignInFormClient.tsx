@@ -1,13 +1,13 @@
 'use client';
 
-import { clsx } from 'clsx';
-import { Card } from '@/components/ui/Card';
 import { EmailField } from '@/components/features/auth/SignInForm/EmailField';
-import { PasswordField } from '@/components/features/auth/SignInForm/PasswordField';
 import { ErrorAlert } from '@/components/features/auth/SignInForm/ErrorAlert';
-import { SignInButton } from '@/components/features/auth/SignInForm/SignInButton';
+import { PasswordField } from '@/components/features/auth/SignInForm/PasswordField';
 import { RegisterLink } from '@/components/features/auth/SignInForm/RegisterLink';
+import { SignInButton } from '@/components/features/auth/SignInForm/SignInButton';
+import { Card } from '@/components/ui/Card';
 
+import { clsx } from 'clsx';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';

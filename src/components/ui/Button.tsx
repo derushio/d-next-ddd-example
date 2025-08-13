@@ -1,8 +1,8 @@
-import * as React from 'react';
+import { cn } from '@/lib/utils-shadcn';
+
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
-
-import { cn } from '@/lib/utils-shadcn';
+import * as React from 'react';
 
 // 既存システムの gradient 機能を shadcn/ui に統合
 const buttonVariants = cva(

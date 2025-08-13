@@ -1,7 +1,8 @@
 'use server';
 
-import { EditUserFormClient } from '@/components/features/user/EditUserFormClient';
 import { getUserById } from '@/app/server-actions/user/getUserById';
+import { EditUserFormClient } from '@/components/features/user/EditUserFormClient';
+
 import { notFound } from 'next/navigation';
 
 interface EditUserPageProps {

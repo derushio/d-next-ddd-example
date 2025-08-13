@@ -1,8 +1,11 @@
 'use client';
 
-import * as React from 'react';
+import { Label } from '@/components/ui/Label';
+import { cn } from '@/lib/utils-shadcn';
+
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { Slot } from '@radix-ui/react-slot';
+import * as React from 'react';
 import {
   Controller,
   FormProvider,
@@ -12,9 +15,6 @@ import {
   type FieldPath,
   type FieldValues,
 } from 'react-hook-form';
-
-import { cn } from '@/lib/utils-shadcn';
-import { Label } from '@/components/ui/Label';
 
 const Form = FormProvider;
 

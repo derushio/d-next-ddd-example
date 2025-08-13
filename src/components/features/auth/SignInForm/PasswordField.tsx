@@ -1,8 +1,9 @@
 'use client';
 
+import { Input } from '@/components/ui/Input';
+
 import { clsx } from 'clsx';
 import { useState } from 'react';
-import { Input } from '@/components/ui/Input';
 import { HiEye, HiEyeOff } from 'react-icons/hi';
 
 interface PasswordFieldProps {

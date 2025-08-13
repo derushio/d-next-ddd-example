@@ -1,5 +1,6 @@
-import { clsx } from 'clsx';
 import { Loading } from '@/components/ui/Loading';
+
+import { clsx } from 'clsx';
 
 export function DivSpinner() {
   return (

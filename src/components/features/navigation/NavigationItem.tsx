@@ -14,14 +14,15 @@
 
 'use client';
 
-import Link from 'next/link';
-import { ReactNode } from 'react';
 import {
   cn,
-  transitionClasses,
-  gradientClasses,
   colorClasses,
+  gradientClasses,
+  transitionClasses,
 } from '@/utils/style-utilities';
+
+import Link from 'next/link';
+import { ReactNode } from 'react';
 
 interface NavigationItemProps {
   href: string;

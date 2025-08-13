@@ -1,7 +1,8 @@
 'use client';
 
-import { clsx } from 'clsx';
 import { Input } from '@/components/ui/Input';
+
+import { clsx } from 'clsx';
 import { HiMail } from 'react-icons/hi';
 
 interface EmailFieldProps {

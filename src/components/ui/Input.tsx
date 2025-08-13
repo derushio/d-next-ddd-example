@@ -1,7 +1,7 @@
-import * as React from 'react';
-import { clsx } from 'clsx';
-
 import { cn } from '@/lib/utils-shadcn';
+
+import { clsx } from 'clsx';
+import * as React from 'react';
 
 export interface InputProps extends React.ComponentProps<'input'> {
   label?: string;

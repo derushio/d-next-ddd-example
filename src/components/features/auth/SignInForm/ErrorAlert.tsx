@@ -1,5 +1,6 @@
-import { clsx } from 'clsx';
 import { Card } from '@/components/ui/Card';
+
+import { clsx } from 'clsx';
 import { HiExclamationTriangle } from 'react-icons/hi2';
 
 interface ErrorAlertProps {

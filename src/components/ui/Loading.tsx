@@ -1,5 +1,5 @@
-import { HTMLAttributes } from 'react';
 import { clsx } from 'clsx';
+import { HTMLAttributes } from 'react';
 
 export interface LoadingProps extends HTMLAttributes<HTMLDivElement> {
   size?: 'sm' | 'md' | 'lg' | 'xl';

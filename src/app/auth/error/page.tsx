@@ -1,4 +1,5 @@
 import { Card } from '@/components/ui/Card';
+
 import type { Metadata } from 'next';
 import Link from 'next/link';
 

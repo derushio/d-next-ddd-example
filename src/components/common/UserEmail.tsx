@@ -1,9 +1,10 @@
 'use server';
 
-import { clsx } from 'clsx';
-import { resolve } from '@/layers/infrastructure/di/resolver';
 import { isSuccess } from '@/layers/application/types/Result';
-import { HiUser, HiExclamationTriangle } from 'react-icons/hi2';
+import { resolve } from '@/layers/infrastructure/di/resolver';
+
+import { clsx } from 'clsx';
+import { HiExclamationTriangle, HiUser } from 'react-icons/hi2';
 
 /**
  * ユーザーメールアドレス表示コンポーネント

@@ -1,7 +1,11 @@
-import * as React from 'react';
-import { clsx } from 'clsx';
-import { HiXMark } from 'react-icons/hi2';
 import { cn } from '@/lib/utils-shadcn';
+
+import { clsx } from 'clsx';
+import { useTheme } from 'next-themes';
+import * as React from 'react';
+import { HiXMark } from 'react-icons/hi2';
+// Sonner integration (for modern toast usage)
+import { Toaster as Sonner, toast } from 'sonner';
 
 export interface ToastProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'info' | 'success' | 'warning' | 'error';
@@ -63,11 +67,6 @@ function Toast({
     </div>
   );
 }
-
-// Sonner integration (for modern toast usage)
-import { Toaster as Sonner } from 'sonner';
-import { useTheme } from 'next-themes';
-import { toast } from 'sonner';
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
