@@ -351,38 +351,75 @@ export function UserManagementClient() {
 }
 ```
 
-### useServices フックパターン
+### Server Actions中心パターン
 
 ```typescript
-// ✅ Client Component でのサービス活用
+// ✅ Server Actions: ビジネスロジック処理
+'use server';
+
+import { resolve } from '@/layers/infrastructure/di/resolver';
+import { Result } from '@/layers/application/types/Result';
+import { revalidatePath } from 'next/cache';
+
+export async function activateUserAction(userId: string): Promise<Result<void>> {
+  try {
+    const activateUserUseCase = resolve<ActivateUserUseCase>('ActivateUserUseCase');
+    await activateUserUseCase.execute({ userId });
+    
+    // Next.js最適化: キャッシュ無効化
+    revalidatePath('/users');
+    
+    return { success: true, data: undefined };
+  } catch (error) {
+    return { success: false, error: 'ユーザーの有効化に失敗しました' };
+  }
+}
+
+export async function deactivateUserAction(userId: string): Promise<Result<void>> {
+  try {
+    const deactivateUserUseCase = resolve<DeactivateUserUseCase>('DeactivateUserUseCase');
+    await deactivateUserUseCase.execute({ userId });
+    
+    revalidatePath('/users');
+    
+    return { success: true, data: undefined };
+  } catch (error) {
+    return { success: false, error: 'ユーザーの無効化に失敗しました' };
+  }
+}
+```
+
+```typescript
+// ✅ Client Component: UIと状態管理のみ
 'use client';
 
-import { useServices } from '@/hooks/useServices';
 import { useState, useTransition } from 'react';
+import { activateUserAction, deactivateUserAction } from './actions';
 
 export function UserActionsClient({ userId }: { userId: string }) {
-  const { userService } = useServices();
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string>('');
 
   const handleActivateUser = () => {
     startTransition(async () => {
-      try {
-        await userService.activateUser(userId);
+      const result = await activateUserAction(userId);
+      
+      if (result.success) {
         setMessage('ユーザーを有効化しました');
-      } catch (error) {
-        setMessage('エラーが発生しました');
+      } else {
+        setMessage(result.error);
       }
     });
   };
 
   const handleDeactivateUser = () => {
     startTransition(async () => {
-      try {
-        await userService.deactivateUser(userId);
+      const result = await deactivateUserAction(userId);
+      
+      if (result.success) {
         setMessage('ユーザーを無効化しました');
-      } catch (error) {
-        setMessage('エラーが発生しました');
+      } else {
+        setMessage(result.error);
       }
     });
   };
@@ -410,23 +447,6 @@ export function UserActionsClient({ userId }: { userId: string }) {
       )}
     </div>
   );
-}
-
-// useServices フックの実装
-export function useServices() {
-  return {
-    userService: {
-      async activateUser(userId: string) {
-        const activateUserUseCase = resolve<ActivateUserUseCase>('ActivateUserUseCase');
-        return await activateUserUseCase.execute({ userId });
-      },
-      
-      async deactivateUser(userId: string) {
-        const deactivateUserUseCase = resolve<DeactivateUserUseCase>('DeactivateUserUseCase');
-        return await deactivateUserUseCase.execute({ userId });
-      },
-    },
-  };
 }
 ```
 

@@ -3,7 +3,6 @@
 import { clsx } from 'clsx';
 import { useIsMountedCheck } from '@/hooks/useIsMountedCheck';
 import { useBreakpoint } from '@/hooks/useMediaQuery';
-import { useServices } from '@/hooks/useServices';
 import { useToast } from '@/components/providers/ToastProvider';
 
 import { Toast } from '@/components/ui/Toast';
@@ -34,46 +33,19 @@ export { ToastContext as ToastStateContext } from '@/components/providers/ToastP
  * トーストコンポーネント
  *
  * 軽微な状態管理最適化:
- * - 新しいToastProviderとuseToastフック使用
+ * - ToastProviderとuseToastフック使用
  * - memo最適化による再レンダリング防止
  * - Context分離による責務明確化
- *
- * DIサービス統合対応:
- * - useServices Hook統合による構造化ログ出力
- * - DI経由でのエラーハンドリング改善
- * - Client Component内でのサービス活用例示
+ * - シンプルなClient Component（DI依存なし）
  */
 export const AppToast = memo(function AppToast() {
   const { toasts, setToasts } = useToast();
-  const { logger, utils } = useServices();
 
   const { isMounted } = useIsMountedCheck();
   const { isSm } = useBreakpoint('sm');
 
   const [animCounter, setAnimCounter] = useState(0);
   const [currentToast, setCurrentToast] = useState<ReactNode>();
-
-  // Component mount/unmount logging
-  useEffect(() => {
-    utils.logComponentMount('AppToast', {
-      initialToastCount: toasts.length,
-      isSm,
-    });
-
-    return () => {
-      utils.logComponentUnmount('AppToast');
-    };
-  }, [utils, toasts.length, isSm]);
-
-  // Toast state change logging
-  useEffect(() => {
-    if (toasts.length > 0) {
-      logger.info('Toast キューに追加', {
-        queueLength: toasts.length,
-        currentToastExists: !!currentToast,
-      });
-    }
-  }, [toasts.length, logger, currentToast]);
 
   /**
    * frameper時間ごとに以下のどちらかの動作を行う
@@ -87,11 +59,6 @@ export const AppToast = memo(function AppToast() {
       if (toasts.length > 0) {
         setCurrentToast(toasts[0]);
         setToasts(toasts.filter((_, i) => 0 < i));
-
-        logger.info('Toast表示開始', {
-          remainingToasts: toasts.length - 1,
-          animationStarted: true,
-        });
       }
 
       setAnimCounter(0);
@@ -120,14 +87,8 @@ export const AppToast = memo(function AppToast() {
 
   /**
    * トースト手動クローズ処理
-   * DIサービス統合対応: ユーザーアクションログ追加
    */
   function handleToastClose() {
-    utils.logUserAction('toast_manual_close', {
-      animCounter,
-      remainingToasts: toasts.length,
-    });
-
     // 隠すアニメーションを即時起動
     setAnimCounter(animMaxCount - animCount * 2);
   }

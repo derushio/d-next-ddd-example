@@ -9,7 +9,7 @@ services:
     ports:
       - '${DB_PORT}:5432'
     volumes:
-      - null-volume:/var/lib/postgresql/data
+      - d-next-resources-volume:/var/lib/postgresql/data
 
 volumes:
-  null-volume: {}
+  d-next-resources-volume: {}

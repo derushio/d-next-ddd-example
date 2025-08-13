@@ -159,13 +159,13 @@ export async function createUserAction(formData: FormData): Promise<ActionResult
 ```mermaid
 graph TD
     SA[Server Actions] --> UC[Use Cases]
-    COMP[Client Components] --> HOOK[useServices]
-    HOOK --> DI[DI Container]
+    SA --> DI[DI Container]
+    COMP[Client Components] --> SA
     
-    note1["Next.jsのパフォーマンス最適化のため<br/>Presentationでresolve関数を使用"]
+    note1["責務分離アーキテクチャ<br/>Client: UI担当, Server Actions: ビジネスロジック担当"]
 ```
 
-**判断理由**: Server Actionsの特性を活かし、サーバーサイドでの効率的なDIを実現
+**判断理由**: Clean Architecture準拠とNext.js 15最適化により、責務分離を徹底
 
 #### 実装例
 
@@ -186,17 +186,28 @@ export async function createUserServerAction(formData: FormData) {
   redirect(`/users/${result.id}`);
 }
 
-// ✅ Client Components での最適化
+// ✅ Client Components での責務分離
 'use client';
 export function UserManagementClient() {
-  // クライアントサイドでのサービス活用
-  const userService = useServices().userService;
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   
-  const handleAction = async () => {
-    await userService.someClientAction();
+  const handleCreateUser = async (formData: FormData) => {
+    setIsLoading(true);
+    // Server Actionにビジネスロジックを委譲
+    await createUserServerAction(formData);
+    setIsLoading(false);
   };
   
-  return <button onClick={handleAction}>アクション実行</button>;
+  return (
+    <form action={handleCreateUser}>
+      <input name="name" placeholder="名前" required />
+      <input name="email" type="email" placeholder="メール" required />
+      <button type="submit" disabled={isLoading}>
+        {isLoading ? '作成中...' : 'ユーザー作成'}
+      </button>
+    </form>
+  );
 }
 ```
 

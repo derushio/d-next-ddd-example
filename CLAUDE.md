@@ -164,7 +164,8 @@ async function createUser(request: CreateUserRequest): Promise<Result<CreateUser
 ### 🔧 依存性注入ルール
 
 - **サービス層**: `@injectable()` + コンストラクター注入
-- **Server Action**: `resolve()` 関数使用OK
+- **Server Action**: `resolve()` 関数使用
+- **Client Component**: シンプルなUI + イベントハンドリングに限定（DI使用不要）
 - **新規トークン**: `tokens.ts` に型定義追加必須
 
 ### 📁 インポートルール

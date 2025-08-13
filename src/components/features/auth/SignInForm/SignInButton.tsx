@@ -23,7 +23,7 @@ export function SignInButton({ isLoading }: SignInButtonProps) {
       loading={isLoading}
       disabled={isLoading}
       className={clsx(
-        'shadow-2xl hover:shadow-3xl transform hover:scale-[1.02] transition-all duration-300',
+        'cursor-pointer shadow-2xl hover:shadow-3xl transform hover:scale-[1.02] transition-all duration-300',
       )}
     >
       {isLoading ? 'サインイン中...' : 'サインイン'}

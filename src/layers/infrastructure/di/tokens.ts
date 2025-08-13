@@ -20,6 +20,9 @@ import type { SignOutUseCase } from '@/layers/application/usecases/auth/SignOutU
 import type { UpdateUserUseCase } from '@/layers/application/usecases/UpdateUserUseCase';
 // Use Cases
 import type { CreateUserUseCase } from '@/layers/application/usecases/user/CreateUserUseCase';
+import type { DeleteUserUseCase } from '@/layers/application/usecases/user/DeleteUserUseCase';
+import type { GetUserByIdUseCase } from '@/layers/application/usecases/user/GetUserByIdUseCase';
+import type { GetUsersUseCase } from '@/layers/application/usecases/user/GetUsersUseCase';
 import type { ISessionRepository } from '@/layers/domain/repositories/ISessionRepository';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 // Domain Services
@@ -51,6 +54,9 @@ export const INJECTION_TOKENS = {
 
   // Use Cases
   CreateUserUseCase: Symbol.for('CreateUserUseCase'),
+  GetUsersUseCase: Symbol.for('GetUsersUseCase'),
+  GetUserByIdUseCase: Symbol.for('GetUserByIdUseCase'),
+  DeleteUserUseCase: Symbol.for('DeleteUserUseCase'),
   UpdateUserUseCase: Symbol.for('UpdateUserUseCase'),
   SignInUseCase: Symbol.for('SignInUseCase'),
   SignOutUseCase: Symbol.for('SignOutUseCase'),
@@ -94,6 +100,9 @@ export interface ServiceTypeMap {
 
   // Use Cases
   CreateUserUseCase: CreateUserUseCase;
+  GetUsersUseCase: GetUsersUseCase;
+  GetUserByIdUseCase: GetUserByIdUseCase;
+  DeleteUserUseCase: DeleteUserUseCase;
   UpdateUserUseCase: UpdateUserUseCase;
   SignInUseCase: SignInUseCase;
   SignOutUseCase: SignOutUseCase;

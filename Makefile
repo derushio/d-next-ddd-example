@@ -36,12 +36,12 @@ setup:
 	# Install Playwright browsers for E2E testing
 	pnpm exec playwright install chromium firefox
 
-	# Replace null with project name from package.json
+	# Replace d-next-resources with project name from package.json
 	PROJECT_NAME=$$(jq -r '.name' package.json) && \
 	command -v fd >/dev/null 2>&1 || { echo "Error: fd command is required but not found." >&2; exit 1; } && \
 	fd --hidden --no-ignore -t f \
 		-E node_modules -E .next -E dist -E .git \
-		-x sed -i "s/null/$${PROJECT_NAME}/g" {}
+		-x sed -i "s/d-next-resources/$${PROJECT_NAME}/g" {}
 
 	# Setup Git hooks
 	@echo ""
@@ -80,13 +80,13 @@ setup-hooks:
 	@mkdir -p ./.git/hooks
 	@echo "#!/bin/sh" > ./.git/hooks/pre-commit
 	@echo "# Auto-format before commit" >> ./.git/hooks/pre-commit
-	@echo "cd null" >> ./.git/hooks/pre-commit
+	@echo "cd d-next-resources" >> ./.git/hooks/pre-commit
 	@echo "pnpm format" >> ./.git/hooks/pre-commit
 	@echo "git add ." >> ./.git/hooks/pre-commit
 	@chmod +x ./.git/hooks/pre-commit
 	@echo "#!/bin/sh" > ./.git/hooks/pre-push
 	@echo "# Run tests before push" >> ./.git/hooks/pre-push
-	@echo "cd null" >> ./.git/hooks/pre-push
+	@echo "cd d-next-resources" >> ./.git/hooks/pre-push
 	@echo "pnpm test:unit" >> ./.git/hooks/pre-push
 	@chmod +x ./.git/hooks/pre-push
 	@echo "✅ Git hooks setup completed!"

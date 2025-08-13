@@ -1,13 +1,12 @@
 'use server';
 
-import { ClientServiceExample } from '@/components/common/ClientServiceExample';
-
+import { DIServicesDemo } from '@/components/features/demo/DIServicesDemo';
 import Image from 'next/image';
 
 /**
  * 🌟 Aurora TOPページ
  * モダンなグラデーションデザインによる美しいホームページ
- * DI統合デモ: Client Component DI統合のデモを表示
+ * Clean Architecture + DDD + DIの実演デモ付き
  */
 export default async function Home() {
   return (
@@ -51,18 +50,22 @@ export default async function Home() {
             </p>
           </div>
 
-          {/* 🌟 DI統合デモ - 視覚的バランス重視 */}
+          {/* 🏗️ DI Architecture Live Demo */}
           <section className='w-full max-w-none'>
             <div className='bg-white/25 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden'>
               <div className='px-6 py-6 text-center border-b border-white/15'>
                 <h2 className='text-2xl sm:text-3xl font-bold'>
                   <span className='bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent'>
-                    DI統合デモンストレーション
+                    Clean Architecture + DDD Live Demo
                   </span>
                 </h2>
+                <p className='text-gray-600 mt-2'>
+                  Server
+                  ComponentでDIサービスを実際に実行し、各層の連携をリアルタイム表示
+                </p>
               </div>
               <div className='p-6'>
-                <ClientServiceExample />
+                <DIServicesDemo />
               </div>
             </div>
           </section>

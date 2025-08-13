@@ -19,12 +19,12 @@ export async function migrate() {
     recursive: true,
   });
   await touch(databaseUrl);
-  await prisma.$queryRawTyped(createMigrationTable());
+  await prisma.$queryRawTyped(createMigrationTable() as any);
 
   const finishedMigrations = (
     await prisma.$queryRawTyped<{
       migration_name: string;
-    }>(queryFinishedMigrations())
+    }>(queryFinishedMigrations() as any)
   ).map((v) => v.migration_name);
 
   const migrations = (
@@ -57,7 +57,7 @@ export async function migrate() {
         null,
         new Date(),
         1,
-      ),
+      ) as any,
     );
   }
 }

@@ -10,6 +10,9 @@ import { ResetPasswordUseCase } from '@/layers/application/usecases/auth/ResetPa
 import { SignInUseCase } from '@/layers/application/usecases/auth/SignInUseCase';
 import { SignOutUseCase } from '@/layers/application/usecases/auth/SignOutUseCase';
 import { CreateUserUseCase } from '@/layers/application/usecases/user/CreateUserUseCase';
+import { DeleteUserUseCase } from '@/layers/application/usecases/user/DeleteUserUseCase';
+import { GetUserByIdUseCase } from '@/layers/application/usecases/user/GetUserByIdUseCase';
+import { GetUsersUseCase } from '@/layers/application/usecases/user/GetUsersUseCase';
 import { domainContainer } from '@/layers/infrastructure/di/containers/domain.container';
 import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
 
@@ -32,6 +35,9 @@ function safeRegister<T>(token: symbol, creator: new (...args: any[]) => T) {
 
 // Use Case registrations
 safeRegister(INJECTION_TOKENS.CreateUserUseCase, CreateUserUseCase);
+safeRegister(INJECTION_TOKENS.GetUsersUseCase, GetUsersUseCase);
+safeRegister(INJECTION_TOKENS.GetUserByIdUseCase, GetUserByIdUseCase);
+safeRegister(INJECTION_TOKENS.DeleteUserUseCase, DeleteUserUseCase);
 safeRegister(INJECTION_TOKENS.SignInUseCase, SignInUseCase);
 safeRegister(INJECTION_TOKENS.SignOutUseCase, SignOutUseCase);
 safeRegister(INJECTION_TOKENS.GetCurrentUserUseCase, GetCurrentUserUseCase);

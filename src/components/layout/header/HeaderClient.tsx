@@ -28,7 +28,8 @@ export const HeaderClient = memo(function HeaderClient({
   UserEmail: ReactNode;
 }) {
   const { isMounted } = useIsMountedCheck();
-  const { isSidenavOpen, setIsSidenavOpen, isSidenavHide } = useLayout();
+  const { isSidenavOpen, setIsSidenavOpen, isSidenavHide, setIsSidenavHide } =
+    useLayout();
 
   return (
     <header className={clsx('fixed top-0 left-0 right-0 z-40 h-14 w-full')}>

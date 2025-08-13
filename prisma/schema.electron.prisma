@@ -7,7 +7,7 @@
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["typedSql"]
-  output          = "../src/data-accesses/infra/prisma/generated"
+  output          = "../src/layers/infrastructure/persistence/prisma/generated"
 }
 
 datasource db {
@@ -20,32 +20,6 @@ model User {
   id String @id @default(cuid())
 
   name String
-
-  email        String @unique
-  /// salt hash
-  passwordHash String
-
-  UserSession UserSession[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-
-  @@index([createdAt])
-  @@index([updatedAt])
-}
-
-/// ユーザーのサインインセッション
-model UserSession {
-  id String @id @default(cuid())
-
-  User   User   @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  userId String
-
-  accessTokenHash     String
-  accessTokenExpireAt DateTime
-
-  resetTokenHash     String
-  resetTokenExpireAt DateTime
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt

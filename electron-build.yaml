@@ -1,4 +1,4 @@
-productName: "null"
+productName: "d-next-resources"
 
 asar: true
 afterPack: "./afterPack.js"
@@ -7,11 +7,16 @@ directories:
   output: dist
 files:
   - "main.js"
+  - ".next/**/*"
+  - "public/**/*"
+  - "package.json"
+  - "src/layers/infrastructure/persistence/prisma/generated/**/*"
   - "!**/.vscode/*"
-  - "!src/*"
+  - "!src/**/test*"
+  - "!src/**/*.test.*"
 extraResources:
-  - from: "node_modules/.prisma/client"
-    to: "node_modules/.prisma/client"
+  - from: "src/layers/infrastructure/persistence/prisma/generated"
+    to: "src/layers/infrastructure/persistence/prisma/generated"
   - from: "node_modules/@prisma/client"
     to: "node_modules/@prisma/client"
   - from: "node_modules/@prisma/engines"
@@ -19,12 +24,12 @@ extraResources:
   - from: "prisma"
     to: "prisma"
 asarUnpack:
-  - "node_modules/.prisma/**/*"
+  - "src/layers/infrastructure/persistence/prisma/generated/**/*"
   - "node_modules/@prisma/**/*"
   - "prisma/**/*"
 
 win:
-  executableName: "null"
+  executableName: "d-next-resources"
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
