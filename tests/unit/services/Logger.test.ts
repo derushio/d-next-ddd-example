@@ -48,7 +48,7 @@ describe('Logger', () => {
       expect(parsedLog).toMatchObject({
         level: 'INFO',
         message,
-        service: 'd-next-resources',
+        service: 'd-next-ddd-example',
         environment: expect.any(String),
         timestamp: expect.any(String),
         traceId: expect.any(String),
@@ -121,7 +121,7 @@ describe('Logger', () => {
       expect(parsedLog).toMatchObject({
         level: 'ERROR',
         message,
-        service: 'd-next-resources',
+        service: 'd-next-ddd-example',
       });
     });
 
@@ -179,7 +179,7 @@ describe('Logger', () => {
       expect(parsedLog).toMatchObject({
         level: 'WARN',
         message,
-        service: 'd-next-resources',
+        service: 'd-next-ddd-example',
       });
     });
 
@@ -219,7 +219,7 @@ describe('Logger', () => {
       expect(parsedLog).toMatchObject({
         level: 'DEBUG',
         message,
-        service: 'd-next-resources',
+        service: 'd-next-ddd-example',
       });
     });
 
@@ -280,7 +280,7 @@ describe('Logger', () => {
       expect(logEntry.message).toBe(message);
       expect(logEntry.user).toEqual(complexMeta.user);
       expect(logEntry.array).toEqual(complexMeta.array);
-      expect(logEntry.service).toBe('d-next-resources');
+      expect(logEntry.service).toBe('d-next-ddd-example');
       expect(logEntry.environment).toBe('test');
     });
 
@@ -334,7 +334,7 @@ describe('Logger', () => {
       const logEntry = JSON.parse(logOutput);
       expect(logEntry.level).toBe('INFO');
       expect(logEntry.message).toBe(longMessage);
-      expect(logEntry.service).toBe('d-next-resources');
+      expect(logEntry.service).toBe('d-next-ddd-example');
       expect(logEntry.environment).toBe('test');
     });
 
@@ -354,7 +354,7 @@ describe('Logger', () => {
       const logEntry = JSON.parse(logOutput);
       expect(logEntry.level).toBe('INFO');
       expect(logEntry.message).toBe(specialMessage);
-      expect(logEntry.service).toBe('d-next-resources');
+      expect(logEntry.service).toBe('d-next-ddd-example');
       expect(logEntry.environment).toBe('test');
     });
 
@@ -567,7 +567,7 @@ describe('Logger', () => {
       expect(parsedLog).toHaveProperty('timestamp');
       expect(parsedLog).toHaveProperty('level', 'INFO');
       expect(parsedLog).toHaveProperty('message', 'Test message');
-      expect(parsedLog).toHaveProperty('service', 'd-next-resources');
+      expect(parsedLog).toHaveProperty('service', 'd-next-ddd-example');
       expect(parsedLog).toHaveProperty('environment');
       expect(parsedLog).toHaveProperty('traceId');
       expect(parsedLog).toHaveProperty('customField', 'value');
