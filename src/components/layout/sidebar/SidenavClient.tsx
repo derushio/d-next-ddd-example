@@ -11,12 +11,11 @@ import { memo } from 'react';
 import {
   HiArrowLeftOnRectangle,
   HiArrowRightOnRectangle,
-  HiChartBarSquare,
-  HiCog6Tooth,
-  HiDocumentText,
   HiHome,
   HiSparkles,
   HiUser,
+  HiUserPlus,
+  HiUsers,
 } from 'react-icons/hi2';
 
 /**
@@ -45,7 +44,6 @@ export const SidenavClient = memo(function SidenavClient({
 
   // レスポンシブ表示制御を明確に分離
   const isVisibleMobile = isSidenavOpen; // モバイル時はisSidenavOpenのみで制御
-  const isVisibleDesktop = !isSidenavHide; // デスクトップ時はisSidenavHideで制御
 
   return (
     <aside
@@ -129,25 +127,9 @@ export const SidenavClient = memo(function SidenavClient({
             >
               ホーム
             </NavigationItem>
-
-            <NavigationItem
-              href='/dashboard'
-              icon={<HiChartBarSquare />}
-              isActive={pathname === '/dashboard'}
-            >
-              ダッシュボード
-            </NavigationItem>
-
-            <NavigationItem
-              href='/docs'
-              icon={<HiDocumentText />}
-              isActive={pathname === '/docs'}
-            >
-              ドキュメント
-            </NavigationItem>
           </div>
 
-          {/* ユーザーメニュー */}
+          {/* 管理機能メニュー */}
           {isMounted && auth && (
             <div className={clsx('space-y-1 pt-6')}>
               <div className={clsx('px-3 mb-4')}>
@@ -156,24 +138,24 @@ export const SidenavClient = memo(function SidenavClient({
                     'text-xs font-semibold text-gray-400 uppercase tracking-wider',
                   )}
                 >
-                  アカウント
+                  管理機能
                 </h2>
               </div>
 
               <NavigationItem
-                href='/profile'
-                icon={<HiUser />}
-                isActive={pathname === '/profile'}
+                href='/users'
+                icon={<HiUsers />}
+                isActive={pathname.startsWith('/users')}
               >
-                プロフィール
+                ユーザー管理
               </NavigationItem>
 
               <NavigationItem
-                href='/settings'
-                icon={<HiCog6Tooth />}
-                isActive={pathname === '/settings'}
+                href='/users/new'
+                icon={<HiUserPlus />}
+                isActive={pathname === '/users/new'}
               >
-                設定
+                新規ユーザー
               </NavigationItem>
             </div>
           )}

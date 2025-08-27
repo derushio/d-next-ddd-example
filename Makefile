@@ -85,13 +85,16 @@ setup-hooks:
 	@echo "git add ." >> ./.git/hooks/pre-commit
 	@chmod +x ./.git/hooks/pre-commit
 	@echo "#!/bin/sh" > ./.git/hooks/pre-push
-	@echo "# Run tests before push" >> ./.git/hooks/pre-push
+	@echo "# Run type-check, lint and tests before push" >> ./.git/hooks/pre-push
+	@echo "set -e" >> ./.git/hooks/pre-push
 	@echo "cd d-next-resources" >> ./.git/hooks/pre-push
+	@echo "pnpm type-check" >> ./.git/hooks/pre-push
+	@echo "pnpm lint" >> ./.git/hooks/pre-push
 	@echo "pnpm test:unit" >> ./.git/hooks/pre-push
 	@chmod +x ./.git/hooks/pre-push
 	@echo "✅ Git hooks setup completed!"
 	@echo "  - pre-commit: auto-format with 'pnpm format'"
-	@echo "  - pre-push: run unit tests with 'pnpm test:unit'"
+	@echo "  - pre-push: run type-check, lint and unit tests with 'pnpm type-check && pnpm lint && pnpm test:unit'"
 
 init-hooks: setup-hooks
 	# Initialize husky for current project (after git init)
@@ -106,6 +109,9 @@ init-hooks: setup-hooks
 	@echo "pnpm format" >> .husky/pre-commit
 	@echo "git add ." >> .husky/pre-commit
 	@echo "#!/bin/sh" > .husky/pre-push
+	@echo "set -e" >> .husky/pre-push
+	@echo "pnpm type-check" >> .husky/pre-push
+	@echo "pnpm lint" >> .husky/pre-push
 	@echo "pnpm test:unit" >> .husky/pre-push
 	@echo "✅ Husky hooks initialized for current project!"
 
@@ -137,4 +143,4 @@ setup-git-hooks:
 	@echo "✅ Git hooks setup completed!"
 	@echo "📝 Configured hooks:"
 	@echo "   - pre-commit: Auto-format with 'pnpm format'"
-	@echo "   - pre-push: Run unit tests with 'pnpm test:unit'"
+	@echo "   - pre-push: Run type-check, lint and unit tests with 'pnpm type-check && pnpm lint && pnpm test:unit'"

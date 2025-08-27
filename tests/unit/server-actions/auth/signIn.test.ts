@@ -154,10 +154,10 @@ describe('signIn Server Action', () => {
       expect(result).toHaveProperty('errors');
       expect(result.errors).toHaveProperty('email');
       expect(result.errors).toHaveProperty('password');
-      expect(Array.isArray(result.errors.email)).toBe(true);
-      expect(Array.isArray(result.errors.password)).toBe(true);
-      expect(result.errors.email.length).toBeGreaterThan(0);
-      expect(result.errors.password.length).toBeGreaterThan(0);
+      expect(Array.isArray(result.errors?.email)).toBe(true);
+      expect(Array.isArray(result.errors?.password)).toBe(true);
+      expect(result.errors?.email?.length).toBeGreaterThan(0);
+      expect(result.errors?.password?.length).toBeGreaterThan(0);
 
       expect(mockSignInUseCase.execute).not.toHaveBeenCalled();
     });
@@ -361,10 +361,10 @@ describe('signIn Server Action', () => {
       expect(result).toHaveProperty('errors');
       expect(result.errors).toHaveProperty('email');
       expect(result.errors).toHaveProperty('password');
-      expect(Array.isArray(result.errors.email)).toBe(true);
-      expect(Array.isArray(result.errors.password)).toBe(true);
-      expect(result.errors.email.length).toBeGreaterThan(0);
-      expect(result.errors.password.length).toBeGreaterThan(0);
+      expect(Array.isArray(result.errors?.email)).toBe(true);
+      expect(Array.isArray(result.errors?.password)).toBe(true);
+      expect(result.errors?.email?.length).toBeGreaterThan(0);
+      expect(result.errors?.password?.length).toBeGreaterThan(0);
 
       expect(mockSignInUseCase.execute).not.toHaveBeenCalled();
     });
@@ -465,7 +465,7 @@ describe('signIn Server Action', () => {
       await signIn(formData);
 
       // Assert - ログにパスワードが含まれていないことを確認
-      const logCalls = mockLogger.info.mock.calls;
+      const logCalls: LoggerMockCall[] = mockLogger.info.mock.calls;
       logCalls.forEach(([message, meta]) => {
         expect(JSON.stringify(meta)).not.toContain('password123');
       });

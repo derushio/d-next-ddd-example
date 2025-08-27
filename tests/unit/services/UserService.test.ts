@@ -343,7 +343,7 @@ describe('UserService', () => {
       );
 
       // Assert - ログにパスワードが含まれていないことを確認
-      const logCalls = mockLogger.info.mock.calls;
+      const logCalls: LoggerMockCall[] = mockLogger.info.mock.calls;
       logCalls.forEach(([message, meta]) => {
         expect(JSON.stringify(meta)).not.toContain('password123');
       });

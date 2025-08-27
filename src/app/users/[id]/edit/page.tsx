@@ -76,8 +76,7 @@ export default async function EditUserPage({ params }: EditUserPageProps) {
               </span>
             </h1>
             <p className='text-xl text-gray-600 max-w-2xl mx-auto'>
-              Clean Architecture + DDDパターンで構築されたユーザー編集機能。
-              型安全で堅牢なユーザー情報更新システムです。
+              ユーザー情報を編集します。
             </p>
           </div>
 
@@ -86,67 +85,6 @@ export default async function EditUserPage({ params }: EditUserPageProps) {
             <div className='bg-white/25 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden'>
               <div className='p-6 sm:p-8'>
                 <EditUserFormClient user={user} />
-              </div>
-            </div>
-          </div>
-
-          {/* 機能紹介セクション */}
-          <div className='mt-12'>
-            <div className='bg-white/20 backdrop-blur-xl rounded-3xl p-6 sm:p-8 shadow-xl border border-white/30'>
-              <h3 className='text-2xl font-bold mb-6'>
-                <span className='bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent'>
-                  編集機能・特徴
-                </span>
-              </h3>
-              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-gray-700'>
-                <div className='bg-white/30 backdrop-blur-lg rounded-xl p-4 border border-white/20'>
-                  <h4 className='font-semibold text-blue-700 mb-2'>
-                    データ整合性チェック
-                  </h4>
-                  <p className='text-sm'>
-                    メールアドレス重複確認と業務ルール検証を実行
-                  </p>
-                </div>
-                <div className='bg-white/30 backdrop-blur-lg rounded-xl p-4 border border-white/20'>
-                  <h4 className='font-semibold text-indigo-700 mb-2'>
-                    楽観的更新
-                  </h4>
-                  <p className='text-sm'>
-                    既存データを保持しつつ差分のみ更新する効率的な処理
-                  </p>
-                </div>
-                <div className='bg-white/30 backdrop-blur-lg rounded-xl p-4 border border-white/20'>
-                  <h4 className='font-semibold text-purple-700 mb-2'>
-                    ドメインロジック統合
-                  </h4>
-                  <p className='text-sm'>
-                    エンティティの不変条件を保持した安全な更新処理
-                  </p>
-                </div>
-                <div className='bg-white/30 backdrop-blur-lg rounded-xl p-4 border border-white/20'>
-                  <h4 className='font-semibold text-blue-700 mb-2'>
-                    リアルタイムエラー表示
-                  </h4>
-                  <p className='text-sm'>
-                    ユーザビリティを重視した即座のフィードバック
-                  </p>
-                </div>
-                <div className='bg-white/30 backdrop-blur-lg rounded-xl p-4 border border-white/20'>
-                  <h4 className='font-semibold text-indigo-700 mb-2'>
-                    キャッシュ自動更新
-                  </h4>
-                  <p className='text-sm'>
-                    更新後の関連ページキャッシュを自動再検証
-                  </p>
-                </div>
-                <div className='bg-white/30 backdrop-blur-lg rounded-xl p-4 border border-white/20'>
-                  <h4 className='font-semibold text-purple-700 mb-2'>
-                    トランザクション保証
-                  </h4>
-                  <p className='text-sm'>
-                    データベース更新の原子性を保証する堅牢な設計
-                  </p>
-                </div>
               </div>
             </div>
           </div>

@@ -4,6 +4,7 @@ import {
   getUsers,
   type GetUsersParams,
 } from '@/app/server-actions/user/getUsers';
+import { DeleteUserButton } from '@/components/features/user/DeleteUserButton';
 import { Alert } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -266,6 +267,16 @@ export function UserListClient({ initialParams = {} }: UserListProps) {
                         >
                           編集
                         </Button>
+                        <DeleteUserButton
+                          userId={user.id}
+                          userName={user.name}
+                          variant='destructive'
+                          size='sm'
+                          onSuccess={() => {
+                            // 削除成功後にユーザーリストを再取得
+                            fetchUsers();
+                          }}
+                        />
                       </div>
                     </div>
                   </Card.Content>

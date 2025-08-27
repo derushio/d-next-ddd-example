@@ -9,6 +9,28 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // 開発環境でのキャッシュ無効化設定
+  ...(process.env.NODE_ENV === 'development' && {
+    headers: async () => [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+          {
+            key: 'Expires',
+            value: '0',
+          },
+        ],
+      },
+    ],
+  }),
   // Turbopack設定（Next.js 15対応）
   turbopack: {
     // エイリアス設定（tsconfig.jsonと統一）

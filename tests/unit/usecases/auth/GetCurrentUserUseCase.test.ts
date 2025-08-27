@@ -5,11 +5,11 @@ import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
 import { getAuth } from '@/layers/infrastructure/persistence/nextAuth';
 import type { ILogger } from '@/layers/infrastructure/services/Logger';
 
-import { createAutoMockLogger } from '../../../utils/mocks/autoMocks';
+import { createAutoMockLogger } from '@tests/utils/mocks/autoMocks';
 import {
   createGetAuthMockHelpers,
   setupGetAuthMock,
-} from '../../../utils/mocks/commonMocks';
+} from '@tests/utils/mocks/commonMocks';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MockProxy } from 'vitest-mock-extended';
 

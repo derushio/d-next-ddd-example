@@ -12,8 +12,8 @@ import {
 import type { MockProxy } from 'vitest-mock-extended';
 
 // uuidv4のモック
-vi.mock('@/utils/uuidv4', () => ({
-  uuidv4: vi.fn(() => 'default-uuid'),
+vi.mock('uuid', () => ({
+  v4: vi.fn(),
 }));
 
 // date-fnsのモック
@@ -29,6 +29,14 @@ describe('TokenService', () => {
   let mockLogger: MockProxy<any>;
 
   beforeEach(async () => {
+    // uuidv4のモック設定
+    const { v4 } = await import('uuid');
+    const mockV4 = vi.mocked(v4) as any;
+    mockV4
+      .mockClear()
+      .mockReturnValueOnce('12345678-1234-4567-8901-123456789abc') // access-token uuid  
+      .mockReturnValueOnce('87654321-4321-4567-8901-cba987654321'); // reset-token uuid
+
     mockSessionRepository = createAutoMockSessionRepository();
     mockHashService = createAutoMockHashService();
     mockConfigService = createAutoMockConfigService();
@@ -47,12 +55,6 @@ describe('TokenService', () => {
         maxAgeMinutes: 60,
       },
     });
-
-    // uuidv4のモック設定
-    const { uuidv4 } = await import('@/utils/uuidv4');
-    vi.mocked(uuidv4)
-      .mockReturnValueOnce('access-token-uuid')
-      .mockReturnValueOnce('reset-token-uuid');
 
     // date-fnsのモック設定
     const { addMinutes } = await import('date-fns');
@@ -88,9 +90,9 @@ describe('TokenService', () => {
       expect(isSuccess(result)).toBe(true);
       if (isSuccess(result)) {
         expect(result.data).toEqual({
-          accessToken: 'access-token-uuid',
+          accessToken: '12345678-1234-4567-8901-123456789abc',
           accessTokenExpireAt: expect.any(Date),
-          resetToken: 'reset-token-uuid',
+          resetToken: '87654321-4321-4567-8901-cba987654321',
           resetTokenExpireAt: expect.any(Date),
           session: mockSession,
         });
@@ -308,10 +310,10 @@ describe('TokenService', () => {
       );
       
       // ログにトークンの生の値が含まれていないことを確認
-      const logCalls = mockLogger.info.mock.calls;
+      const logCalls: LoggerMockCall[] = mockLogger.info.mock.calls;
       logCalls.forEach(([message, meta]) => {
-        expect(JSON.stringify(meta)).not.toContain('access-token-uuid');
-        expect(JSON.stringify(meta)).not.toContain('reset-token-uuid');
+        expect(JSON.stringify(meta)).not.toContain('12345678-1234-4567-8901-123456789abc');
+        expect(JSON.stringify(meta)).not.toContain('87654321-4321-4567-8901-cba987654321');
       });
     });
   });

@@ -31,8 +31,7 @@ export default async function CreateUserPage() {
               </span>
             </h1>
             <p className='text-xl text-gray-600 max-w-2xl mx-auto'>
-              Clean Architecture + DDDパターンで構築された新規ユーザー作成機能。
-              型安全で堅牢なユーザー管理システムです。
+              新しいユーザーを作成します。
             </p>
           </div>
 
@@ -41,67 +40,6 @@ export default async function CreateUserPage() {
             <div className='bg-white/25 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden'>
               <div className='p-6 sm:p-8'>
                 <CreateUserFormClient />
-              </div>
-            </div>
-          </div>
-
-          {/* 機能紹介セクション */}
-          <div className='mt-12'>
-            <div className='bg-white/20 backdrop-blur-xl rounded-3xl p-6 sm:p-8 shadow-xl border border-white/30'>
-              <h3 className='text-2xl font-bold mb-6'>
-                <span className='bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent'>
-                  機能・特徴
-                </span>
-              </h3>
-              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-gray-700'>
-                <div className='bg-white/30 backdrop-blur-lg rounded-xl p-4 border border-white/20'>
-                  <h4 className='font-semibold text-green-700 mb-2'>
-                    リアルタイムバリデーション
-                  </h4>
-                  <p className='text-sm'>
-                    フォーム入力中にクライアントサイドでバリデーションを実行
-                  </p>
-                </div>
-                <div className='bg-white/30 backdrop-blur-lg rounded-xl p-4 border border-white/20'>
-                  <h4 className='font-semibold text-emerald-700 mb-2'>
-                    型安全な処理
-                  </h4>
-                  <p className='text-sm'>
-                    TypeScriptとZodによる完全な型安全性を保証
-                  </p>
-                </div>
-                <div className='bg-white/30 backdrop-blur-lg rounded-xl p-4 border border-white/20'>
-                  <h4 className='font-semibold text-teal-700 mb-2'>
-                    セキュアなハッシュ化
-                  </h4>
-                  <p className='text-sm'>
-                    パスワードは安全にハッシュ化してデータベースに保存
-                  </p>
-                </div>
-                <div className='bg-white/30 backdrop-blur-lg rounded-xl p-4 border border-white/20'>
-                  <h4 className='font-semibold text-green-700 mb-2'>
-                    DDD準拠設計
-                  </h4>
-                  <p className='text-sm'>
-                    Domain Driven Designのベストプラクティスに従って実装
-                  </p>
-                </div>
-                <div className='bg-white/30 backdrop-blur-lg rounded-xl p-4 border border-white/20'>
-                  <h4 className='font-semibold text-emerald-700 mb-2'>
-                    Result型エラーハンドリング
-                  </h4>
-                  <p className='text-sm'>
-                    例外処理ではなくResult型による安全なエラーハンドリング
-                  </p>
-                </div>
-                <div className='bg-white/30 backdrop-blur-lg rounded-xl p-4 border border-white/20'>
-                  <h4 className='font-semibold text-teal-700 mb-2'>
-                    レスポンシブ対応
-                  </h4>
-                  <p className='text-sm'>
-                    モバイルからデスクトップまで全てのデバイスで快適操作
-                  </p>
-                </div>
               </div>
             </div>
           </div>

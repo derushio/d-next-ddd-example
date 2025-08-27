@@ -9,6 +9,7 @@ import { RefreshTokenUseCase } from '@/layers/application/usecases/auth/RefreshT
 import { ResetPasswordUseCase } from '@/layers/application/usecases/auth/ResetPasswordUseCase';
 import { SignInUseCase } from '@/layers/application/usecases/auth/SignInUseCase';
 import { SignOutUseCase } from '@/layers/application/usecases/auth/SignOutUseCase';
+import { UpdateUserUseCase } from '@/layers/application/usecases/UpdateUserUseCase';
 import { CreateUserUseCase } from '@/layers/application/usecases/user/CreateUserUseCase';
 import { DeleteUserUseCase } from '@/layers/application/usecases/user/DeleteUserUseCase';
 import { GetUserByIdUseCase } from '@/layers/application/usecases/user/GetUserByIdUseCase';
@@ -38,6 +39,7 @@ safeRegister(INJECTION_TOKENS.CreateUserUseCase, CreateUserUseCase);
 safeRegister(INJECTION_TOKENS.GetUsersUseCase, GetUsersUseCase);
 safeRegister(INJECTION_TOKENS.GetUserByIdUseCase, GetUserByIdUseCase);
 safeRegister(INJECTION_TOKENS.DeleteUserUseCase, DeleteUserUseCase);
+safeRegister(INJECTION_TOKENS.UpdateUserUseCase, UpdateUserUseCase);
 safeRegister(INJECTION_TOKENS.SignInUseCase, SignInUseCase);
 safeRegister(INJECTION_TOKENS.SignOutUseCase, SignOutUseCase);
 safeRegister(INJECTION_TOKENS.GetCurrentUserUseCase, GetCurrentUserUseCase);

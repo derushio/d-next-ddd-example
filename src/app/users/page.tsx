@@ -31,8 +31,7 @@ export default async function UsersPage() {
               </span>
             </h1>
             <p className='text-xl text-gray-600 max-w-2xl mx-auto'>
-              Clean Architecture + DDDパターンで構築されたユーザー管理システム。
-              検索・ページネーション・リアルタイム更新をサポートします。
+              ユーザーの管理・検索・作成を行えます。
             </p>
           </div>
 
@@ -48,43 +47,6 @@ export default async function UsersPage() {
                     sortOrder: 'desc',
                   }}
                 />
-              </div>
-            </div>
-          </div>
-
-          {/* 技術情報セクション */}
-          <div className='mt-12'>
-            <div className='bg-white/20 backdrop-blur-xl rounded-3xl p-6 sm:p-8 shadow-xl border border-white/30'>
-              <h3 className='text-2xl font-bold mb-6'>
-                <span className='bg-gradient-to-r from-pink-600 to-orange-600 bg-clip-text text-transparent'>
-                  技術スタック
-                </span>
-              </h3>
-              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-gray-700'>
-                <div className='bg-white/30 backdrop-blur-lg rounded-xl p-4 border border-white/20'>
-                  <h4 className='font-semibold text-violet-700 mb-2'>
-                    Application Layer
-                  </h4>
-                  <p className='text-sm'>
-                    GetUsersUseCase でビジネスロジック実装
-                  </p>
-                </div>
-                <div className='bg-white/30 backdrop-blur-lg rounded-xl p-4 border border-white/20'>
-                  <h4 className='font-semibold text-blue-700 mb-2'>
-                    Presentation Layer
-                  </h4>
-                  <p className='text-sm'>
-                    Server Actions で型安全なAPI呼び出し
-                  </p>
-                </div>
-                <div className='bg-white/30 backdrop-blur-lg rounded-xl p-4 border border-white/20'>
-                  <h4 className='font-semibold text-cyan-700 mb-2'>
-                    Infrastructure Layer
-                  </h4>
-                  <p className='text-sm'>
-                    Prisma Repository でデータベース操作
-                  </p>
-                </div>
               </div>
             </div>
           </div>

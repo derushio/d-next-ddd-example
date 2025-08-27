@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": ["dom", "dom.iterable", "esnext", "ES2020"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -13,6 +13,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "types": ["vitest/globals", "@testing-library/jest-dom", "node"],
     "plugins": [
       {
         "name": "next"
@@ -41,7 +42,6 @@
   "exclude": [
     "node_modules",
     "docker",
-    "src/layers/infrastructure/persistence/prisma/generated",
-    "tests/**/*"
+    "src/layers/infrastructure/persistence/prisma/generated"
   ]
 }

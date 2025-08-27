@@ -12,13 +12,13 @@ import { container } from '@/layers/infrastructure/di/container';
 import { resolve } from '@/layers/infrastructure/di/resolver';
 import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
 
-import { setupTestEnvironment } from '../../utils/helpers/testHelpers';
+import { setupTestEnvironment } from '@tests/utils/helpers/testHelpers';
 import {
   createAutoMockHashService,
   createAutoMockLogger,
   createAutoMockUserDomainService,
   createAutoMockUserRepository,
-} from '../../utils/mocks/autoMocks';
+} from '@tests/utils/mocks/autoMocks';
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { MockProxy } from 'vitest-mock-extended';
 

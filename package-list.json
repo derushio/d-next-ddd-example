@@ -41,6 +41,7 @@
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.44.2",
     "@eslint/eslintrc": "^3",
+    "@eslint/js": "^9.34.0",
     "@ianvs/prettier-plugin-sort-imports": "^4.4.2",
     "@onozaty/prisma-db-comments-generator": "^1.2.0",
     "@playwright/test": "^1.53.0",
@@ -75,7 +76,9 @@
     "dev": "pnpm run-p next:dev db:generate:watch db:studio",
     "build": "pnpm run-s db:generate next:build",
     "start": "pnpm next:start",
-    "lint": "pnpm next:lint",
+    "lint": "pnpm run-s lint:next lint:tests",
+    "lint:next": "pnpm next:lint",
+    "lint:tests": "eslint --config eslint.config.mjs \"tests/**/*.{ts,tsx,js,jsx}\"",
     "format": "pnpm run-p format:prettier format:markdown",
     "format:prettier": "pnpm prettier -w package.json src",
     "format:markdown": "pnpm markdownlint --fix '**/*.md'",

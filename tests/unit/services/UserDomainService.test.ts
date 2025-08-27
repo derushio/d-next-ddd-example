@@ -13,8 +13,8 @@ import {
   expectMockCalledWith,
   setupMockReturnValues,
   setupTestEnvironment,
-} from '../../utils/helpers/testHelpers';
-import { createAutoMockHashService, createAutoMockUserRepository } from '../../utils/mocks/autoMocks';
+} from '@tests/utils/helpers/testHelpers';
+import { createAutoMockHashService, createAutoMockUserRepository } from '@tests/utils/mocks/autoMocks';
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { MockProxy } from 'vitest-mock-extended';
 

@@ -1,7 +1,7 @@
 'use server';
 
-import { deleteUser } from '@/app/server-actions/user/deleteUser';
 import { getUserById } from '@/app/server-actions/user/getUserById';
+import { DeleteUserButton } from '@/components/features/user/DeleteUserButton';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/Separator';
 
 import { clsx } from 'clsx';
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 
 interface UserDetailPageProps {
   params: { id: string };
@@ -151,34 +151,11 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
                       </Button>
                     </Link>
 
-                    <form
-                      action={async () => {
-                        'use server';
-                        const result = await deleteUser({ userId: user.id });
-                        if ('success' in result) {
-                          // 成功時はリダイレクト
-                          redirect('/users');
-                        }
-                      }}
-                    >
-                      <Button
-                        type='submit'
-                        variant='destructive'
-                        size='lg'
-                        className={clsx('w-full cursor-pointer')}
-                        onClick={(e) => {
-                          if (
-                            !confirm(
-                              `本当に「${user.name}」を削除しますか？\n\nこの操作は取り消せません。`,
-                            )
-                          ) {
-                            e.preventDefault();
-                          }
-                        }}
-                      >
-                        🗑️ ユーザーを削除
-                      </Button>
-                    </form>
+                    <DeleteUserButton
+                      userId={user.id}
+                      userName={user.name}
+                      className='w-full'
+                    />
 
                     <Separator />
 

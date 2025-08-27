@@ -1,7 +1,7 @@
 import { Logger } from '@/layers/infrastructure/services/Logger';
 
 import { createAutoMockConsole } from '@tests/utils/mocks/autoMocks';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('Logger', () => {
   let logger: Logger;
@@ -25,6 +25,11 @@ describe('Logger', () => {
 
     // Loggerインスタンス作成
     logger = new Logger();
+  });
+
+  afterEach(() => {
+    // 環境変数モックのクリーンアップ
+    vi.unstubAllEnvs();
   });
 
   describe('info', () => {
@@ -303,8 +308,8 @@ describe('Logger', () => {
         expect(logEntry.message).toBe(message);
         
         // Check that meta properties are included in the log entry
-        Object.keys(meta).forEach(key => {
-          expect(logEntry[key]).toEqual(meta[key]);
+        Object.entries(meta).forEach(([key, value]) => {
+          expect(logEntry[key]).toEqual(value);
         });
 
         // Clear mocks for next iteration
@@ -584,8 +589,7 @@ describe('Logger', () => {
 
     it('should include environment from NODE_ENV', () => {
       // Arrange
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'production';
+      vi.stubEnv('NODE_ENV', 'production');
 
       // Act
       logger.info('Environment test');
@@ -595,8 +599,7 @@ describe('Logger', () => {
       const parsedLog = JSON.parse(loggedOutput);
       expect(parsedLog.environment).toBe('production');
 
-      // Cleanup
-      process.env.NODE_ENV = originalEnv;
+      // Cleanup is handled automatically by vi.unstubAllEnvs()
     });
   });
 });
