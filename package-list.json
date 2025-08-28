@@ -1,4 +1,6 @@
 {
+  "name": "d-next-ddd-example",
+  "version": "0.1.0",
   "private": true,
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",

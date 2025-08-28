@@ -48,7 +48,7 @@ src/
 ### 基本開発
 
 ```bash
-pnpm dev          # 開発サーバー起動
+pnpm dev          # 開発サーバー起動、既に起動しているか実行前に確認してください。
 pnpm build        # ビルド
 pnpm start        # 本番サーバー
 pnpm lint         # Lint
