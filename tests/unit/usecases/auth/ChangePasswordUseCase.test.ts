@@ -6,8 +6,8 @@ import type { IUserRepository } from '@/layers/domain/repositories/IUserReposito
 import type { UserDomainService } from '@/layers/domain/services/UserDomainService';
 import { Email } from '@/layers/domain/value-objects/Email';
 import { UserId } from '@/layers/domain/value-objects/UserId';
-import { container } from '@/layers/infrastructure/di/container';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
+import { container } from '@/di/container';
+import { INJECTION_TOKENS } from '@/di/tokens';
 import type { IHashService } from '@/layers/infrastructure/services/HashService';
 import type { ILogger } from '@/layers/infrastructure/services/Logger';
 

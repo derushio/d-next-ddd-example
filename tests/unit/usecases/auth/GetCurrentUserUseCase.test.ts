@@ -1,7 +1,7 @@
 import { isFailure, isSuccess } from '@/layers/application/types/Result';
 import { GetCurrentUserUseCase } from '@/layers/application/usecases/auth/GetCurrentUserUseCase';
-import { container } from '@/layers/infrastructure/di/container';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
+import { container } from '@/di/container';
+import { INJECTION_TOKENS } from '@/di/tokens';
 import { getAuth } from '@/layers/infrastructure/persistence/nextAuth';
 import type { ILogger } from '@/layers/infrastructure/services/Logger';
 

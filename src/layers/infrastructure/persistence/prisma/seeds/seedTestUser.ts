@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 
-import { resolve } from '@/layers/infrastructure/di/resolver';
+import { resolve } from '@/di/resolver';
 import { prisma } from '@/layers/infrastructure/persistence/prisma';
 import {
   Prisma,

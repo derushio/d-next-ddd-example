@@ -1,3 +1,4 @@
+import { INJECTION_TOKENS } from '@/di/tokens';
 import { User } from '@/layers/domain/entities/User';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import {
@@ -6,10 +7,10 @@ import {
 } from '@/layers/domain/repositories/IUserRepository';
 import { Email } from '@/layers/domain/value-objects/Email';
 import { UserId } from '@/layers/domain/value-objects/UserId';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
 import type {
   Prisma,
   PrismaClient,
+  User as PrismaUser,
 } from '@/layers/infrastructure/persistence/prisma/generated';
 import type { ILogger } from '@/layers/infrastructure/services/Logger';
 
@@ -125,8 +126,8 @@ export class PrismaUserRepository implements IUserRepository {
 
   async save(user: User, transaction?: unknown): Promise<void> {
     this.logger.info('ユーザー保存開始', {
-      userId: user.getId().toString(),
-      email: user.getEmail().toString(),
+      userId: user.id.toString(),
+      email: user.email.toString(),
     });
 
     try {
@@ -144,13 +145,13 @@ export class PrismaUserRepository implements IUserRepository {
       });
 
       this.logger.info('ユーザー保存成功', {
-        userId: user.getId().toString(),
-        email: user.getEmail().toString(),
+        userId: user.id.toString(),
+        email: user.email.toString(),
       });
     } catch (error) {
       this.logger.error('ユーザー保存に失敗', {
-        userId: user.getId().toString(),
-        email: user.getEmail().toString(),
+        userId: user.id.toString(),
+        email: user.email.toString(),
         error: error instanceof Error ? error.message : 'Unknown error',
         stack: error instanceof Error ? error.stack : undefined,
       });
@@ -173,8 +174,8 @@ export class PrismaUserRepository implements IUserRepository {
 
   async update(user: User, transaction?: unknown): Promise<void> {
     this.logger.info('ユーザー更新開始', {
-      userId: user.getId().toString(),
-      email: user.getEmail().toString(),
+      userId: user.id.toString(),
+      email: user.email.toString(),
     });
 
     try {
@@ -191,13 +192,13 @@ export class PrismaUserRepository implements IUserRepository {
       });
 
       this.logger.info('ユーザー更新成功', {
-        userId: user.getId().toString(),
-        email: user.getEmail().toString(),
+        userId: user.id.toString(),
+        email: user.email.toString(),
       });
     } catch (error) {
       this.logger.error('ユーザー更新に失敗', {
-        userId: user.getId().toString(),
-        email: user.getEmail().toString(),
+        userId: user.id.toString(),
+        email: user.email.toString(),
         error: error instanceof Error ? error.message : 'Unknown error',
         stack: error instanceof Error ? error.stack : undefined,
       });
@@ -247,7 +248,7 @@ export class PrismaUserRepository implements IUserRepository {
   }
 
   // ドメインオブジェクト変換（Infrastructure層の責務）
-  private toDomainObject(data: any): User {
+  private toDomainObject(data: PrismaUser): User {
     return User.reconstruct(
       new UserId(data.id),
       new Email(data.email),
@@ -261,12 +262,12 @@ export class PrismaUserRepository implements IUserRepository {
   // 永続化オブジェクト変換（Infrastructure層の責務）
   private toPersistenceObject(user: User) {
     return {
-      id: user.getId().toString(),
-      email: user.getEmail().toString(),
-      name: user.getName(),
-      passwordHash: user.getPasswordHash(),
-      createdAt: user.getCreatedAt(),
-      updatedAt: user.getUpdatedAt(),
+      id: user.id.toString(),
+      email: user.email.toString(),
+      name: user.name,
+      passwordHash: user.passwordHash,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     };
   }
 }

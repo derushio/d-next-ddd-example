@@ -4,12 +4,12 @@ import { generateUserId, UserId } from '@/layers/domain/value-objects/UserId';
 
 export class User {
   private constructor(
-    private readonly id: UserId,
-    private email: Email,
-    private name: string,
-    private readonly passwordHash: string,
-    private readonly createdAt: Date,
-    private updatedAt: Date,
+    public readonly id: UserId,
+    public readonly email: Email,
+    public readonly name: string,
+    public readonly passwordHash: string,
+    public readonly createdAt: Date,
+    public readonly updatedAt: Date,
   ) {
     this.validateInvariants();
   }
@@ -32,32 +32,16 @@ export class User {
     return new User(id, email, name, passwordHash, createdAt, updatedAt);
   }
 
-  // ビジネスロジック：ユーザー情報更新
-  updateProfile(email: Email, name: string): void {
-    this.email = email;
-    this.name = name;
-    this.updatedAt = new Date();
-    this.validateInvariants();
-  }
-
-  // ゲッター（読み取り専用）
-  getId(): UserId {
-    return this.id;
-  }
-  getEmail(): Email {
-    return this.email;
-  }
-  getName(): string {
-    return this.name;
-  }
-  getPasswordHash(): string {
-    return this.passwordHash;
-  }
-  getCreatedAt(): Date {
-    return this.createdAt;
-  }
-  getUpdatedAt(): Date {
-    return this.updatedAt;
+  // ビジネスロジック：ユーザー情報更新（新しいインスタンスを返すimmutableパターン）
+  updateProfile(email: Email, name: string): User {
+    return new User(
+      this.id,
+      email,
+      name,
+      this.passwordHash,
+      this.createdAt,
+      new Date(),
+    );
   }
 
   // プライベートメソッド：不変条件検証

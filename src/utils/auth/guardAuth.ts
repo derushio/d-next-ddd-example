@@ -1,8 +1,8 @@
 'use server';
 
+import { resolve } from '@/di/resolver';
 import { isSuccess } from '@/layers/application/types/Result';
-import { resolve } from '@/layers/infrastructure/di/resolver';
-import { HEADER_PATH } from '@/middleware';
+import { HEADER_PATH } from '@/proxy';
 
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';

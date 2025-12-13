@@ -1,9 +1,9 @@
 import 'reflect-metadata';
 
+import { INJECTION_TOKENS } from '@/di/tokens';
+import type { IAuthSessionService } from '@/layers/application/interfaces/IAuthSessionService';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 import { failure, Result, success } from '@/layers/application/types/Result';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
-import { getAuth } from '@/layers/infrastructure/persistence/nextAuth';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
 
 import { inject, injectable } from 'tsyringe';
 
@@ -26,6 +26,8 @@ export class GetCurrentUserUseCase {
   constructor(
     @inject(INJECTION_TOKENS.Logger)
     private readonly logger: ILogger,
+    @inject(INJECTION_TOKENS.AuthSessionService)
+    private readonly authSessionService: IAuthSessionService,
   ) {}
 
   /**
@@ -40,16 +42,10 @@ export class GetCurrentUserUseCase {
         timestamp: new Date().toISOString(),
       });
 
-      // Infrastructure層のgetAuthを使用（将来的にはRepositoryパターンで抽象化可能）
-      const auth = await getAuth();
+      // DI経由で認証セッションサービスを使用
+      const session = await this.authSessionService.getSession();
 
-      if (
-        !auth ||
-        !auth.user ||
-        !auth.user.id ||
-        !auth.user.email ||
-        !auth.user.name
-      ) {
+      if (!session) {
         this.logger.info('ユーザー未認証または必要な情報が不足', {
           action: 'getCurrentUser',
           result: 'unauthenticated',
@@ -58,9 +54,9 @@ export class GetCurrentUserUseCase {
       }
 
       const userInfo = {
-        id: auth.user.id,
-        email: auth.user.email,
-        name: auth.user.name,
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.name,
       };
 
       this.logger.info('ユーザー情報取得成功', {
@@ -71,9 +67,12 @@ export class GetCurrentUserUseCase {
 
       return success(userInfo);
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+
       this.logger.error('ユーザー情報取得エラー', {
         action: 'getCurrentUser',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: errorMessage,
         stack: error instanceof Error ? error.stack : undefined,
       });
 

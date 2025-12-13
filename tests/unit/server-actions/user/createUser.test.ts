@@ -2,14 +2,17 @@ import 'reflect-metadata';
 
 import { createUser } from '@/app/server-actions/user/createUser';
 import { failure, success } from '@/layers/application/types/Result';
+import type { CreateUserUseCase } from '@/layers/application/usecases/user/CreateUserUseCase';
+import type { ILogger } from '@/layers/infrastructure/services/Logger';
 import {
   createAutoMockLogger,
 } from '@tests/utils/mocks/autoMocks';
 
 import type { MockProxy } from 'vitest-mock-extended';
+import { mock } from 'vitest-mock-extended';
 
 // resolve()のモック - hoisting対応
-vi.mock('@/layers/infrastructure/di/resolver', () => ({
+vi.mock('@/di/resolver', () => ({
   resolve: vi.fn(),
 }));
 
@@ -19,17 +22,15 @@ vi.mock('next/cache', () => ({
 }));
 
 describe('createUser Server Action', () => {
-  let mockLogger: MockProxy<any>;
-  let mockCreateUserUseCase: MockProxy<any>;
+  let mockLogger: MockProxy<ILogger>;
+  let mockCreateUserUseCase: MockProxy<CreateUserUseCase>;
 
   beforeEach(async () => {
     mockLogger = createAutoMockLogger();
-    mockCreateUserUseCase = {
-      execute: vi.fn(),
-    };
+    mockCreateUserUseCase = mock<CreateUserUseCase>();
 
     // resolve()のモック設定
-    const { resolve } = await import('@/layers/infrastructure/di/resolver');
+    const { resolve } = await import('@/di/resolver');
     vi.mocked(resolve).mockImplementation((serviceName: string) => {
       switch (serviceName) {
         case 'Logger':
@@ -58,6 +59,8 @@ describe('createUser Server Action', () => {
         id: 'user-123',
         name: 'Test User',
         email: 'test@example.com',
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       mockCreateUserUseCase.execute.mockResolvedValue(
@@ -70,7 +73,11 @@ describe('createUser Server Action', () => {
       // Assert
       expect(result).toEqual({
         success: true,
-        user: mockUser,
+        user: {
+          id: mockUser.id,
+          name: mockUser.name,
+          email: mockUser.email,
+        },
       });
 
       expect(mockCreateUserUseCase.execute).toHaveBeenCalledWith({
@@ -403,7 +410,7 @@ describe('createUser Server Action', () => {
       formData.append('email', 'test@example.com');
       formData.append('password', 'password123');
 
-      const { resolve } = await import('@/layers/infrastructure/di/resolver');
+      const { resolve } = await import('@/di/resolver');
       vi.mocked(resolve).mockImplementation((serviceName: string) => {
         if (serviceName === 'Logger') return mockLogger;
         if (serviceName === 'CreateUserUseCase') {
@@ -513,6 +520,8 @@ describe('createUser Server Action', () => {
         id: 'user-123',
         name: 'Test User',
         email: 'test@example.com',
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       mockCreateUserUseCase.execute.mockResolvedValue(
@@ -560,6 +569,8 @@ describe('createUser Server Action', () => {
         id: 'user-123',
         name: 'Test User',
         email: 'test@example.com',
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       mockCreateUserUseCase.execute.mockResolvedValue(
@@ -595,6 +606,8 @@ describe('createUser Server Action', () => {
         id: 'user-123',
         name: 'Test User',
         email: 'test@example.com',
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       mockCreateUserUseCase.execute.mockResolvedValue(

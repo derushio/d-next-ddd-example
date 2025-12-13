@@ -1,7 +1,12 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext", "ES2020"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext",
+      "ES2020"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -11,22 +16,34 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
-    "types": ["vitest/globals", "@testing-library/jest-dom", "node"],
+    "types": [
+      "vitest/globals",
+      "@testing-library/jest-dom",
+      "node"
+    ],
     "plugins": [
       {
         "name": "next"
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
+      "@/*": [
+        "./src/*"
+      ],
       "@prisma/generated/*": [
         "./src/layers/infrastructure/persistence/prisma/generated/*"
       ],
-      "@tests/*": ["./tests/*"],
-      "@/components/ui/*": ["./src/components/ui/*"],
-      "@/lib/utils-shadcn": ["./src/lib/utils-shadcn"]
+      "@tests/*": [
+        "./tests/*"
+      ],
+      "@/components/ui/*": [
+        "./src/components/ui/*"
+      ],
+      "@/lib/utils-shadcn": [
+        "./src/lib/utils-shadcn"
+      ]
     },
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
@@ -37,7 +54,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "main.js",
-    "afterPack.js"
+    "afterPack.js",
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

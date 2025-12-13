@@ -1,12 +1,12 @@
+import { INJECTION_TOKENS } from '@/di/tokens';
+import type { IHashService } from '@/layers/application/interfaces/IHashService';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 import { failure, Result, success } from '@/layers/application/types/Result';
 import { User } from '@/layers/domain/entities/User';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import type { UserDomainService } from '@/layers/domain/services/UserDomainService';
 import { Email } from '@/layers/domain/value-objects/Email';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
-import type { IHashService } from '@/layers/infrastructure/services/HashService';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
 
 import { inject, injectable } from 'tsyringe';
 
@@ -56,17 +56,17 @@ export class CreateUserUseCase {
       await this.userRepository.save(user);
 
       this.logger.info('ユーザー作成完了', {
-        userId: user.getId().toString(),
+        userId: user.id.value,
         email,
       });
 
       // 5. レスポンス変換
       return success({
-        id: user.getId().toString(),
-        name: user.getName(),
-        email: user.getEmail().toString(),
-        createdAt: user.getCreatedAt(),
-        updatedAt: user.getUpdatedAt(),
+        id: user.id.value,
+        name: user.name,
+        email: user.email.value,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
       });
     } catch (error) {
       const errorMessage =

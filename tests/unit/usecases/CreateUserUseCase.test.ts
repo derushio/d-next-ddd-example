@@ -8,9 +8,9 @@ import type { IUserRepository } from '@/layers/domain/repositories/IUserReposito
 import type { UserDomainService } from '@/layers/domain/services/UserDomainService';
 import { Email } from '@/layers/domain/value-objects/Email';
 import { UserId } from '@/layers/domain/value-objects/UserId';
-import { container } from '@/layers/infrastructure/di/container';
-import { resolve } from '@/layers/infrastructure/di/resolver';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
+import { container } from '@/di/container';
+import { resolve } from '@/di/resolver';
+import { INJECTION_TOKENS } from '@/di/tokens';
 
 import { setupTestEnvironment } from '@tests/utils/helpers/testHelpers';
 import {

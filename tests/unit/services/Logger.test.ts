@@ -44,11 +44,11 @@ describe('Logger', () => {
       expect(mockConsole.info).toHaveBeenCalledTimes(1);
       const loggedOutput = mockConsole.info.mock.calls[0][0];
       const parsedLog = JSON.parse(loggedOutput);
-      
+
       expect(parsedLog).toMatchObject({
         level: 'INFO',
         message,
-        service: 'd-next-ddd-example',
+        service: 'd-next-resources',
         environment: expect.any(String),
         timestamp: expect.any(String),
         traceId: expect.any(String),
@@ -58,11 +58,11 @@ describe('Logger', () => {
     it('should mask sensitive data in meta', () => {
       // Arrange
       const message = 'User SignIn';
-      const meta = { 
-        userId: '123', 
+      const meta = {
+        userId: '123',
         email: 'test@example.com',
         password: 'secret123',
-        token: 'bearer-token-value'
+        token: 'bearer-token-value',
       };
 
       // Act
@@ -72,7 +72,7 @@ describe('Logger', () => {
       expect(mockConsole.info).toHaveBeenCalledTimes(1);
       const loggedOutput = mockConsole.info.mock.calls[0][0];
       const parsedLog = JSON.parse(loggedOutput);
-      
+
       expect(parsedLog.userId).toBe('123'); // 非機密情報はそのまま
       expect(parsedLog.email).toBe('t**t@e*****e.com'); // メールアドレスはマスク
       expect(parsedLog.password).toBe('***'); // パスワードは完全マスク
@@ -117,11 +117,11 @@ describe('Logger', () => {
       expect(mockConsole.error).toHaveBeenCalledTimes(1);
       const loggedOutput = mockConsole.error.mock.calls[0][0];
       const parsedLog = JSON.parse(loggedOutput);
-      
+
       expect(parsedLog).toMatchObject({
         level: 'ERROR',
         message,
-        service: 'd-next-ddd-example',
+        service: 'd-next-resources',
       });
     });
 
@@ -137,7 +137,7 @@ describe('Logger', () => {
       expect(mockConsole.error).toHaveBeenCalledTimes(1);
       const loggedOutput = mockConsole.error.mock.calls[0][0];
       const parsedLog = JSON.parse(loggedOutput);
-      
+
       expect(parsedLog.level).toBe('ERROR');
       expect(parsedLog.message).toBe(message);
       expect(parsedLog.errorCode).toBe(500);
@@ -156,7 +156,7 @@ describe('Logger', () => {
       expect(mockConsole.error).toHaveBeenCalledTimes(1);
       const loggedOutput = mockConsole.error.mock.calls[0][0];
       const parsedLog = JSON.parse(loggedOutput);
-      
+
       expect(parsedLog.level).toBe('ERROR');
       expect(parsedLog.message).toBe(message);
       expect(parsedLog).toHaveProperty('error');
@@ -175,11 +175,11 @@ describe('Logger', () => {
       expect(mockConsole.warn).toHaveBeenCalledTimes(1);
       const loggedOutput = mockConsole.warn.mock.calls[0][0];
       const parsedLog = JSON.parse(loggedOutput);
-      
+
       expect(parsedLog).toMatchObject({
         level: 'WARN',
         message,
-        service: 'd-next-ddd-example',
+        service: 'd-next-resources',
       });
     });
 
@@ -195,7 +195,7 @@ describe('Logger', () => {
       expect(mockConsole.warn).toHaveBeenCalledTimes(1);
       const loggedOutput = mockConsole.warn.mock.calls[0][0];
       const parsedLog = JSON.parse(loggedOutput);
-      
+
       expect(parsedLog.level).toBe('WARN');
       expect(parsedLog.message).toBe(message);
       expect(parsedLog.apiVersion).toBe('v1');
@@ -215,11 +215,11 @@ describe('Logger', () => {
       expect(mockConsole.debug).toHaveBeenCalledTimes(1);
       const loggedOutput = mockConsole.debug.mock.calls[0][0];
       const parsedLog = JSON.parse(loggedOutput);
-      
+
       expect(parsedLog).toMatchObject({
         level: 'DEBUG',
         message,
-        service: 'd-next-ddd-example',
+        service: 'd-next-resources',
       });
     });
 
@@ -239,7 +239,7 @@ describe('Logger', () => {
       expect(mockConsole.debug).toHaveBeenCalledTimes(1);
       const loggedOutput = mockConsole.debug.mock.calls[0][0];
       const parsedLog = JSON.parse(loggedOutput);
-      
+
       expect(parsedLog.level).toBe('DEBUG');
       expect(parsedLog.message).toBe(message);
       expect(parsedLog.query).toBe('SELECT * FROM users');
@@ -274,13 +274,13 @@ describe('Logger', () => {
       expect(mockConsole.info).toHaveBeenCalledTimes(1);
       const logOutput = mockConsole.info.mock.calls[0][0];
       expect(typeof logOutput).toBe('string');
-      
+
       const logEntry = JSON.parse(logOutput);
       expect(logEntry.level).toBe('INFO');
       expect(logEntry.message).toBe(message);
       expect(logEntry.user).toEqual(complexMeta.user);
       expect(logEntry.array).toEqual(complexMeta.array);
-      expect(logEntry.service).toBe('d-next-ddd-example');
+      expect(logEntry.service).toBe('d-next-resources');
       expect(logEntry.environment).toBe('test');
     });
 
@@ -290,7 +290,10 @@ describe('Logger', () => {
         { description: 'boolean object', meta: { enabled: true } },
         { description: 'null value', meta: { data: null } },
         { description: 'array object', meta: { items: [1, 2, 3] } },
-        { description: 'Date object', meta: { timestamp: new Date().toISOString() } },
+        {
+          description: 'Date object',
+          meta: { timestamp: new Date().toISOString() },
+        },
         { description: 'nested object', meta: { config: { theme: 'dark' } } },
       ];
 
@@ -302,11 +305,11 @@ describe('Logger', () => {
         expect(mockConsole.info).toHaveBeenCalledTimes(1);
         const logOutput = mockConsole.info.mock.calls[0][0];
         expect(typeof logOutput).toBe('string');
-        
+
         const logEntry = JSON.parse(logOutput);
         expect(logEntry.level).toBe('INFO');
         expect(logEntry.message).toBe(message);
-        
+
         // Check that meta properties are included in the log entry
         Object.entries(meta).forEach(([key, value]) => {
           expect(logEntry[key]).toEqual(value);
@@ -330,11 +333,11 @@ describe('Logger', () => {
       expect(mockConsole.info).toHaveBeenCalledTimes(1);
       const logOutput = mockConsole.info.mock.calls[0][0];
       expect(typeof logOutput).toBe('string');
-      
+
       const logEntry = JSON.parse(logOutput);
       expect(logEntry.level).toBe('INFO');
       expect(logEntry.message).toBe(longMessage);
-      expect(logEntry.service).toBe('d-next-ddd-example');
+      expect(logEntry.service).toBe('d-next-resources');
       expect(logEntry.environment).toBe('test');
     });
 
@@ -350,23 +353,26 @@ describe('Logger', () => {
       expect(mockConsole.info).toHaveBeenCalledTimes(1);
       const logOutput = mockConsole.info.mock.calls[0][0];
       expect(typeof logOutput).toBe('string');
-      
+
       const logEntry = JSON.parse(logOutput);
       expect(logEntry.level).toBe('INFO');
       expect(logEntry.message).toBe(specialMessage);
-      expect(logEntry.service).toBe('d-next-ddd-example');
+      expect(logEntry.service).toBe('d-next-resources');
       expect(logEntry.environment).toBe('test');
     });
 
     it('should handle circular reference objects', () => {
       // Arrange
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 循環参照オブジェクトのテスト作成のためanyが必要
       const circularObj: any = { name: 'test' };
       circularObj.self = circularObj;
 
       // Act & Assert - Should throw an error due to circular reference
       expect(() => {
         logger.info('Circular reference test', circularObj);
-      }).toThrow(/Converting circular structure to JSON|Maximum call stack size exceeded/);
+      }).toThrow(
+        /Converting circular structure to JSON|Maximum call stack size exceeded/,
+      );
     });
   });
 
@@ -391,7 +397,10 @@ describe('Logger', () => {
       // Arrange
       const testCases = [
         { input: 'user@example.com', expected: 'u**r@e*****e.com' },
-        { input: 'test.email+tag@domain.co.jp', expected: 't************g@d****n.co.jp' },
+        {
+          input: 'test.email+tag@domain.co.jp',
+          expected: 't************g@d****n.co.jp',
+        },
         { input: 'a@b.com', expected: '***@***.com' }, // 短いケース
       ];
 
@@ -400,7 +409,10 @@ describe('Logger', () => {
         logger.info('Test email masking', { email: input });
 
         // Assert
-        const loggedOutput = mockConsole.info.mock.calls[mockConsole.info.mock.calls.length - 1][0];
+        const loggedOutput =
+          mockConsole.info.mock.calls[
+            mockConsole.info.mock.calls.length - 1
+          ][0];
         const parsedLog = JSON.parse(loggedOutput);
         expect(parsedLog.email).toBe(expected);
       });
@@ -416,13 +428,16 @@ describe('Logger', () => {
         'oldPassword',
       ];
 
-      sensitiveFields.forEach(field => {
+      sensitiveFields.forEach((field) => {
         // Act
         const meta = { [field]: 'secret-value-123' };
         logger.info('Password field test', meta);
 
         // Assert
-        const loggedOutput = mockConsole.info.mock.calls[mockConsole.info.mock.calls.length - 1][0];
+        const loggedOutput =
+          mockConsole.info.mock.calls[
+            mockConsole.info.mock.calls.length - 1
+          ][0];
         const parsedLog = JSON.parse(loggedOutput);
         expect(parsedLog[field]).toBe('***');
       });
@@ -443,13 +458,16 @@ describe('Logger', () => {
         'authorization',
       ];
 
-      tokenFields.forEach(field => {
+      tokenFields.forEach((field) => {
         // Act
         const meta = { [field]: 'secret-token-value' };
         logger.info('Token field test', meta);
 
         // Assert
-        const loggedOutput = mockConsole.info.mock.calls[mockConsole.info.mock.calls.length - 1][0];
+        const loggedOutput =
+          mockConsole.info.mock.calls[
+            mockConsole.info.mock.calls.length - 1
+          ][0];
         const parsedLog = JSON.parse(loggedOutput);
         expect(parsedLog[field]).toBe('***');
       });
@@ -477,7 +495,7 @@ describe('Logger', () => {
       // Assert
       const loggedOutput = mockConsole.info.mock.calls[0][0];
       const parsedLog = JSON.parse(loggedOutput);
-      
+
       expect(parsedLog.user.id).toBe('123'); // 非機密情報はそのまま
       expect(parsedLog.user.email).toBe('u**r@e*****e.com'); // メールマスク
       expect(parsedLog.user.profile.name).toBe('Test User'); // 非機密情報はそのまま
@@ -498,7 +516,7 @@ describe('Logger', () => {
       // Assert
       const loggedOutput = mockConsole.info.mock.calls[0][0];
       const parsedLog = JSON.parse(loggedOutput);
-      
+
       expect(parsedLog.authHeader).toBe('***');
       expect(parsedLog.description).toBe('Authorization: ***');
     });
@@ -523,7 +541,7 @@ describe('Logger', () => {
       // Assert
       const loggedOutput = mockConsole.info.mock.calls[0][0];
       const parsedLog = JSON.parse(loggedOutput);
-      
+
       // すべての非機密データが保持されていることを確認
       expect(parsedLog.userId).toBe('123');
       expect(parsedLog.userName).toBe('testuser');
@@ -548,10 +566,12 @@ describe('Logger', () => {
       // Assert
       const loggedOutput = mockConsole.info.mock.calls[0][0];
       const parsedLog = JSON.parse(loggedOutput);
-      
+
       expect(parsedLog.ssn).toBe('***-**-****');
       expect(parsedLog.creditCard).toBe('****-****-****-****');
-      expect(parsedLog.description).toBe('User SSN: ***-**-****, Card: ****-****-****-****');
+      expect(parsedLog.description).toBe(
+        'User SSN: ***-**-****, Card: ****-****-****-****',
+      );
     });
   });
 
@@ -563,11 +583,11 @@ describe('Logger', () => {
       // Assert
       const loggedOutput = mockConsole.info.mock.calls[0][0];
       const parsedLog = JSON.parse(loggedOutput);
-      
+
       expect(parsedLog).toHaveProperty('timestamp');
       expect(parsedLog).toHaveProperty('level', 'INFO');
       expect(parsedLog).toHaveProperty('message', 'Test message');
-      expect(parsedLog).toHaveProperty('service', 'd-next-ddd-example');
+      expect(parsedLog).toHaveProperty('service', 'd-next-resources');
       expect(parsedLog).toHaveProperty('environment');
       expect(parsedLog).toHaveProperty('traceId');
       expect(parsedLog).toHaveProperty('customField', 'value');
@@ -581,7 +601,7 @@ describe('Logger', () => {
       // Assert
       const firstLog = JSON.parse(mockConsole.info.mock.calls[0][0]);
       const secondLog = JSON.parse(mockConsole.info.mock.calls[1][0]);
-      
+
       expect(firstLog.traceId).not.toBe(secondLog.traceId);
       expect(firstLog.traceId).toMatch(/^[a-z0-9]+$/);
       expect(secondLog.traceId).toMatch(/^[a-z0-9]+$/);

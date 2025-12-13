@@ -3,29 +3,30 @@ import 'reflect-metadata';
 import { signIn } from '@/app/server-actions/auth/signIn';
 import { isFailure, isSuccess } from '@/layers/application/types/Result';
 import { failure, success } from '@/layers/application/types/Result';
+import type { SignInUseCase } from '@/layers/application/usecases/auth/SignInUseCase';
+import type { ILogger } from '@/layers/infrastructure/services/Logger';
 import {
   createAutoMockLogger,
 } from '@tests/utils/mocks/autoMocks';
 
 import type { MockProxy } from 'vitest-mock-extended';
+import { mock } from 'vitest-mock-extended';
 
 // resolve()のモック - hoisting対応
-vi.mock('@/layers/infrastructure/di/resolver', () => ({
+vi.mock('@/di/resolver', () => ({
   resolve: vi.fn(),
 }));
 
 describe('signIn Server Action', () => {
-  let mockLogger: MockProxy<any>;
-  let mockSignInUseCase: MockProxy<any>;
+  let mockLogger: MockProxy<ILogger>;
+  let mockSignInUseCase: MockProxy<SignInUseCase>;
 
   beforeEach(async () => {
     mockLogger = createAutoMockLogger();
-    mockSignInUseCase = {
-      execute: vi.fn(),
-    };
+    mockSignInUseCase = mock<SignInUseCase>();
 
     // resolve()のモック設定
-    const { resolve } = await import('@/layers/infrastructure/di/resolver');
+    const { resolve } = await import('@/di/resolver');
     vi.mocked(resolve).mockImplementation((serviceName: string) => {
       switch (serviceName) {
         case 'Logger':
@@ -320,7 +321,7 @@ describe('signIn Server Action', () => {
       formData.append('email', 'test@example.com');
       formData.append('password', 'password123');
 
-      const { resolve } = await import('@/layers/infrastructure/di/resolver');
+      const { resolve } = await import('@/di/resolver');
       vi.mocked(resolve).mockImplementation((serviceName: string) => {
         if (serviceName === 'Logger') return mockLogger;
         if (serviceName === 'SignInUseCase') {

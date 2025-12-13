@@ -17,11 +17,11 @@ describe('User Entity', () => {
       const user = User.create(email, name, passwordHash);
 
       // Assert
-      expect(user.getName()).toBe(name);
-      expect(user.getEmail()).toBe(email);
-      expect(user.getPasswordHash()).toBe(passwordHash);
-      expect(user.getCreatedAt()).toBeInstanceOf(Date);
-      expect(user.getUpdatedAt()).toBeInstanceOf(Date);
+      expect(user.name).toBe(name);
+      expect(user.email).toBe(email);
+      expect(user.passwordHash).toBe(passwordHash);
+      expect(user.createdAt).toBeInstanceOf(Date);
+      expect(user.updatedAt).toBeInstanceOf(Date);
     });
 
     it('無効な名前でエラーが発生する', () => {
@@ -61,12 +61,12 @@ describe('User Entity', () => {
       );
 
       // Assert
-      expect(user.getId()).toBe(id);
-      expect(user.getName()).toBe(name);
-      expect(user.getEmail()).toBe(email);
-      expect(user.getPasswordHash()).toBe(passwordHash);
-      expect(user.getCreatedAt()).toBe(createdAt);
-      expect(user.getUpdatedAt()).toBe(updatedAt);
+      expect(user.id).toBe(id);
+      expect(user.name).toBe(name);
+      expect(user.email).toBe(email);
+      expect(user.passwordHash).toBe(passwordHash);
+      expect(user.createdAt).toBe(createdAt);
+      expect(user.updatedAt).toBe(updatedAt);
     });
   });
 
@@ -80,19 +80,19 @@ describe('User Entity', () => {
       );
       const newEmail = new Email('new@example.com');
       const newName = 'New Name';
-      const oldUpdatedAt = user.getUpdatedAt();
+      const oldUpdatedAt = user.updatedAt;
 
       // わずかな時間待機して確実に時刻差を作る
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Act
-      user.updateProfile(newEmail, newName);
+      const updatedUser = user.updateProfile(newEmail, newName);
 
       // Assert
-      expect(user.getEmail()).toBe(newEmail);
-      expect(user.getName()).toBe(newName);
-      expect(user.getUpdatedAt()).toBeInstanceOf(Date);
-      expect(user.getUpdatedAt().getTime()).toBeGreaterThan(
+      expect(updatedUser.email).toBe(newEmail);
+      expect(updatedUser.name).toBe(newName);
+      expect(updatedUser.updatedAt).toBeInstanceOf(Date);
+      expect(updatedUser.updatedAt.getTime()).toBeGreaterThan(
         oldUpdatedAt.getTime(),
       );
     });
@@ -137,16 +137,16 @@ describe('User Entity', () => {
         'Test Name',
         'hashed-password',
       );
-      const originalUpdatedAt = user.getUpdatedAt();
+      const originalUpdatedAt = user.updatedAt;
 
       // わずかな時間待機して確実に時刻差を作る
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Act
-      user.updateProfile(new Email('test@example.com'), 'Test Name');
+      const updatedUser = user.updateProfile(new Email('test@example.com'), 'Test Name');
 
       // Assert
-      expect(user.getUpdatedAt().getTime()).toBeGreaterThan(
+      expect(updatedUser.updatedAt.getTime()).toBeGreaterThan(
         originalUpdatedAt.getTime(),
       );
     });

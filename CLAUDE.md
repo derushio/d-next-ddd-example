@@ -1,5 +1,9 @@
 # CLAUDE.md
 
+## 重要ルール
+
+- pnpm devはすでに3000ポートで立ち上がっていないか確認してから立ち上げてください。すでに立ち上がっている場合は `pnpm stop-dev` で停止してから起動してください。
+
 ## 📋 CLAUDE.mdの存在意義
 
 このファイルは **Claude Code (claude.ai/code) が効率的にプロジェクトで作業できるよう**、以下の情報を提供します：
@@ -49,10 +53,10 @@ src/
 
 ```bash
 pnpm dev          # 開発サーバー起動、既に起動しているか実行前に確認してください。
+pnpm stop-dev     # 開発サーバー停止（ポート3000-3020, 5555-5575を停止）
 pnpm build        # ビルド
 pnpm start        # 本番サーバー
-pnpm lint         # Lint
-pnpm type-check   # 型チェック
+pnpm check        # コード品質チェック
 ```
 
 ### テスト
@@ -85,62 +89,62 @@ pnpm db:migrate:dev   # マイグレーション実行
 
 ### 🏗️ アーキテクチャ理解
 
-| タスク | 必読ドキュメント |
-|--------|------------------|
-| プロジェクト全体理解 | `_DOCS/architecture/overview.md` |
-| DDD・Clean Architecture理解 | `_DOCS/guides/ddd/concepts/` |
-| 依存性注入理解 | `_DOCS/architecture/patterns/dependency-injection.md` |
+| タスク                      | 必読ドキュメント                                      |
+| --------------------------- | ----------------------------------------------------- |
+| プロジェクト全体理解        | `_DOCS/architecture/overview.md`                      |
+| DDD・Clean Architecture理解 | `_DOCS/guides/ddd/concepts/`                          |
+| 依存性注入理解              | `_DOCS/architecture/patterns/dependency-injection.md` |
 
 ### 🎨 UI・フロントエンド開発
 
-| タスク | 必読ドキュメント |
-|--------|------------------|
-| コンポーネント作成 | `_DOCS/guides/ddd/layers/presentation-layer.md` |
-| shadcn/ui統合 | `_DOCS/guides/theme-system.md` |
-| Server Actions実装 | `_DOCS/guides/ddd/layers/components/server-actions.md` |
-| フロントエンドベストプラクティス | `_DOCS/guides/frontend-best-practices.md` |
+| タスク                           | 必読ドキュメント                                       |
+| -------------------------------- | ------------------------------------------------------ |
+| コンポーネント作成               | `_DOCS/guides/ddd/layers/presentation-layer.md`        |
+| shadcn/ui統合                    | `_DOCS/guides/theme-system.md`                         |
+| Server Actions実装               | `_DOCS/guides/ddd/layers/components/server-actions.md` |
+| フロントエンドベストプラクティス | `_DOCS/guides/frontend-best-practices.md`              |
 
 ### 📋 ビジネスロジック開発
 
-| タスク | 必読ドキュメント |
-|--------|------------------|
-| UseCase作成 | `_DOCS/guides/ddd/layers/application-layer.md` |
-| UseCase詳細実装 | `_DOCS/guides/ddd/layers/components/use-cases.md` |
+| タスク             | 必読ドキュメント                                   |
+| ------------------ | -------------------------------------------------- |
+| UseCase作成        | `_DOCS/guides/ddd/layers/application-layer.md`     |
+| UseCase詳細実装    | `_DOCS/guides/ddd/layers/components/use-cases.md`  |
 | エラーハンドリング | `_DOCS/guides/ddd/cross-cutting/error-handling.md` |
 
 ### 👑 ドメインモデル開発
 
-| タスク | 必読ドキュメント |
-|--------|------------------|
-| Entity作成 | `_DOCS/guides/ddd/layers/components/entities.md` |
+| タスク           | 必読ドキュメント                                      |
+| ---------------- | ----------------------------------------------------- |
+| Entity作成       | `_DOCS/guides/ddd/layers/components/entities.md`      |
 | Value Object作成 | `_DOCS/guides/ddd/layers/components/value-objects.md` |
-| ドメイン層全体 | `_DOCS/guides/ddd/layers/domain-layer.md` |
+| ドメイン層全体   | `_DOCS/guides/ddd/layers/domain-layer.md`             |
 
 ### 🔧 インフラ開発
 
-| タスク | 必読ドキュメント |
-|--------|------------------|
-| Repository実装 | `_DOCS/guides/ddd/layers/components/repository-implementations.md` |
-| 外部サービス連携 | `_DOCS/guides/ddd/layers/components/external-services.md` |
-| インフラ層全体 | `_DOCS/guides/ddd/layers/infrastructure-layer.md` |
+| タスク           | 必読ドキュメント                                                   |
+| ---------------- | ------------------------------------------------------------------ |
+| Repository実装   | `_DOCS/guides/ddd/layers/components/repository-implementations.md` |
+| 外部サービス連携 | `_DOCS/guides/ddd/layers/components/external-services.md`          |
+| インフラ層全体   | `_DOCS/guides/ddd/layers/infrastructure-layer.md`                  |
 
 ### 🧪 テスト開発
 
-| タスク | 必読ドキュメント |
-|--------|------------------|
-| テスト戦略理解 | `_DOCS/testing/strategy.md` |
+| タスク         | 必読ドキュメント                 |
+| -------------- | -------------------------------- |
+| テスト戦略理解 | `_DOCS/testing/strategy.md`      |
 | ユニットテスト | `_DOCS/testing/unit/overview.md` |
-| E2Eテスト | `_DOCS/testing/e2e/overview.md` |
-| モック活用 | `_DOCS/testing/unit/mocking.md` |
+| E2Eテスト      | `_DOCS/testing/e2e/overview.md`  |
+| モック活用     | `_DOCS/testing/unit/mocking.md`  |
 
 ### 🚨 問題解決
 
-| 問題カテゴリ | 参照先 |
-|-------------|-------|
-| 一般的な問題 | `_DOCS/troubleshooting/common-issues.md` |
-| Email関連 | `_DOCS/troubleshooting/development/email-validation-issues.md` |
-| Prisma関連 | `_DOCS/troubleshooting/development/prisma-mock-setup.md` |
-| テスト関連 | `_DOCS/troubleshooting/testing/` |
+| 問題カテゴリ | 参照先                                                         |
+| ------------ | -------------------------------------------------------------- |
+| 一般的な問題 | `_DOCS/troubleshooting/common-issues.md`                       |
+| Email関連    | `_DOCS/troubleshooting/development/email-validation-issues.md` |
+| Prisma関連   | `_DOCS/troubleshooting/development/prisma-mock-setup.md`       |
+| テスト関連   | `_DOCS/troubleshooting/testing/`                               |
 
 ---
 
@@ -150,14 +154,16 @@ pnpm db:migrate:dev   # マイグレーション実行
 
 ```typescript
 // 全UseCaseはResult型を返却
-import { Result, success, failure } from '@/layers/application/types/Result';
+import { failure, Result, success } from '@/layers/application/types/Result';
 
-async function createUser(request: CreateUserRequest): Promise<Result<CreateUserResponse>> {
-  try {
-    return success(response);
-  } catch (error) {
-    return failure('エラーメッセージ', 'ERROR_CODE');
-  }
+async function createUser(
+ request: CreateUserRequest,
+): Promise<Result<CreateUserResponse>> {
+ try {
+  return success(response);
+ } catch (error) {
+  return failure('エラーメッセージ', 'ERROR_CODE');
+ }
 }
 ```
 
@@ -202,6 +208,8 @@ import { Button } from '@/components/ui';
 2. **🏗️ アーキテクチャ準拠性確認** - レイヤー責務と依存関係の方向性確認
 3. **🔧 実装ルール確認** - Result型、DI、インポート、テストルール遵守
 4. **✅ 完了時品質確認** - `pnpm test && pnpm lint && pnpm type-check && pnpm build`
+
+※ コミット時はpre-commit/pre-pushフックで自動実行されるため、手動チェック不要
 
 ---
 

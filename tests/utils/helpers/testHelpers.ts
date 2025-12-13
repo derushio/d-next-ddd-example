@@ -1,9 +1,10 @@
-import { container } from '@/layers/infrastructure/di/container';
+import { container } from '@/di/container';
 import {
   INJECTION_TOKENS,
   type ServiceType,
   type ServiceTypeMap,
-} from '@/layers/infrastructure/di/tokens';
+} from '@/di/tokens';
+
 import { beforeEach, expect, vi } from 'vitest';
 
 /**
@@ -14,7 +15,9 @@ import { beforeEach, expect, vi } from 'vitest';
  * モックの戻り値を設定するヘルパー
  */
 export const setupMockReturnValues = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- モックオブジェクトの型は実行時まで不明なためanyが必要
   mocks: Record<string, any>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- モック戻り値の型は実行時まで不明なためanyが必要
   values: Record<string, any>,
 ) => {
   Object.entries(values).forEach(([key, value]) => {
@@ -57,11 +60,13 @@ export const setupMockReturnValues = (
 /**
  * 複数のモックを一度にクリアするヘルパー
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- 様々な型のモックオブジェクトを受け取るためanyが必要
 export const clearAllMocks = (...mocks: any[]) => {
   mocks.forEach((mock) => {
     if (mock && typeof mock === 'object') {
       Object.values(mock).forEach((fn) => {
         if (typeof fn === 'function' && 'mockClear' in fn) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- モック関数の型チェック回避のためanyが必要
           (fn as any).mockClear();
         }
       });
@@ -116,7 +121,9 @@ export const createErrorTestCases = () => [
  * 期待されるモック呼び出しをアサートするヘルパー
  */
 export const expectMockCalledWith = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- モック関数の型は実行時まで不明なためanyが必要
   mockFn: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 引数の型は実行時まで不明なためanyが必要
   expectedArgs: any[],
   callIndex = 0,
 ) => {
@@ -126,6 +133,7 @@ export const expectMockCalledWith = (
 /**
  * 期待されるモック呼び出し回数をアサートするヘルパー
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- モック関数の型は実行時まで不明なためanyが必要
 export const expectMockCalledTimes = (mockFn: any, times: number) => {
   return expect(mockFn).toHaveBeenCalledTimes(times);
 };
@@ -133,6 +141,7 @@ export const expectMockCalledTimes = (mockFn: any, times: number) => {
 /**
  * モックが呼ばれていないことをアサートするヘルパー
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- モック関数の型は実行時まで不明なためanyが必要
 export const expectMockNotCalled = (mockFn: any) => {
   return expect(mockFn).not.toHaveBeenCalled();
 };

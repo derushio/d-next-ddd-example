@@ -15,7 +15,7 @@ import { Separator } from '@/components/ui/Separator';
 
 import { clsx } from 'clsx';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface UserListProps {
   initialParams?: Partial<GetUsersParams>;
@@ -59,35 +59,38 @@ export function UserListClient({ initialParams = {} }: UserListProps) {
   const [currentPage, setCurrentPage] = useState(initialParams.page || 1);
 
   // ユーザー一覧を取得する関数
-  const fetchUsers = async (params: Partial<GetUsersParams> = {}) => {
-    setIsLoading(true);
-    setError(null);
+  const fetchUsers = useCallback(
+    async (params: Partial<GetUsersParams> = {}) => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const result = await getUsers({
-        ...initialParams,
-        ...params,
-        searchQuery: searchQuery || undefined,
-        page: currentPage,
-      });
+      try {
+        const result = await getUsers({
+          ...initialParams,
+          ...params,
+          searchQuery: searchQuery || undefined,
+          page: currentPage,
+        });
 
-      if ('success' in result && result.success) {
-        setUsers(result.data);
-      } else if ('error' in result) {
-        setError(result.error || null);
+        if ('success' in result && result.success) {
+          setUsers(result.data);
+        } else if ('error' in result) {
+          setError(result.error || null);
+        }
+      } catch (error) {
+        console.error('ユーザー一覧取得エラー:', error);
+        setError('予期しないエラーが発生しました');
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('ユーザー一覧取得エラー:', error);
-      setError('予期しないエラーが発生しました');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    [initialParams, searchQuery, currentPage],
+  );
 
   // 初回読み込み
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [fetchUsers]);
 
   // 検索実行
   const handleSearch = () => {

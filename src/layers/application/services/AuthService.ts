@@ -1,10 +1,10 @@
+import { INJECTION_TOKENS } from '@/di/tokens';
+import type { IHashService } from '@/layers/application/interfaces/IHashService';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 import { failure, Result, success } from '@/layers/application/types/Result';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import { Email } from '@/layers/domain/value-objects/Email';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
-import type { IHashService } from '@/layers/infrastructure/services/HashService';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
 
 import { inject, injectable } from 'tsyringe';
 
@@ -48,12 +48,12 @@ export class AuthService {
       // パスワード検証
       const isValidPassword = await this.hashService.compareHash(
         password,
-        user.getPasswordHash(),
+        user.passwordHash,
       );
       if (!isValidPassword) {
         this.logger.warn('認証失敗: パスワードが正しくありません', {
           email,
-          userId: user.getId().toString(),
+          userId: user.id.value,
         });
         return failure(
           'メールアドレスまたはパスワードが正しくありません',
@@ -61,12 +61,12 @@ export class AuthService {
         );
       }
 
-      this.logger.info('認証成功', { email, userId: user.getId().toString() });
+      this.logger.info('認証成功', { email, userId: user.id.value });
 
       return success({
-        id: user.getId().toString(),
-        email: user.getEmail().toString(),
-        name: user.getName(),
+        id: user.id.value,
+        email: user.email.value,
+        name: user.name,
       });
     } catch (error) {
       if (error instanceof DomainError) {

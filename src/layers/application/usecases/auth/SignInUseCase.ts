@@ -1,11 +1,11 @@
+import { INJECTION_TOKENS } from '@/di/tokens';
+import type { IHashService } from '@/layers/application/interfaces/IHashService';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 import { failure, Result, success } from '@/layers/application/types/Result';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import type { UserDomainService } from '@/layers/domain/services/UserDomainService';
 import { Email } from '@/layers/domain/value-objects/Email';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
-import type { IHashService } from '@/layers/infrastructure/services/HashService';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
 
 import { inject, injectable } from 'tsyringe';
 
@@ -64,12 +64,12 @@ export class SignInUseCase {
       // パスワード検証
       const isPasswordValid = await this.hashService.compareHash(
         password,
-        user.getPasswordHash(),
+        user.passwordHash,
       );
 
       if (!isPasswordValid) {
         this.logger.warn('サインイン失敗: パスワード不正', {
-          userId: user.getId().toString(),
+          userId: user.id.value,
         });
         return failure(
           'メールアドレスまたはパスワードが正しくありません',
@@ -77,13 +77,13 @@ export class SignInUseCase {
         );
       }
 
-      this.logger.info('サインイン成功', { userId: user.getId().toString() });
+      this.logger.info('サインイン成功', { userId: user.id.value });
 
       return success({
         user: {
-          id: user.getId().toString(),
-          name: user.getName(),
-          email: user.getEmail().toString(),
+          id: user.id.value,
+          name: user.name,
+          email: user.email.value,
         },
       });
     } catch (error) {

@@ -1,11 +1,11 @@
+import { INJECTION_TOKENS } from '@/di/tokens';
+import type { IHashService } from '@/layers/application/interfaces/IHashService';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 import { failure, Result, success } from '@/layers/application/types/Result';
 import { User } from '@/layers/domain/entities/User';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import { Email } from '@/layers/domain/value-objects/Email';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
-import type { IHashService } from '@/layers/infrastructure/services/HashService';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
 
 import { inject, injectable } from 'tsyringe';
 
@@ -59,7 +59,7 @@ export class UserService {
       await this.userRepository.save(user);
 
       this.logger.info('ユーザー作成成功', {
-        userId: user.getId().toString(),
+        userId: user.id.value,
         email,
       });
       return success(user);
@@ -92,7 +92,7 @@ export class UserService {
       this.logger.info('ユーザー検索完了', {
         email,
         found: !!user,
-        userId: user ? user.getId().toString() : null,
+        userId: user ? user.id.value : null,
       });
 
       return success(user);

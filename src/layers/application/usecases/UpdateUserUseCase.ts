@@ -1,11 +1,17 @@
-import { failure, Result, success } from '@/layers/application/types/Result';
+import { INJECTION_TOKENS } from '@/di/tokens';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
+import {
+  failure,
+  isFailure,
+  Result,
+  success,
+} from '@/layers/application/types/Result';
+import type { GetCurrentUserUseCase } from '@/layers/application/usecases/auth/GetCurrentUserUseCase';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import { UserDomainService } from '@/layers/domain/services/UserDomainService';
 import { Email } from '@/layers/domain/value-objects/Email';
 import { UserId } from '@/layers/domain/value-objects/UserId';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
 
 import { inject, injectable } from 'tsyringe';
 
@@ -30,6 +36,8 @@ export class UpdateUserUseCase {
     @inject(INJECTION_TOKENS.UserDomainService)
     private readonly userDomainService: UserDomainService,
     @inject(INJECTION_TOKENS.Logger) private readonly logger: ILogger,
+    @inject(INJECTION_TOKENS.GetCurrentUserUseCase)
+    private readonly getCurrentUserUseCase: GetCurrentUserUseCase,
   ) {}
 
   async execute(
@@ -44,6 +52,27 @@ export class UpdateUserUseCase {
     });
 
     try {
+      // 認証チェック
+      const authResult =
+        await this.getCurrentUserUseCase.requireAuthentication();
+      if (isFailure(authResult)) {
+        this.logger.warn('ユーザー更新失敗: 未認証', {
+          targetUserId: request.userId,
+        });
+        return authResult;
+      }
+
+      const currentUser = authResult.data;
+
+      // 認可チェック（自分自身のアカウントのみ更新可能）
+      if (currentUser.id !== request.userId) {
+        this.logger.warn('ユーザー更新失敗: 権限不足', {
+          currentUserId: currentUser.id,
+          targetUserId: request.userId,
+        });
+        return failure('他のユーザーの情報は更新できません', 'FORBIDDEN');
+      }
+
       // ユーザーID検証
       const userId = new UserId(request.userId);
 
@@ -59,15 +88,12 @@ export class UpdateUserUseCase {
       // 更新データ準備
       const newEmail = request.email
         ? new Email(request.email)
-        : existingUser.getEmail();
+        : existingUser.email;
       const newName =
-        request.name !== undefined ? request.name : existingUser.getName();
+        request.name !== undefined ? request.name : existingUser.name;
 
       // ドメインサービスでの重複チェック（メールアドレスが変更される場合）
-      if (
-        request.email &&
-        request.email !== existingUser.getEmail().toString()
-      ) {
+      if (request.email && request.email !== existingUser.email.value) {
         const isDuplicate =
           await this.userDomainService.isEmailDuplicate(newEmail);
         if (isDuplicate) {
@@ -83,21 +109,21 @@ export class UpdateUserUseCase {
       }
 
       // プロフィール更新（ドメインロジック）
-      existingUser.updateProfile(newEmail, newName);
+      const updatedUser = existingUser.updateProfile(newEmail, newName);
 
       // 永続化
-      await this.userRepository.update(existingUser);
+      await this.userRepository.update(updatedUser);
 
       this.logger.info('ユーザー更新完了', {
-        userId: existingUser.getId().toString(),
-        email: existingUser.getEmail().toString(),
+        userId: updatedUser.id.value,
+        email: updatedUser.email.value,
       });
 
       return success({
-        id: existingUser.getId().toString(),
-        email: existingUser.getEmail().toString(),
-        name: existingUser.getName(),
-        updatedAt: existingUser.getUpdatedAt(),
+        id: updatedUser.id.value,
+        email: updatedUser.email.value,
+        name: updatedUser.name,
+        updatedAt: updatedUser.updatedAt,
       });
     } catch (error) {
       this.logger.error('ユーザー更新中に予期しないエラーが発生', {

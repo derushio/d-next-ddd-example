@@ -5,8 +5,8 @@ import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import type { IUserDomainService } from '@/layers/domain/services/UserDomainService';
 import { Email } from '@/layers/domain/value-objects/Email';
-import { container } from '@/layers/infrastructure/di/container';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
+import { container } from '@/di/container';
+import { INJECTION_TOKENS } from '@/di/tokens';
 import type { ILogger } from '@/layers/infrastructure/services/Logger';
 
 import { setupTestEnvironment } from '@tests/utils/helpers/testHelpers';
@@ -93,7 +93,7 @@ describe('ResetPasswordUseCase', () => {
         'パスワードリセット処理完了',
         {
           email: validInput.email,
-          userId: mockUser.getId().toString(),
+          userId: mockUser.id.toString(),
         },
       );
     });

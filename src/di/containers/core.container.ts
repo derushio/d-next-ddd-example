@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
+import { INJECTION_TOKENS } from '@/di/tokens';
 import { DatabaseFactory } from '@/layers/infrastructure/persistence/DatabaseFactory';
 import { ConfigService } from '@/layers/infrastructure/services/ConfigService';
 
@@ -16,6 +16,7 @@ import { container } from 'tsyringe';
 export const coreContainer = container.createChildContainer();
 
 // Prevent duplicate registration
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- DIコンテナのコンストラクタ型は実行時に多様な引数パターンを受け取るためanyが必要
 function safeRegister<T>(token: symbol, creator: new (...args: any[]) => T) {
   if (!coreContainer.isRegistered(token)) {
     coreContainer.registerSingleton(creator);

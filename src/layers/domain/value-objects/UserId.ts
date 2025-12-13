@@ -1,7 +1,7 @@
 import { genCuid2 } from '@/utils/cuid2';
 
 export class UserId {
-  private readonly value: string;
+  public readonly value: string;
 
   constructor(value: string) {
     this.validateUserId(value);

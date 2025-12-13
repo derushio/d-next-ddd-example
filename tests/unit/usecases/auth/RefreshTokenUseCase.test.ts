@@ -1,8 +1,8 @@
 import { isFailure, isSuccess } from '@/layers/application/types/Result';
 import { RefreshTokenUseCase } from '@/layers/application/usecases/auth/RefreshTokenUseCase';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
-import { container } from '@/layers/infrastructure/di/container';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
+import { container } from '@/di/container';
+import { INJECTION_TOKENS } from '@/di/tokens';
 import type { ILogger } from '@/layers/infrastructure/services/Logger';
 
 import { setupTestEnvironment } from '@tests/utils/helpers/testHelpers';
@@ -89,7 +89,7 @@ describe('RefreshTokenUseCase', () => {
     it('should return failure when refresh token is null', async () => {
       // Arrange
       const nullTokenInput = {
-        refreshToken: null as any,
+        refreshToken: null as unknown as string,
       };
 
       // Act

@@ -2,8 +2,8 @@
 
 import 'reflect-metadata';
 
-import { isFailure, isSuccess } from '@/layers/application/types/Result';
-import { resolve } from '@/layers/infrastructure/di/resolver';
+import { resolve } from '@/di/resolver';
+import { isSuccess } from '@/layers/application/types/Result';
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';

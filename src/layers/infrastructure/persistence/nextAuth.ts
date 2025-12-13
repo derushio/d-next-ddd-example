@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
+import { resolve } from '@/di/resolver';
 import { isSuccess } from '@/layers/application/types/Result';
-import { resolve } from '@/layers/infrastructure/di/resolver';
 // Prisma Client
 import { prisma } from '@/layers/infrastructure/persistence/prisma';
 

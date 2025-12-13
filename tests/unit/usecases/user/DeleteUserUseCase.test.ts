@@ -1,13 +1,14 @@
-import { isFailure, isSuccess } from '@/layers/application/types/Result';
+import { isFailure, isSuccess, success } from '@/layers/application/types/Result';
+import type { GetCurrentUserUseCase } from '@/layers/application/usecases/auth/GetCurrentUserUseCase';
 import { DeleteUserUseCase } from '@/layers/application/usecases/user/DeleteUserUseCase';
 import { User } from '@/layers/domain/entities/User';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import { Email } from '@/layers/domain/value-objects/Email';
 import { UserId } from '@/layers/domain/value-objects/UserId';
-import { container } from '@/layers/infrastructure/di/container';
-import { resolve } from '@/layers/infrastructure/di/resolver';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
+import { container } from '@/di/container';
+import { resolve } from '@/di/resolver';
+import { INJECTION_TOKENS } from '@/di/tokens';
 import type { ILogger } from '@/layers/infrastructure/services/Logger';
 
 import { setupTestEnvironment } from '@tests/utils/helpers/testHelpers';
@@ -16,12 +17,20 @@ import {
   createAutoMockUserRepository,
 } from '@tests/utils/mocks/autoMocks';
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { MockProxy } from 'vitest-mock-extended';
+import { mock, type MockProxy } from 'vitest-mock-extended';
 
 describe('DeleteUserUseCase', () => {
   let deleteUserUseCase: DeleteUserUseCase;
   let mockUserRepository: MockProxy<IUserRepository>;
   let mockLogger: MockProxy<ILogger>;
+  let mockGetCurrentUserUseCase: MockProxy<GetCurrentUserUseCase>;
+
+  // テスト用の認証済みユーザー情報
+  const authenticatedUser = {
+    id: 'test-user-id',
+    email: 'test@example.com',
+    name: 'Test User',
+  };
 
   // テスト環境の自動セットアップ
   setupTestEnvironment();
@@ -30,6 +39,12 @@ describe('DeleteUserUseCase', () => {
     // 🚀 自動モック生成（vitest-mock-extended）
     mockUserRepository = createAutoMockUserRepository();
     mockLogger = createAutoMockLogger();
+    mockGetCurrentUserUseCase = mock<GetCurrentUserUseCase>();
+
+    // 認証成功をデフォルトに設定
+    mockGetCurrentUserUseCase.requireAuthentication.mockResolvedValue(
+      success(authenticatedUser),
+    );
 
     // DIコンテナにモックを登録
     container.registerInstance(
@@ -37,6 +52,10 @@ describe('DeleteUserUseCase', () => {
       mockUserRepository,
     );
     container.registerInstance(INJECTION_TOKENS.Logger, mockLogger);
+    container.registerInstance(
+      INJECTION_TOKENS.GetCurrentUserUseCase,
+      mockGetCurrentUserUseCase,
+    );
 
     // UseCaseインスタンスをDIコンテナから取得（型安全）
     deleteUserUseCase = resolve('DeleteUserUseCase');
@@ -106,9 +125,15 @@ describe('DeleteUserUseCase', () => {
 
     it('should return failure for empty userId', async () => {
       // Arrange
+      const emptyUserId = '';
       const invalidInput = {
-        userId: '',
+        userId: emptyUserId,
       };
+
+      // 認証ユーザーを空のIDに変更（認可チェックを通過させる）
+      mockGetCurrentUserUseCase.requireAuthentication.mockResolvedValue(
+        success({ id: emptyUserId, email: 'test@example.com', name: 'Test User' }),
+      );
 
       // Act
       const result = await deleteUserUseCase.execute(invalidInput);
@@ -127,9 +152,15 @@ describe('DeleteUserUseCase', () => {
 
     it('should return failure for whitespace-only userId', async () => {
       // Arrange
+      const whitespaceUserId = '   ';
       const invalidInput = {
-        userId: '   ',
+        userId: whitespaceUserId,
       };
+
+      // 認証ユーザーを空白のIDに変更（認可チェックを通過させる）
+      mockGetCurrentUserUseCase.requireAuthentication.mockResolvedValue(
+        success({ id: whitespaceUserId, email: 'test@example.com', name: 'Test User' }),
+      );
 
       // Act
       const result = await deleteUserUseCase.execute(invalidInput);
@@ -253,9 +284,15 @@ describe('DeleteUserUseCase', () => {
 
     it('should handle invalid UserId creation error', async () => {
       // Arrange - UserId作成時にErrorが発生するケース
+      const invalidUserId = 'ab'; // 短すぎるID（7文字未満）
       const invalidUserIdInput = {
-        userId: 'ab', // 短すぎるID（7文字未満）
+        userId: invalidUserId,
       };
+
+      // 認証ユーザーを短いIDに変更（認可チェックを通過させる）
+      mockGetCurrentUserUseCase.requireAuthentication.mockResolvedValue(
+        success({ id: invalidUserId, email: 'test@example.com', name: 'Test User' }),
+      );
 
       // Act
       const result = await deleteUserUseCase.execute(invalidUserIdInput);

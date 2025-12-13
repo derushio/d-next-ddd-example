@@ -1,8 +1,8 @@
 import type { IConfigService } from '@/layers/infrastructure/services/ConfigService';
 import { HashService } from '@/layers/infrastructure/services/HashService';
-import { container } from '@/layers/infrastructure/di/container';
-import { resolve } from '@/layers/infrastructure/di/resolver';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
+import { container } from '@/di/container';
+import { resolve } from '@/di/resolver';
+import { INJECTION_TOKENS } from '@/di/tokens';
 
 import { createMockConfigService } from '@tests/utils/mocks/autoMocks';
 import { beforeEach, describe, expect, it } from 'vitest';

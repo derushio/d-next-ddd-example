@@ -1,10 +1,10 @@
+import { INJECTION_TOKENS } from '@/di/tokens';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 import { failure, Result, success } from '@/layers/application/types/Result';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import type { IUserDomainService } from '@/layers/domain/services/UserDomainService';
 import { Email } from '@/layers/domain/value-objects/Email';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
 
 import { inject, injectable } from 'tsyringe';
 
@@ -67,7 +67,7 @@ export class ResetPasswordUseCase {
 
       this.logger.info('パスワードリセット処理完了', {
         email,
-        userId: user?.getId().toString(),
+        userId: user?.id.value,
       });
 
       return success({

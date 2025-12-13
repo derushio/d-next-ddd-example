@@ -28,4 +28,4 @@ jobs:
         env:
           KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
         run: |
-          kubectl --kubeconfig=<(echo "$KUBE_CONFIG") set image deployment/d-next-ddd-example-next-deployment container-0=harbor.example.com/d-next-ddd-example/next:${{ env.GITHUB_SHA }} --namespace=d-next-ddd-example
+          kubectl --kubeconfig=<(echo "$KUBE_CONFIG") set image deployment/d-next-resources-next-deployment container-0=harbor.example.com/d-next-resources/next:${{ env.GITHUB_SHA }} --namespace=d-next-resources

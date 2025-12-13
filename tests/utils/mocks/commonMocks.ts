@@ -29,6 +29,7 @@ export const createMockPrismaClient = () =>
       update: vi.fn(),
       delete: vi.fn(),
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- PrismaClientの複雑な型構造をモック化するためanyが必要
   }) as any;
 
 // NextAuth getAuth function mock helpers
@@ -53,6 +54,7 @@ export const createGetAuthMockHelpers = () => {
 
     // 不完全なユーザー情報を返すモックデータ
     getIncompleteUserData: (
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- テスト用の部分的ユーザーオブジェクト作成のためanyが必要
       partialUser: any = { email: 'test@example.com' },
     ) => ({ user: partialUser }),
 

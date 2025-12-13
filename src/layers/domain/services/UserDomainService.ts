@@ -1,9 +1,9 @@
+import { INJECTION_TOKENS } from '@/di/tokens';
 import { User } from '@/layers/domain/entities/User';
 import { DomainError } from '@/layers/domain/errors/DomainError';
+import type { IHashService } from '@/layers/domain/interfaces/IHashService';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import { Email } from '@/layers/domain/value-objects/Email';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
-import type { IHashService } from '@/layers/infrastructure/services/HashService';
 
 import { inject, injectable } from 'tsyringe';
 
@@ -71,13 +71,13 @@ export class UserDomainService implements IUserDomainService {
     const emailValue = new Email(newEmail);
 
     // 現在のメールアドレスと同じ場合は問題なし
-    if (currentUser.getEmail().equals(emailValue)) {
+    if (currentUser.email.equals(emailValue)) {
       return;
     }
 
     // 他のユーザーが使用していないかチェック
     const existingUser = await this.userRepository.findByEmail(emailValue);
-    if (existingUser && !existingUser.getId().equals(currentUser.getId())) {
+    if (existingUser && !existingUser.id.equals(currentUser.id)) {
       throw new DomainError(
         'このメールアドレスは既に使用されています',
         'EMAIL_ALREADY_EXISTS',

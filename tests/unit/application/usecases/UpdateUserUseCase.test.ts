@@ -2,7 +2,8 @@ import {
   UpdateUserRequest,
   UpdateUserUseCase,
 } from '@/layers/application/usecases/UpdateUserUseCase';
-import { isFailure, isSuccess } from '@/layers/application/types/Result';
+import { isFailure, isSuccess, success } from '@/layers/application/types/Result';
+import type { GetCurrentUserUseCase } from '@/layers/application/usecases/auth/GetCurrentUserUseCase';
 import { User } from '@/layers/domain/entities/User';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
@@ -17,24 +18,39 @@ import {
   createAutoMockUserRepository,
 } from '@tests/utils/mocks/autoMocks';
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { MockProxy } from 'vitest-mock-extended';
+import { mock, type MockProxy } from 'vitest-mock-extended';
 
 describe('UpdateUserUseCase', () => {
   let updateUserUseCase: UpdateUserUseCase;
   let mockUserRepository: MockProxy<IUserRepository>;
   let mockUserDomainService: MockProxy<UserDomainService>;
   let mockLogger: MockProxy<ILogger>;
+  let mockGetCurrentUserUseCase: MockProxy<GetCurrentUserUseCase>;
+
+  // テスト用の認証済みユーザー情報
+  const authenticatedUser = {
+    id: 'existing-user-id',
+    email: 'test@example.com',
+    name: 'Test User',
+  };
 
   beforeEach(() => {
     // 🚀 自動モック生成（vitest-mock-extended）
     mockUserRepository = createAutoMockUserRepository();
     mockUserDomainService = createAutoMockUserDomainService();
     mockLogger = createAutoMockLogger();
+    mockGetCurrentUserUseCase = mock<GetCurrentUserUseCase>();
+
+    // 認証成功をデフォルトに設定
+    mockGetCurrentUserUseCase.requireAuthentication.mockResolvedValue(
+      success(authenticatedUser),
+    );
 
     updateUserUseCase = new UpdateUserUseCase(
       mockUserRepository,
       mockUserDomainService,
       mockLogger,
+      mockGetCurrentUserUseCase,
     );
   });
 
@@ -56,6 +72,7 @@ describe('UpdateUserUseCase', () => {
         name: 'New Name',
       };
 
+
       mockUserRepository.findById.mockResolvedValue(existingUser);
       mockUserDomainService.isEmailDuplicate.mockResolvedValue(false);
       mockUserRepository.update.mockResolvedValue(undefined);
@@ -76,7 +93,15 @@ describe('UpdateUserUseCase', () => {
       expect(mockUserDomainService.isEmailDuplicate).toHaveBeenCalledWith(
         new Email('new@example.com'),
       );
-      expect(mockUserRepository.update).toHaveBeenCalledWith(existingUser);
+      // 更新されたユーザーが渡されていることを確認（時間の具体的な値は除外）
+      expect(mockUserRepository.update).toHaveBeenCalledTimes(1);
+      const calledUser = mockUserRepository.update.mock.calls[0][0];
+      expect(calledUser.id.value).toBe('existing-user-id');
+      expect(calledUser.email.value).toBe('new@example.com');
+      expect(calledUser.name).toBe('New Name');
+      expect(calledUser.passwordHash).toBe('hashed-password');
+      expect(calledUser.createdAt).toEqual(new Date('2023-01-01'));
+      expect(calledUser.updatedAt).toBeInstanceOf(Date);
     });
 
     it('名前のみ更新できる', async () => {
@@ -143,11 +168,16 @@ describe('UpdateUserUseCase', () => {
 
     it('存在しないユーザーIDでエラーを返す', async () => {
       // Arrange
+      const nonExistentUserId = 'non-existent-id';
       const request: UpdateUserRequest = {
-        userId: 'non-existent-id',
+        userId: nonExistentUserId,
         name: 'New Name',
       };
 
+      // 認証ユーザーを存在しないIDに変更（認可チェックを通過させる）
+      mockGetCurrentUserUseCase.requireAuthentication.mockResolvedValue(
+        success({ id: nonExistentUserId, email: 'test@example.com', name: 'Test User' }),
+      );
       mockUserRepository.findById.mockResolvedValue(null);
 
       // Act

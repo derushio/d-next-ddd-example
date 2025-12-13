@@ -16,9 +16,9 @@ export const HEADER_PATH = 'x-url-path';
 export const HEADER_SEARCH = 'x-url-search';
 
 /**
- * 全体に関わるmiddleware
+ * 全体に関わるproxy
  */
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   // リクエストURLをServer Componentから取得するためのヘッダ
   const requestHeaders = new Headers(req.headers);
   const url = new URL(req.url);

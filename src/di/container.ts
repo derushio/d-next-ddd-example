@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 
-import { applicationContainer } from '@/layers/infrastructure/di/containers/application.container';
+import { applicationContainer } from '@/di/containers/application.container';
 
 /**
  * 分離されたDIコンテナアーキテクチャ
@@ -10,9 +10,9 @@ import { applicationContainer } from '@/layers/infrastructure/di/containers/appl
  */
 
 // レイヤー別コンテナを順次初期化（依存関係の順序に従って）
-import '@/layers/infrastructure/di/containers/core.container';
-import '@/layers/infrastructure/di/containers/domain.container';
-import '@/layers/infrastructure/di/containers/infrastructure.container';
+import '@/di/containers/core.container';
+import '@/di/containers/domain.container';
+import '@/di/containers/infrastructure.container';
 
 /**
  * 最上位のアプリケーションコンテナをデフォルトコンテナとしてエクスポート
@@ -20,5 +20,4 @@ import '@/layers/infrastructure/di/containers/infrastructure.container';
  */
 export const container = applicationContainer;
 
-// resolve関数は resolver.ts で定義されています
-export { resolve } from '@/layers/infrastructure/di/resolver';
+// resolve関数は別途 resolver.ts からimportしてください、ここでexportすると循環参照になります。

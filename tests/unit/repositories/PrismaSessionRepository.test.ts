@@ -1,6 +1,6 @@
-import { container } from '@/layers/infrastructure/di/container';
-import { resolve } from '@/layers/infrastructure/di/resolver';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
+import { container } from '@/di/container';
+import { resolve } from '@/di/resolver';
+import { INJECTION_TOKENS } from '@/di/tokens';
 import { PrismaSessionRepository } from '@/layers/infrastructure/repositories/implementations/PrismaSessionRepository';
 import type { ILogger } from '@/layers/infrastructure/services/Logger';
 

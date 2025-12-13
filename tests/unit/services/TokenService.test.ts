@@ -2,6 +2,10 @@ import 'reflect-metadata';
 
 import { TokenService } from '@/layers/application/services/TokenService';
 import { isFailure, isSuccess } from '@/layers/application/types/Result';
+import type { ISessionRepository } from '@/layers/domain/repositories/ISessionRepository';
+import type { IConfigService } from '@/layers/infrastructure/services/ConfigService';
+import type { IHashService } from '@/layers/infrastructure/services/HashService';
+import type { ILogger } from '@/layers/infrastructure/services/Logger';
 import {
   createAutoMockConfigService,
   createAutoMockHashService,
@@ -9,6 +13,7 @@ import {
   createAutoMockSessionRepository,
 } from '@tests/utils/mocks/autoMocks';
 
+import { beforeEach, describe, expect, it, vi, type MockedFunction } from 'vitest';
 import type { MockProxy } from 'vitest-mock-extended';
 
 // uuidv4のモック
@@ -23,19 +28,19 @@ vi.mock('date-fns', () => ({
 
 describe('TokenService', () => {
   let tokenService: TokenService;
-  let mockSessionRepository: MockProxy<any>;
-  let mockHashService: MockProxy<any>;
-  let mockConfigService: MockProxy<any>;
-  let mockLogger: MockProxy<any>;
+  let mockSessionRepository: MockProxy<ISessionRepository>;
+  let mockHashService: MockProxy<IHashService>;
+  let mockConfigService: MockProxy<IConfigService>;
+  let mockLogger: MockProxy<ILogger>;
 
   beforeEach(async () => {
     // uuidv4のモック設定
     const { v4 } = await import('uuid');
-    const mockV4 = vi.mocked(v4) as any;
+    const mockV4 = vi.mocked(v4) as unknown as MockedFunction<() => string>;
     mockV4
       .mockClear()
-      .mockReturnValueOnce('12345678-1234-4567-8901-123456789abc') // access-token uuid  
-      .mockReturnValueOnce('87654321-4321-4567-8901-cba987654321'); // reset-token uuid
+      .mockReturnValueOnce('12345678-1234-4567-8901-123456789abc') // accessToken用
+      .mockReturnValueOnce('87654321-4321-4567-8901-cba987654321'); // resetToken用
 
     mockSessionRepository = createAutoMockSessionRepository();
     mockHashService = createAutoMockHashService();
@@ -51,8 +56,19 @@ describe('TokenService', () => {
 
     // ConfigServiceのモック設定
     mockConfigService.getConfig.mockReturnValue({
+      database: {
+        url: 'test-database-url',
+      },
+      app: {
+        baseUrl: 'http://localhost:3000',
+        isDevelopment: true,
+        nodeEnv: 'test',
+      },
       token: {
+        saltRounds: 12,
+        secret: 'test-secret',
         maxAgeMinutes: 60,
+        updateAgeMinutes: 30,
       },
     });
 
@@ -73,7 +89,19 @@ describe('TokenService', () => {
       id: 'session-456',
       userId: validUserId,
       accessTokenHash: 'hashed-access-token',
+      accessTokenExpireAt: new Date(),
       resetTokenHash: 'hashed-reset-token',
+      resetTokenExpireAt: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      User: {
+        id: validUserId,
+        name: 'Test User',
+        email: 'test@example.com',
+        passwordHash: 'hashed-password',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     };
 
     it('should successfully create new token session', async () => {
@@ -130,7 +158,7 @@ describe('TokenService', () => {
 
     it('should return failure when userId is null', async () => {
       // Act
-      const result = await tokenService.createNewTokenSession(null as any);
+      const result = await tokenService.createNewTokenSession(null as unknown as string);
 
       // Assert
       expect(isFailure(result)).toBe(true);
@@ -154,7 +182,7 @@ describe('TokenService', () => {
 
     it('should return failure when userId is not a string', async () => {
       // Act
-      const result = await tokenService.createNewTokenSession(123 as any);
+      const result = await tokenService.createNewTokenSession(123 as unknown as string);
 
       // Assert
       expect(isFailure(result)).toBe(true);

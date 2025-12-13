@@ -1,8 +1,9 @@
-import { resolve } from '@/layers/infrastructure/di/container';
+import { resolve } from '@/di/resolver';
 import type { IConfigService } from '@/layers/infrastructure/services/ConfigService';
 import type { IErrorHandler } from '@/layers/infrastructure/services/ErrorHandler';
 import type { IHashService } from '@/layers/infrastructure/services/HashService';
 import type { ILogger } from '@/layers/infrastructure/services/Logger';
+
 import { describe, expect, expectTypeOf, it } from 'vitest';
 
 describe('DI Type Inference Tests', () => {
@@ -112,6 +113,7 @@ describe('DI Type Inference Tests', () => {
 
       // 全ての有効なインフラサービス名でresolveが動作することを確認
       validInfraServiceNames.forEach((serviceName) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 動的サービス名での型推論テスト実行のためanyが必要
         expect(() => resolve(serviceName as any)).not.toThrow();
       });
     });

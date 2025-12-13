@@ -1,7 +1,7 @@
+import { INJECTION_TOKENS } from '@/di/tokens';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 import { failure, Result, success } from '@/layers/application/types/Result';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
 
 import { inject, injectable } from 'tsyringe';
 

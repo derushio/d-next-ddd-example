@@ -15,12 +15,12 @@ import { BodyContainer } from '@/components/layout/container/BodyContainer';
 import { BodyContainerClient } from '@/components/layout/container/BodyContainerClient';
 import { SessionProvider } from '@/components/providers/SessionProvider';
 
-import '@/layers/infrastructure/di/container';
+import '@/di/container';
 
 import type { Metadata } from 'next';
 
 /**
- * Tailwind v4ダークモード用のスクリプト
+ * テーマ初期化スクリプト（ライトテーマのみ）
  */
 function ThemeModeScript() {
   return (
@@ -28,9 +28,7 @@ function ThemeModeScript() {
       dangerouslySetInnerHTML={{
         __html: `
           (function() {
-            const theme = localStorage.getItem('theme') || 'system';
-            const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            document.documentElement.classList.toggle('dark', isDark);
+            document.documentElement.classList.remove('dark');
           })()
         `,
       }}

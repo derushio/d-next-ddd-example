@@ -1,5 +1,7 @@
 import 'reflect-metadata';
 
+import { domainContainer } from '@/di/containers/domain.container';
+import { INJECTION_TOKENS } from '@/di/tokens';
 import { AuthService } from '@/layers/application/services/AuthService';
 import { TokenService } from '@/layers/application/services/TokenService';
 import { UserService } from '@/layers/application/services/UserService';
@@ -14,8 +16,6 @@ import { CreateUserUseCase } from '@/layers/application/usecases/user/CreateUser
 import { DeleteUserUseCase } from '@/layers/application/usecases/user/DeleteUserUseCase';
 import { GetUserByIdUseCase } from '@/layers/application/usecases/user/GetUserByIdUseCase';
 import { GetUsersUseCase } from '@/layers/application/usecases/user/GetUsersUseCase';
-import { domainContainer } from '@/layers/infrastructure/di/containers/domain.container';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
 
 /**
  * Application Container - アプリケーション層（最上位）
@@ -27,6 +27,7 @@ import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
 export const applicationContainer = domainContainer.createChildContainer();
 
 // Prevent duplicate registration
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- DIコンテナのコンストラクタ型は実行時に多様な引数パターンを受け取るためanyが必要
 function safeRegister<T>(token: symbol, creator: new (...args: any[]) => T) {
   if (!applicationContainer.isRegistered(token)) {
     applicationContainer.registerSingleton(creator);
@@ -35,17 +36,20 @@ function safeRegister<T>(token: symbol, creator: new (...args: any[]) => T) {
 }
 
 // Use Case registrations
+// 認証系UseCase（他のUseCaseから依存されるため先に登録）
+safeRegister(INJECTION_TOKENS.GetCurrentUserUseCase, GetCurrentUserUseCase);
+safeRegister(INJECTION_TOKENS.SignInUseCase, SignInUseCase);
+safeRegister(INJECTION_TOKENS.SignOutUseCase, SignOutUseCase);
+safeRegister(INJECTION_TOKENS.RefreshTokenUseCase, RefreshTokenUseCase);
+safeRegister(INJECTION_TOKENS.ResetPasswordUseCase, ResetPasswordUseCase);
+safeRegister(INJECTION_TOKENS.ChangePasswordUseCase, ChangePasswordUseCase);
+
+// ユーザー系UseCase（GetCurrentUserUseCaseに依存）
 safeRegister(INJECTION_TOKENS.CreateUserUseCase, CreateUserUseCase);
 safeRegister(INJECTION_TOKENS.GetUsersUseCase, GetUsersUseCase);
 safeRegister(INJECTION_TOKENS.GetUserByIdUseCase, GetUserByIdUseCase);
 safeRegister(INJECTION_TOKENS.DeleteUserUseCase, DeleteUserUseCase);
 safeRegister(INJECTION_TOKENS.UpdateUserUseCase, UpdateUserUseCase);
-safeRegister(INJECTION_TOKENS.SignInUseCase, SignInUseCase);
-safeRegister(INJECTION_TOKENS.SignOutUseCase, SignOutUseCase);
-safeRegister(INJECTION_TOKENS.GetCurrentUserUseCase, GetCurrentUserUseCase);
-safeRegister(INJECTION_TOKENS.RefreshTokenUseCase, RefreshTokenUseCase);
-safeRegister(INJECTION_TOKENS.ResetPasswordUseCase, ResetPasswordUseCase);
-safeRegister(INJECTION_TOKENS.ChangePasswordUseCase, ChangePasswordUseCase);
 
 // Legacy Service registrations (will be phased out)
 safeRegister(INJECTION_TOKENS.UserService, UserService);

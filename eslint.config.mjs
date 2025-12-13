@@ -1,32 +1,23 @@
-import { FlatCompat } from '@eslint/eslintrc';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// FlatCompat の初期化
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+import nextVitals from 'eslint-config-next/core-web-vitals';
+import nextTypescript from 'eslint-config-next/typescript';
 
 // 無視するパターンの定義
 const ignorePatterns = [
   // dependencies
-  '/node_modules/**',
-  '/.pnp',
+  'node_modules/**',
+  '.pnp',
   '.pnp.*',
   '.yarn/**',
 
   // testing
-  '/coverage/**',
+  'coverage/**',
 
   // next.js
-  '/.next/**',
-  '/out/**',
+  '.next/**',
+  'out/**',
 
   // production
-  '/build/**',
+  'build/**',
 
   // misc
   '.DS_Store',
@@ -53,11 +44,15 @@ const ignorePatterns = [
 
 // ESLint 設定
 const eslintConfig = [
-  ...compat.extends('next/core-web-vitals', 'next/typescript').map((c) => ({
-    ...c,
-    ignores: ignorePatterns, // 無視パターンを適用
+  ...nextVitals,
+  ...nextTypescript,
+  {
+    ignores: ignorePatterns,
+  },
+  {
     rules: {
-      '@typescript-eslint/no-unused-vars': 'off', // ルールのカスタマイズ
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-explicit-any': 'error',
       // 相対参照を禁止し、alias参照を強制
       'no-restricted-imports': [
         'error',
@@ -71,8 +66,86 @@ const eslintConfig = [
           ],
         },
       ],
+      // Next.jsのServer Componentsでは Date.now() 等の使用は正当なため無効化
+      'react-hooks/purity': 'off',
     },
-  })),
+  },
+  // ============================================================
+  // Clean Architecture レイヤー依存関係制約
+  // src/layers/ 配下のみが対象
+  // ============================================================
+  // Domain層: 最も内側、他のレイヤーに依存禁止
+  {
+    files: ['src/layers/domain/**/*.ts', 'src/layers/domain/**/*.tsx'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['../*', './*'],
+              message:
+                '相対参照は禁止です。@/* のalias参照を使用してください。',
+            },
+            {
+              group: ['@/layers/application/*', '@/layers/application/**'],
+              message:
+                'Domain層からApplication層へのインポートは禁止です。Clean Architectureの依存関係に違反しています。',
+            },
+            {
+              group: ['@/layers/infrastructure/*', '@/layers/infrastructure/**'],
+              message:
+                'Domain層からInfrastructure層へのインポートは禁止です。Clean Architectureの依存関係に違反しています。',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  // Application層: Domain層にのみ依存可能
+  {
+    files: ['src/layers/application/**/*.ts', 'src/layers/application/**/*.tsx'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['../*', './*'],
+              message:
+                '相対参照は禁止です。@/* のalias参照を使用してください。',
+            },
+            {
+              group: ['@/layers/infrastructure/*', '@/layers/infrastructure/**'],
+              message:
+                'Application層からInfrastructure層へのインポートは禁止です。Clean Architectureの依存関係に違反しています。',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  // Infrastructure層: Domain層、Application層に依存可能
+  {
+    files: [
+      'src/layers/infrastructure/**/*.ts',
+      'src/layers/infrastructure/**/*.tsx',
+    ],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['../*', './*'],
+              message:
+                '相対参照は禁止です。@/* のalias参照を使用してください。',
+            },
+          ],
+        },
+      ],
+    },
+  },
 ];
 
 export default eslintConfig;

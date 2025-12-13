@@ -1,22 +1,15 @@
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
+import { INJECTION_TOKENS } from '@/di/tokens';
 import type {
   AppConfig,
   IConfigService,
-} from '@/layers/infrastructure/services/ConfigService';
+} from '@/layers/application/interfaces/IConfigService';
+import type { IHashService } from '@/layers/domain/interfaces/IHashService';
 
 import * as bcrypt from 'bcryptjs';
 import { inject, injectable } from 'tsyringe';
 
-/**
- * パスワードハッシュを担当するユーティリティサービス。
- * アルゴリズムを abstract することで、将来的に argon2 等へ切り替えが容易となる。
- */
-export interface IHashService {
-  /** テキストをハッシュ化する */
-  generateHash(text: string): Promise<string>;
-  /** ハッシュとプレーンテキストを比較する */
-  compareHash(text: string, hash: string): Promise<boolean>;
-}
+// Re-export for backward compatibility
+export type { IHashService } from '@/layers/domain/interfaces/IHashService';
 
 @injectable()
 export class HashService implements IHashService {

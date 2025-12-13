@@ -1,3 +1,5 @@
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
+
 import { injectable } from 'tsyringe';
 
 /**
@@ -13,16 +15,8 @@ interface SensitiveDataMaskConfig {
   }>;
 }
 
-/**
- * 共通ログ出力を集約するサービス。
- * 機密情報の自動マスク機能を含む構造化ログ出力を提供。
- */
-export interface ILogger {
-  info(message: string, meta?: Record<string, unknown>): void;
-  warn(message: string, meta?: Record<string, unknown>): void;
-  error(message: string, meta?: Record<string, unknown>): void;
-  debug(message: string, meta?: Record<string, unknown>): void;
-}
+// Re-export for backward compatibility
+export type { ILogger } from '@/layers/application/interfaces/ILogger';
 
 @injectable()
 export class Logger implements ILogger {
@@ -97,7 +91,7 @@ export class Logger implements ILogger {
       timestamp: new Date().toISOString(),
       level,
       message,
-      service: 'd-next-ddd-example',
+      service: 'd-next-resources',
       environment: process.env.NODE_ENV || 'development',
       traceId: this.generateTraceId(),
       ...meta,

@@ -210,7 +210,6 @@ export const colorClasses = {
   border: {
     default: 'border-[var(--border)]',
     light: 'border-[var(--border-light)]',
-    dark: 'border-[var(--border-dark)]',
   },
 
   // ホバー状態（CSS変数統一）

@@ -6,41 +6,44 @@
 
 ---
 
-## 🎯 ご自身の状況に合わせた学習パス
+## 🎯 ご自身の状況に合わせてお使いください
 
-### 🔰 これからモダンアーキテクチャを学びたい方
+### 🔰 これからモダンアーキテクチャに触れる方へ
 
-**Clean ArchitectureやDDDをこれから学んでみたい** という方はこちら：
+**Clean ArchitectureやDDDにご興味をお持ちの方** へ、以下の順序でご案内しております：
 
 ```mermaid
 graph LR
     A[📚 基本概念理解] --> B[🎨 図解で理解]
     B --> C[🚀 実践チュートリアル]
     C --> D[🤔 FAQ・トラブル解決]
-    
+
     style A fill:#ffcdd2
     style B fill:#c8e6c9
     style C fill:#bbdefb
     style D fill:#d1c4e9
 ```
 
-**📖 推奨学習順序（約1-2週間）：**
+**📖 おすすめの順序（目安：1-2週間程度）：**
 
 1. **[📚 従来のReactからモダンアーキテクチャへの入門](./_DOCS/guides/beginners/legacy-react-to-modern-architecture.md)**
+
    - 従来のReact vs モダンアーキテクチャの比較
    - よくある疑問や不安の解消
 
 2. **[🎨 アーキテクチャ図解：ビジュアルで理解](./_DOCS/guides/beginners/architecture-diagrams.md)**
-   - 図解でスッキリ理解！アーキテクチャの全体像
-   - データフローとレイヤー構造を視覚的に把握
+
+   - 図解でアーキテクチャの全体像を把握
+   - データフローとレイヤー構造を視覚的に確認
 
 3. **[🚀 実践チュートリアル：商品一覧機能を作ってみよう](./_DOCS/guides/beginners/simple-tutorial.md)**
-   - 手を動かして体感する！実際の機能実装
-   - Clean Architecture の各層を段階的に実装
+
+   - 実際に手を動かしながら機能を実装
+   - Clean Architecture の各層を段階的に体験
 
 4. **[🤔 よくある質問とトラブルシューティング](./_DOCS/guides/beginners/legacy-react-faq.md)**
    - よくある疑問・つまづきポイントの解決
-   - 緊急時のチートシート
+   - 困ったときのチートシート
 
 ### 💪 モダンアーキテクチャの経験がある方
 

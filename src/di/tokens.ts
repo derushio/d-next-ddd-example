@@ -6,6 +6,11 @@
  * - 名前衝突の防止
  * - デバッグ時の可読性向上
  */
+// Application層インターフェース
+import type { IAuthSessionService } from '@/layers/application/interfaces/IAuthSessionService';
+import type { IConfigService } from '@/layers/application/interfaces/IConfigService';
+import type { IHashService } from '@/layers/application/interfaces/IHashService';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 // Service型のインポート
 // Legacy Application Services (will be phased out)
 import type { AuthService } from '@/layers/application/services/AuthService';
@@ -28,10 +33,7 @@ import type { IUserRepository } from '@/layers/domain/repositories/IUserReposito
 // Domain Services
 import type { UserDomainService } from '@/layers/domain/services/UserDomainService';
 import type { PrismaClient } from '@/layers/infrastructure/persistence/prisma/generated';
-import type { IConfigService } from '@/layers/infrastructure/services/ConfigService';
 import type { IErrorHandler } from '@/layers/infrastructure/services/ErrorHandler';
-import type { IHashService } from '@/layers/infrastructure/services/HashService';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
 
 /**
  * 全DIコンテナで使用するToken定数
@@ -43,6 +45,7 @@ export const INJECTION_TOKENS = {
   HashService: Symbol.for('HashService'),
   Logger: Symbol.for('Logger'),
   ErrorHandler: Symbol.for('ErrorHandler'),
+  AuthSessionService: Symbol.for('AuthSessionService'),
 
   // Repository Layer
   UserRepository: Symbol.for('UserRepository'),
@@ -90,6 +93,7 @@ export interface ServiceTypeMap {
   HashService: IHashService;
   Logger: ILogger;
   ErrorHandler: IErrorHandler;
+  AuthSessionService: IAuthSessionService;
 
   // Repository Layer
   UserRepository: IUserRepository;

@@ -1,13 +1,14 @@
+import { INJECTION_TOKENS } from '@/di/tokens';
+import type { IConfigService } from '@/layers/application/interfaces/IConfigService';
+import type { IHashService } from '@/layers/application/interfaces/IHashService';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 import { failure, Result, success } from '@/layers/application/types/Result';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type {
   CreateSessionDTO,
   ISessionRepository,
+  UserSessionWithUser,
 } from '@/layers/domain/repositories/ISessionRepository';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
-import type { IConfigService } from '@/layers/infrastructure/services/ConfigService';
-import type { IHashService } from '@/layers/infrastructure/services/HashService';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
 import { uuidv4 } from '@/utils/uuidv4';
 
 import { addMinutes } from 'date-fns';
@@ -21,7 +22,7 @@ export interface TokenSessionResult {
   accessTokenExpireAt: Date;
   resetToken: string;
   resetTokenExpireAt: Date;
-  session: any; // FIXME: 型定義を Prisma.UserSession に
+  session: UserSessionWithUser;
 }
 
 /**

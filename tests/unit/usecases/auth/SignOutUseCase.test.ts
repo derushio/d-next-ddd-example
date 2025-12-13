@@ -1,7 +1,7 @@
 import { isSuccess } from '@/layers/application/types/Result';
 import { SignOutUseCase } from '@/layers/application/usecases/auth/SignOutUseCase';
-import { container } from '@/layers/infrastructure/di/container';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
+import { container } from '@/di/container';
+import { INJECTION_TOKENS } from '@/di/tokens';
 import type { ILogger } from '@/layers/infrastructure/services/Logger';
 
 import { setupTestEnvironment } from '@tests/utils/helpers/testHelpers';

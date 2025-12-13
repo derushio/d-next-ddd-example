@@ -1,7 +1,4 @@
-import type {
-  User,
-  UserSession,
-} from '@/layers/infrastructure/persistence/prisma/generated';
+import type { UserSessionWithUser } from '@/layers/domain/types/Session';
 
 /**
  * セッション作成用のDTO
@@ -23,13 +20,8 @@ export interface SessionFindCondition {
   id: string;
 }
 
-/**
- * UserSessionWithUser型定義
- * セッション情報にUserを含む型
- */
-export type UserSessionWithUser = UserSession & {
-  User: User;
-};
+// Re-export for convenience
+export type { UserSessionWithUser } from '@/layers/domain/types/Session';
 
 /**
  * SessionRepositoryのインターフェース

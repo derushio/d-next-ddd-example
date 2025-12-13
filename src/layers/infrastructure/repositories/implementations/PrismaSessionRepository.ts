@@ -1,3 +1,4 @@
+import { INJECTION_TOKENS } from '@/di/tokens';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type {
   CreateSessionDTO,
@@ -5,7 +6,6 @@ import type {
   SessionFindCondition,
   UserSessionWithUser,
 } from '@/layers/domain/repositories/ISessionRepository';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
 import type { PrismaClient } from '@/layers/infrastructure/persistence/prisma/generated';
 import type { ILogger } from '@/layers/infrastructure/services/Logger';
 

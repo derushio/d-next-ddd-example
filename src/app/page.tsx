@@ -31,7 +31,7 @@ export default async function Home() {
                 width={200}
                 height={42}
                 priority
-                className='dark:invert opacity-70 hover:opacity-100 transition-opacity duration-300'
+                className='opacity-70 hover:opacity-100 transition-opacity duration-300'
               />
             </div>
 

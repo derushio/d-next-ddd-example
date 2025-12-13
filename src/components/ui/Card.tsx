@@ -22,8 +22,6 @@ const cardVariants = cva(
           'bg-gradient-to-br from-teal-50 to-blue-50 border-teal-200/50 shadow-xl hover:shadow-2xl py-6 backdrop-blur-sm',
         cosmic:
           'bg-gradient-to-br from-red-50 to-purple-50 border-red-200/50 shadow-xl hover:shadow-2xl py-6 backdrop-blur-sm',
-        'aurora-dark':
-          'bg-gradient-to-br from-violet-500/10 to-cyan-500/10 border-violet-300/30 shadow-2xl hover:shadow-3xl py-6 backdrop-blur-xl',
       },
       padding: {
         none: 'py-0',
@@ -40,8 +38,7 @@ const cardVariants = cva(
 );
 
 export interface CardProps
-  extends React.ComponentProps<'div'>,
-    VariantProps<typeof cardVariants> {
+  extends React.ComponentProps<'div'>, VariantProps<typeof cardVariants> {
   hover?: boolean; // 既存システムの hover 機能
 }
 

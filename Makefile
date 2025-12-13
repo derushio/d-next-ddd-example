@@ -1,10 +1,25 @@
-dev:
+up:
 	docker compose -f docker/compose.yaml --env-file=".env" up -d pg
+	@echo "⏳ Waiting for PostgreSQL to be ready..."
+	@until docker compose -f docker/compose.yaml --env-file=".env" exec -T pg pg_isready -U postgres > /dev/null 2>&1; do \
+		echo "  PostgreSQL is not ready yet, waiting..."; \
+		sleep 1; \
+	done
+	@echo "✅ PostgreSQL is ready!"
+	pnpm db:migrate:dev
+	pnpm db:seed
+
+dev: up
+	pnpm dev
+
+build: up
+	pnpm build
 
 down:
 	docker compose -f docker/compose.yaml --env-file=".env" down
 
-reset:
+clean:
+	pnpm stop-dev
 	docker compose -f docker/compose.yaml --env-file=".env" down -v
 
 seed:
@@ -36,12 +51,12 @@ setup:
 	# Install Playwright browsers for E2E testing
 	pnpm exec playwright install chromium firefox
 
-	# Replace d-next-ddd-example with project name from package.json
+	# Replace d-next-resources with project name from package.json
 	PROJECT_NAME=$$(jq -r '.name' package.json) && \
 	command -v fd >/dev/null 2>&1 || { echo "Error: fd command is required but not found." >&2; exit 1; } && \
 	fd --hidden --no-ignore -t f \
 		-E node_modules -E .next -E dist -E .git \
-		-x sed -i "s/d-next-ddd-example/$${PROJECT_NAME}/g" {}
+		-x sed -i "s/d-next-resources/$${PROJECT_NAME}/g" {}
 
 	# Setup Git hooks
 	@echo ""
@@ -81,18 +96,15 @@ setup-hooks:
 	@echo "#!/bin/sh" > ./.git/hooks/pre-commit
 	@echo "# Auto-format before commit" >> ./.git/hooks/pre-commit
 	@echo "pnpm format" >> ./.git/hooks/pre-commit
-	@echo "git add ." >> ./.git/hooks/pre-commit
 	@chmod +x ./.git/hooks/pre-commit
 	@echo "#!/bin/sh" > ./.git/hooks/pre-push
-	@echo "# Run type-check, lint and tests before push" >> ./.git/hooks/pre-push
+	@echo "# Run check before push" >> ./.git/hooks/pre-push
 	@echo "set -e" >> ./.git/hooks/pre-push
-	@echo "pnpm type-check" >> ./.git/hooks/pre-push
-	@echo "pnpm lint" >> ./.git/hooks/pre-push
-	@echo "pnpm test:unit" >> ./.git/hooks/pre-push
+	@echo "pnpm check" >> ./.git/hooks/pre-push
 	@chmod +x ./.git/hooks/pre-push
 	@echo "✅ Git hooks setup completed!"
 	@echo "  - pre-commit: auto-format with 'pnpm format'"
-	@echo "  - pre-push: run type-check, lint and unit tests with 'pnpm type-check && pnpm lint && pnpm test:unit'"
+	@echo "  - pre-push: run check with 'pnpm check'"
 
 init-hooks: setup-hooks
 	# Initialize husky for current project (after git init)
@@ -105,12 +117,9 @@ init-hooks: setup-hooks
 	pnpm husky init
 	@echo "#!/bin/sh" > .husky/pre-commit
 	@echo "pnpm format" >> .husky/pre-commit
-	@echo "git add ." >> .husky/pre-commit
 	@echo "#!/bin/sh" > .husky/pre-push
 	@echo "set -e" >> .husky/pre-push
-	@echo "pnpm type-check" >> .husky/pre-push
-	@echo "pnpm lint" >> .husky/pre-push
-	@echo "pnpm test:unit" >> .husky/pre-push
+	@echo "pnpm check" >> .husky/pre-push
 	@echo "✅ Husky hooks initialized for current project!"
 
 setup-git-hooks:
@@ -141,4 +150,4 @@ setup-git-hooks:
 	@echo "✅ Git hooks setup completed!"
 	@echo "📝 Configured hooks:"
 	@echo "   - pre-commit: Auto-format with 'pnpm format'"
-	@echo "   - pre-push: Run type-check, lint and unit tests with 'pnpm type-check && pnpm lint && pnpm test:unit'"
+	@echo "   - pre-push: Run check with 'pnpm check'"

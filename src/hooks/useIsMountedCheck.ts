@@ -1,25 +1,52 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
 
 /**
  * シンプルなマウントチェックフック
- * 無限ループを避けたシンプルな実装
+ * React 18+ の useSyncExternalStore を使用した実装
  */
 export function useIsMountedCheck() {
-  const [isMounted, setIsMounted] = useState(false);
-  const [isMountedDelay, setIsMountedDelay] = useState(false);
+  const isMountedRef = useRef(false);
+  const isMountedDelayRef = useRef(false);
+  const subscribersRef = useRef(new Set<() => void>());
+
+  // サブスクライブ関数
+  const subscribe = (callback: () => void) => {
+    subscribersRef.current.add(callback);
+    return () => {
+      subscribersRef.current.delete(callback);
+    };
+  };
+
+  // マウント状態の外部ストア
+  const isMounted = useSyncExternalStore(
+    subscribe,
+    () => isMountedRef.current,
+    () => false, // サーバーサイドでは常にfalse
+  );
+
+  const isMountedDelay = useSyncExternalStore(
+    subscribe,
+    () => isMountedDelayRef.current,
+    () => false,
+  );
 
   useEffect(() => {
-    setIsMounted(true);
+    const subscribers = subscribersRef.current;
+
+    isMountedRef.current = true;
+    subscribers.forEach((callback) => callback());
 
     // 少し遅延してからisMountedDelayをtrueに
     const timer = setTimeout(() => {
-      setIsMountedDelay(true);
+      isMountedDelayRef.current = true;
+      subscribers.forEach((callback) => callback());
     }, 100);
 
     return () => {
       clearTimeout(timer);
-      setIsMounted(false);
-      setIsMountedDelay(false);
+      isMountedRef.current = false;
+      isMountedDelayRef.current = false;
+      subscribers.forEach((callback) => callback());
     };
   }, []);
 

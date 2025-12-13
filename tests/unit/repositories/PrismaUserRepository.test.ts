@@ -2,8 +2,8 @@ import { User } from '@/layers/domain/entities/User';
 import { Email } from '@/layers/domain/value-objects/Email';
 import { UserId } from '@/layers/domain/value-objects/UserId';
 import type { PrismaClient } from '@/layers/infrastructure/persistence/prisma/generated';
-import { container } from '@/layers/infrastructure/di/container';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
+import { container } from '@/di/container';
+import { INJECTION_TOKENS } from '@/di/tokens';
 import { PrismaUserRepository } from '@/layers/infrastructure/repositories/implementations/PrismaUserRepository';
 import type { ILogger } from '@/layers/infrastructure/services/Logger';
 
@@ -49,9 +49,9 @@ describe('PrismaUserRepository', () => {
 
       // Assert
       expect(result).toBeInstanceOf(User);
-      expect(result?.getId().toString()).toBe('test-user-id');
-      expect(result?.getEmail().toString()).toBe('test@example.com');
-      expect(result?.getName()).toBe('Test User');
+      expect(result?.id.toString()).toBe('test-user-id');
+      expect(result?.email.toString()).toBe('test@example.com');
+      expect(result?.name).toBe('Test User');
       expect(mockPrismaClient.user.findUnique).toHaveBeenCalledWith({
         where: { id: 'test-user-id' },
       });
@@ -90,7 +90,7 @@ describe('PrismaUserRepository', () => {
 
       // Assert
       expect(result).toBeInstanceOf(User);
-      expect(result?.getEmail().toString()).toBe('test@example.com');
+      expect(result?.email.toString()).toBe('test@example.com');
       expect(mockPrismaClient.user.findUnique).toHaveBeenCalledWith({
         where: { email: 'test@example.com' },
       });
@@ -119,12 +119,12 @@ describe('PrismaUserRepository', () => {
       );
 
       mockPrismaClient.user.upsert.mockResolvedValue({
-        id: user.getId().toString(),
-        email: user.getEmail().toString(),
-        name: user.getName(),
-        passwordHash: user.getPasswordHash(),
-        createdAt: user.getCreatedAt(),
-        updatedAt: user.getUpdatedAt(),
+        id: user.id.toString(),
+        email: user.email.toString(),
+        name: user.name,
+        passwordHash: user.passwordHash,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
       });
 
       // Act
@@ -132,19 +132,19 @@ describe('PrismaUserRepository', () => {
 
       // Assert
       expect(mockPrismaClient.user.upsert).toHaveBeenCalledWith({
-        where: { id: user.getId().toString() },
+        where: { id: user.id.toString() },
         update: {
-          name: user.getName(),
-          email: user.getEmail().toString(),
-          updatedAt: user.getUpdatedAt(),
+          name: user.name,
+          email: user.email.toString(),
+          updatedAt: user.updatedAt,
         },
         create: {
-          id: user.getId().toString(),
-          email: user.getEmail().toString(),
-          name: user.getName(),
-          passwordHash: user.getPasswordHash(),
-          createdAt: user.getCreatedAt(),
-          updatedAt: user.getUpdatedAt(),
+          id: user.id.toString(),
+          email: user.email.toString(),
+          name: user.name,
+          passwordHash: user.passwordHash,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
         },
       });
     });
@@ -162,20 +162,20 @@ describe('PrismaUserRepository', () => {
         new Date('2023-01-01'),
       );
 
-      // プロフィール更新
-      user.updateProfile(new Email('new@example.com'), 'New Name');
+      // プロフィール更新（immutableパターンのため新しいインスタンスを取得）
+      const updatedUser = user.updateProfile(new Email('new@example.com'), 'New Name');
 
       mockPrismaClient.user.update.mockResolvedValue({
-        id: user.getId().toString(),
-        email: user.getEmail().toString(),
-        name: user.getName(),
-        passwordHash: user.getPasswordHash(),
-        createdAt: user.getCreatedAt(),
-        updatedAt: user.getUpdatedAt(),
+        id: updatedUser.id.toString(),
+        email: updatedUser.email.toString(),
+        name: updatedUser.name,
+        passwordHash: updatedUser.passwordHash,
+        createdAt: updatedUser.createdAt,
+        updatedAt: updatedUser.updatedAt,
       });
 
       // Act
-      await userRepository.update(user);
+      await userRepository.update(updatedUser);
 
       // Assert
       expect(mockPrismaClient.user.update).toHaveBeenCalledWith({
@@ -183,7 +183,7 @@ describe('PrismaUserRepository', () => {
         data: {
           name: 'New Name',
           email: 'new@example.com',
-          updatedAt: user.getUpdatedAt(),
+          updatedAt: updatedUser.updatedAt,
         },
       });
     });

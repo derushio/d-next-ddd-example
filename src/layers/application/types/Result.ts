@@ -74,7 +74,7 @@ export function isFailure<T>(result: Result<T>): result is Failure {
  * 複数のResult型を組み合わせるユーティリティ
  * 全て成功の場合のみ成功、一つでも失敗があれば最初の失敗を返す
  */
-export function combineResults<T extends readonly Result<any>[]>(
+export function combineResults<T extends readonly Result<unknown>[]>(
   results: T,
 ): Result<{ [K in keyof T]: T[K] extends Result<infer U> ? U : never }> {
   const failures = results.filter(isFailure);

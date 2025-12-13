@@ -1,8 +1,8 @@
 import 'reflect-metadata';
 
+import { infrastructureContainer } from '@/di/containers/infrastructure.container';
+import { INJECTION_TOKENS } from '@/di/tokens';
 import { UserDomainService } from '@/layers/domain/services/UserDomainService';
-import { infrastructureContainer } from '@/layers/infrastructure/di/containers/infrastructure.container';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
 
 /**
  * Domain Container - ドメイン層
@@ -14,6 +14,7 @@ import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
 export const domainContainer = infrastructureContainer.createChildContainer();
 
 // Prevent duplicate registration
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- DIコンテナのコンストラクタ型は実行時に多様な引数パターンを受け取るためanyが必要
 function safeRegister<T>(token: symbol, creator: new (...args: any[]) => T) {
   if (!domainContainer.isRegistered(token)) {
     domainContainer.registerSingleton(creator);

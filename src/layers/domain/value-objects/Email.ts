@@ -1,7 +1,7 @@
 import { DomainError } from '@/layers/domain/errors/DomainError';
 
 export class Email {
-  private readonly value: string;
+  public readonly value: string;
 
   constructor(value: string) {
     this.validateEmail(value);
@@ -54,7 +54,7 @@ export class Email {
     }
 
     // 禁止文字チェック
-    const forbiddenChars = /[<>\"'&]/;
+    const forbiddenChars = /[<>\\"'&]/;
     if (forbiddenChars.test(value)) {
       throw new DomainError(
         'メールアドレスに使用できない文字が含まれています',

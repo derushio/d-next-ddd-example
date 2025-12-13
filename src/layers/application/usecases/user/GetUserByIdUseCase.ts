@@ -1,10 +1,16 @@
-import { failure, Result, success } from '@/layers/application/types/Result';
+import { INJECTION_TOKENS } from '@/di/tokens';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
+import {
+  failure,
+  isFailure,
+  Result,
+  success,
+} from '@/layers/application/types/Result';
+import type { GetCurrentUserUseCase } from '@/layers/application/usecases/auth/GetCurrentUserUseCase';
 import type { User } from '@/layers/domain/entities/User';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import { UserId } from '@/layers/domain/value-objects/UserId';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
 
 import { inject, injectable } from 'tsyringe';
 
@@ -24,8 +30,11 @@ export interface GetUserByIdResponse {
 export class GetUserByIdUseCase {
   constructor(
     @inject(INJECTION_TOKENS.UserRepository)
-    private userRepository: IUserRepository,
-    @inject(INJECTION_TOKENS.Logger) private logger: ILogger,
+    private readonly userRepository: IUserRepository,
+    @inject(INJECTION_TOKENS.Logger)
+    private readonly logger: ILogger,
+    @inject(INJECTION_TOKENS.GetCurrentUserUseCase)
+    private readonly getCurrentUserUseCase: GetCurrentUserUseCase,
   ) {}
 
   async execute(
@@ -34,6 +43,27 @@ export class GetUserByIdUseCase {
     this.logger.info('ユーザー個別取得開始', { userId: request.userId });
 
     try {
+      // 認証チェック
+      const authResult =
+        await this.getCurrentUserUseCase.requireAuthentication();
+      if (isFailure(authResult)) {
+        this.logger.warn('ユーザー個別取得失敗: 未認証', {
+          targetUserId: request.userId,
+        });
+        return authResult;
+      }
+
+      const currentUser = authResult.data;
+
+      // 認可チェック（自分自身の情報のみ取得可能）
+      if (currentUser.id !== request.userId) {
+        this.logger.warn('ユーザー個別取得失敗: 権限不足', {
+          currentUserId: currentUser.id,
+          targetUserId: request.userId,
+        });
+        return failure('他のユーザーの情報は取得できません', 'FORBIDDEN');
+      }
+
       // ユーザーID検証
       if (!request.userId || request.userId.trim() === '') {
         return failure('ユーザーIDが指定されていません', 'INVALID_USER_ID');
@@ -53,11 +83,11 @@ export class GetUserByIdUseCase {
 
       // レスポンス変換
       const response: GetUserByIdResponse = {
-        id: user.getId().toString(),
-        name: user.getName(),
-        email: user.getEmail().toString(),
-        createdAt: user.getCreatedAt(),
-        updatedAt: user.getUpdatedAt(),
+        id: user.id.value,
+        name: user.name,
+        email: user.email.value,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
       };
 
       this.logger.info('ユーザー個別取得完了', {

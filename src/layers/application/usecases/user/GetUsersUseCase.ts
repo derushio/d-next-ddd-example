@@ -1,3 +1,5 @@
+import { INJECTION_TOKENS } from '@/di/tokens';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 import { failure, Result, success } from '@/layers/application/types/Result';
 import type { User } from '@/layers/domain/entities/User';
 import { DomainError } from '@/layers/domain/errors/DomainError';
@@ -5,8 +7,6 @@ import type {
   IUserRepository,
   UserSearchCriteria,
 } from '@/layers/domain/repositories/IUserRepository';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
 
 import { inject, injectable } from 'tsyringe';
 
@@ -88,11 +88,11 @@ export class GetUsersUseCase {
 
       // レスポンス変換
       const userSummaries: UserSummary[] = users.map((user: User) => ({
-        id: user.getId().toString(),
-        name: user.getName(),
-        email: user.getEmail().toString(),
-        createdAt: user.getCreatedAt(),
-        updatedAt: user.getUpdatedAt(),
+        id: user.id.value,
+        name: user.name,
+        email: user.email.value,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
       }));
 
       // ページネーション計算

@@ -5,13 +5,16 @@ import { ErrorHandler } from '@/layers/infrastructure/services/ErrorHandler';
 import { HashService } from '@/layers/infrastructure/services/HashService';
 import { Logger } from '@/layers/infrastructure/services/Logger';
 import { UpdateUserUseCase } from '@/layers/application/usecases/UpdateUserUseCase';
+import { GetCurrentUserUseCase } from '@/layers/application/usecases/auth/GetCurrentUserUseCase';
 import { SignInUseCase } from '@/layers/application/usecases/auth/SignInUseCase';
 import { CreateUserUseCase } from '@/layers/application/usecases/user/CreateUserUseCase';
+import { AuthSessionService } from '@/layers/infrastructure/services/AuthSessionService';
 import { UserDomainService } from '@/layers/domain/services/UserDomainService';
 import { DatabaseFactory } from '@/layers/infrastructure/persistence/DatabaseFactory';
 // DIコンテナの初期化のために、明示的にcontainerモジュールをインポート
 // ただし、テスト時は個別に管理する
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
+import { INJECTION_TOKENS, type InjectionToken } from '@/di/tokens';
+import type { PrismaClient } from '@/layers/infrastructure/persistence/prisma/generated';
 import { PrismaSessionRepository } from '@/layers/infrastructure/repositories/implementations/PrismaSessionRepository';
 import { PrismaUserRepository } from '@/layers/infrastructure/repositories/implementations/PrismaUserRepository';
 
@@ -21,13 +24,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // テスト用のresolve関数（型安全）
 function testResolve<
   K extends
-    keyof import('@/layers/infrastructure/di/tokens').ServiceTypeMap,
+    keyof import('@/di/tokens').ServiceTypeMap,
 >(
   serviceName: K,
-): import('@/layers/infrastructure/di/tokens').ServiceType<K> {
+): import('@/di/tokens').ServiceType<K> {
   return container.resolve<
-    import('@/layers/infrastructure/di/tokens').ServiceType<K>
-  >(INJECTION_TOKENS[serviceName] as any);
+    import('@/di/tokens').ServiceType<K>
+  >(INJECTION_TOKENS[serviceName] as InjectionToken<K>);
 }
 
 describe('DIコンテナテスト', () => {
@@ -43,7 +46,7 @@ describe('DIコンテナテスト', () => {
       userSession: { create: vi.fn(), findFirst: vi.fn() },
       $connect: vi.fn(),
       $disconnect: vi.fn(),
-    } as any;
+    } as unknown as PrismaClient;
     DatabaseFactory.setInstance(mockPrisma);
 
     // DIコンテナに各サービスを登録
@@ -66,6 +69,14 @@ describe('DIコンテナテスト', () => {
     container.registerSingleton(
       INJECTION_TOKENS.UserDomainService,
       UserDomainService,
+    );
+    container.registerSingleton(
+      INJECTION_TOKENS.AuthSessionService,
+      AuthSessionService,
+    );
+    container.registerSingleton(
+      INJECTION_TOKENS.GetCurrentUserUseCase,
+      GetCurrentUserUseCase,
     );
     container.registerSingleton(
       INJECTION_TOKENS.CreateUserUseCase,
@@ -155,7 +166,7 @@ describe('DIコンテナテスト', () => {
         userSession: { create: vi.fn(), findFirst: vi.fn() },
         $connect: vi.fn(),
         $disconnect: vi.fn(),
-      } as any;
+      } as unknown as PrismaClient;
 
       DatabaseFactory.setInstance(mockPrisma);
       const instance = DatabaseFactory.getInstance();

@@ -4,7 +4,10 @@ import { UserService } from '@/layers/application/services/UserService';
 import { isFailure, isSuccess } from '@/layers/application/types/Result';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import { User } from '@/layers/domain/entities/User';
+import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import { Email } from '@/layers/domain/value-objects/Email';
+import type { IHashService } from '@/layers/infrastructure/services/HashService';
+import type { ILogger } from '@/layers/infrastructure/services/Logger';
 import {
   createAutoMockHashService,
   createAutoMockLogger,
@@ -15,9 +18,9 @@ import type { MockProxy } from 'vitest-mock-extended';
 
 describe('UserService', () => {
   let userService: UserService;
-  let mockUserRepository: MockProxy<any>;
-  let mockHashService: MockProxy<any>;
-  let mockLogger: MockProxy<any>;
+  let mockUserRepository: MockProxy<IUserRepository>;
+  let mockHashService: MockProxy<IHashService>;
+  let mockLogger: MockProxy<ILogger>;
 
   beforeEach(() => {
     mockUserRepository = createAutoMockUserRepository();
@@ -39,9 +42,12 @@ describe('UserService', () => {
     };
 
     const mockUser = {
-      getId: () => ({ toString: () => 'user-id' }),
-      getEmail: () => ({ toString: () => 'test@example.com' }),
-      getName: () => 'Test User',
+      id: { value: 'user-id' },
+      email: { value: 'test@example.com' },
+      name: 'Test User',
+      passwordHash: 'hashed-password',
+      createdAt: new Date(),
+      updatedAt: new Date(),
     } as User;
 
     it('should successfully create user with valid data', async () => {
@@ -125,7 +131,7 @@ describe('UserService', () => {
     it('should return failure when name is not a string', async () => {
       // Act
       const result = await userService.createUser(
-        null as any,
+        null as unknown as string,
         validUserData.email,
         validUserData.password,
       );
@@ -355,9 +361,12 @@ describe('UserService', () => {
   describe('findUserByEmail', () => {
     const validEmail = 'test@example.com';
     const mockUser = {
-      getId: () => ({ toString: () => 'user-id' }),
-      getEmail: () => ({ toString: () => 'test@example.com' }),
-      getName: () => 'Test User',
+      id: { value: 'user-id' },
+      email: { value: 'test@example.com' },
+      name: 'Test User',
+      passwordHash: 'hashed-password',
+      createdAt: new Date(),
+      updatedAt: new Date(),
     } as User;
 
     it('should successfully find user by email', async () => {

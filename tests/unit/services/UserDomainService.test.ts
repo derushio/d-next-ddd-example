@@ -4,9 +4,9 @@ import type { IUserRepository } from '@/layers/domain/repositories/IUserReposito
 import { UserDomainService } from '@/layers/domain/services/UserDomainService';
 import { Email } from '@/layers/domain/value-objects/Email';
 import { UserId } from '@/layers/domain/value-objects/UserId';
-import { container } from '@/layers/infrastructure/di/container';
-import { resolve } from '@/layers/infrastructure/di/resolver';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
+import { container } from '@/di/container';
+import { resolve } from '@/di/resolver';
+import { INJECTION_TOKENS } from '@/di/tokens';
 import type { IHashService } from '@/layers/infrastructure/services/HashService';
 
 import {
@@ -206,12 +206,12 @@ describe('UserDomainService', () => {
       const newEmail = 'new@example.com';
       // 同じユーザーIDを持つユーザーが見つかった場合
       const sameUser = User.reconstruct(
-        currentUser.getId(),
+        currentUser.id,
         new Email(newEmail),
         'Current User',
         'hashed-password',
-        currentUser.getCreatedAt(),
-        currentUser.getUpdatedAt(),
+        currentUser.createdAt,
+        currentUser.updatedAt,
       );
       mockUserRepository.findByEmail.mockResolvedValue(sameUser);
 

@@ -2,8 +2,8 @@
 
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
+import { resolve } from '@/di/resolver';
 import { Email } from '@/layers/domain/value-objects/Email';
-import { resolve } from '@/layers/infrastructure/di/resolver';
 
 /**
  * DI機能デモンストレーション - Server Component

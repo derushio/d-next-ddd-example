@@ -1,44 +1,17 @@
 import { Env } from '@/app/server-actions/env/Env';
+import type {
+  AppConfig,
+  IConfigService,
+} from '@/layers/application/interfaces/IConfigService';
 
 import { injectable } from 'tsyringe';
 
-/**
- * アプリケーション設定値インターフェース
- * Server/Client両方で利用可能な設定値を提供
- */
-export interface AppConfig {
-  token: {
-    saltRounds: number;
-    secret: string;
-    maxAgeMinutes: number;
-    updateAgeMinutes: number;
-  };
-  database: {
-    url: string;
-  };
-  app: {
-    baseUrl: string;
-    isDevelopment: boolean;
-    nodeEnv: string;
-  };
-}
-
-/**
- * Client Component用設定値インターフェース
- * NEXT_PUBLIC_ プレフィックス付き環境変数のみアクセス可能
- */
-export interface ClientAppConfig {
-  app: {
-    baseUrl: string;
-    isDevelopment: boolean;
-    nodeEnv: string;
-  };
-}
-
-export interface IConfigService {
-  /** 設定オブジェクトを取得する */
-  getConfig(): AppConfig;
-}
+// Re-export for backward compatibility
+export type {
+  AppConfig,
+  ClientAppConfig,
+  IConfigService,
+} from '@/layers/application/interfaces/IConfigService';
 
 /**
  * 統合ConfigService

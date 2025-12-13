@@ -11,22 +11,18 @@ interface PasswordFieldProps {
   error?: string;
 }
 
-/**
- * サインインフォーム - パスワード入力フィールド
- *
- * 分離されたフォームコンポーネント：
- * - パスワード表示/非表示切り替え
- * - エラー状態の視覚的フィードバック
- * - アクセシビリティ対応
- */
-export function PasswordField({ disabled = false, error }: PasswordFieldProps) {
-  const [showPassword, setShowPassword] = useState(false);
+interface PasswordToggleIconProps {
+  onClick: () => void;
+  showPassword: boolean;
+  disabled?: boolean;
+}
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const PasswordToggleIcon = ({ onClick }: { onClick: () => void }) => (
+function PasswordToggleIcon({
+  onClick,
+  showPassword,
+  disabled,
+}: PasswordToggleIconProps) {
+  return (
     <button
       type='button'
       onClick={onClick}
@@ -51,6 +47,22 @@ export function PasswordField({ disabled = false, error }: PasswordFieldProps) {
       )}
     </button>
   );
+}
+
+/**
+ * サインインフォーム - パスワード入力フィールド
+ *
+ * 分離されたフォームコンポーネント：
+ * - パスワード表示/非表示切り替え
+ * - エラー状態の視覚的フィードバック
+ * - アクセシビリティ対応
+ */
+export function PasswordField({ disabled = false, error }: PasswordFieldProps) {
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   return (
     <Input
@@ -61,7 +73,13 @@ export function PasswordField({ disabled = false, error }: PasswordFieldProps) {
       required
       placeholder='8文字以上のパスワード'
       label='パスワード'
-      rightIcon={<PasswordToggleIcon onClick={togglePasswordVisibility} />}
+      rightIcon={
+        <PasswordToggleIcon
+          onClick={togglePasswordVisibility}
+          showPassword={showPassword}
+          disabled={disabled}
+        />
+      }
       disabled={disabled}
       error={error}
       helperText='8文字以上で英数字を組み合わせてください'
