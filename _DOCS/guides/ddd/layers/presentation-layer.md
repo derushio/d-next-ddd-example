@@ -13,10 +13,10 @@ graph LR
     USER[ユーザー] --> UI[UI Components]
     UI --> SA[Server Actions]
     SA --> APP[Application Layer]
-    
+
     UI --> STATE[UI State Management]
     UI --> EVENT[Event Handling]
-    
+
     style UI fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style SA fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style STATE fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
@@ -45,7 +45,7 @@ export function UserProfileClient() {
   const [isEditing, setIsEditing] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedTab, setSelectedTab] = useState('profile');
-  
+
   return (
     <div>
       {isEditing ? (
@@ -53,7 +53,7 @@ export function UserProfileClient() {
       ) : (
         <ProfileView onEdit={() => setIsEditing(true)} />
       )}
-      
+
       {showModal && (
         <Modal onClose={() => setShowModal(false)}>
           <ConfirmDialog />
@@ -79,59 +79,59 @@ export function UserProfileClient() {
 'use client';
 export function CreateUserFormClient() {
   const [errors, setErrors] = useState<Record<string, string>>({});
-  
+
   const validateForm = (data: FormData) => {
     const newErrors: Record<string, string> = {};
-    
+
     // UI用の即座フィードバック（ユーザビリティ向上）
     const email = data.get('email') as string;
     if (!email.includes('@')) {
       newErrors.email = 'メールアドレスの形式が正しくありません';
     }
-    
+
     const password = data.get('password') as string;
     if (password.length < 8) {
       newErrors.password = 'パスワードは8文字以上で入力してください';
     }
-    
+
     const name = data.get('name') as string;
     if (name.trim().length < 2) {
       newErrors.name = '名前は2文字以上で入力してください';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
+
   const handleSubmit = (formData: FormData) => {
     if (validateForm(formData)) {
       // バリデーション成功時のみServer Actionを実行
       createUserAction(formData);
     }
   };
-  
+
   return (
     <form action={handleSubmit}>
-      <input 
-        name="email" 
+      <input
+        name="email"
         type="email"
         placeholder="メールアドレス"
       />
       {errors.email && <span className="text-red-500">{errors.email}</span>}
-      
-      <input 
-        name="password" 
+
+      <input
+        name="password"
         type="password"
         placeholder="パスワード"
       />
       {errors.password && <span className="text-red-500">{errors.password}</span>}
-      
-      <input 
-        name="name" 
+
+      <input
+        name="name"
         placeholder="名前"
       />
       {errors.name && <span className="text-red-500">{errors.name}</span>}
-      
+
       <button type="submit">登録</button>
     </form>
   );
@@ -165,13 +165,13 @@ export function UserListPage({ users }: { users: User[] }) {
       day: 'numeric'
     }).format(date);
   };
-  
+
   const formatUserLevel = (level: number) => {
     if (level >= 10) return '🏆 マスター';
     if (level >= 5) return '⭐ エキスパート';
     return '🌱 ビギナー';
   };
-  
+
   return (
     <div>
       {users.map(user => (
@@ -194,29 +194,28 @@ export function UserListPage({ users }: { users: User[] }) {
 // ✅ 許可：Server Actions（Application Layerへの橋渡し）
 'use server';
 export async function createUserAction(formData: FormData) {
-  try {
-    // フォームデータの抽出（プレゼンテーション層の責務）
-    const userData = {
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      password: formData.get('password') as string,
-    };
-    
-    // Application Layerへの委譲
-    const createUserUseCase = resolve('CreateUserUseCase');
-    const user = await createUserUseCase.execute(userData);
-    
-    // 成功時のリダイレクト（プレゼンテーション層の責務）
-    redirect(`/users/${user.id}`);
-    
-  } catch (error) {
-    // エラーハンドリング（プレゼンテーション層の責務）
-    if (error instanceof DomainError) {
-      return { error: error.message };
-    }
-    
-    return { error: '予期しないエラーが発生しました' };
+ try {
+  // フォームデータの抽出（プレゼンテーション層の責務）
+  const userData = {
+   name: formData.get('name') as string,
+   email: formData.get('email') as string,
+   password: formData.get('password') as string,
+  };
+
+  // Application Layerへの委譲
+  const createUserUseCase = resolve('CreateUserUseCase');
+  const user = await createUserUseCase.execute(userData);
+
+  // 成功時のリダイレクト（プレゼンテーション層の責務）
+  redirect(`/users/${user.id}`);
+ } catch (error) {
+  // エラーハンドリング（プレゼンテーション層の責務）
+  if (error instanceof DomainError) {
+   return { error: error.message };
   }
+
+  return { error: '予期しないエラーが発生しました' };
+ }
 }
 ```
 
@@ -230,14 +229,14 @@ export async function createUserAction(formData: FormData) {
 export function NavigationClient() {
   const router = useRouter();
   const pathname = usePathname();
-  
+
   const handleNavigation = (path: string) => {
     router.push(path);
   };
-  
+
   return (
     <nav>
-      <button 
+      <button
         className={`cursor-pointer ${pathname === '/users' ? 'bg-blue-500' : 'bg-gray-200'}`}
         onClick={() => handleNavigation('/users')}
       >
@@ -267,7 +266,7 @@ export function UserPromotionClient({ user }: { user: User }) {
       promoteUser(user.id);
     }
   };
-  
+
   return <button onClick={handlePromote}>昇格</button>;
 }
 
@@ -294,21 +293,21 @@ export async function promoteUserAction(userId: string) {
 // ❌ 禁止：データベース直接アクセス
 'use server';
 export async function getUsersAction() {
-  // ❌ Presentation LayerでPrismaを直接使用してはダメ
-  const users = await prisma.user.findMany({
-    where: { status: 'active' }
-  });
-  
-  return users;
+ // ❌ Presentation LayerでPrismaを直接使用してはダメ
+ const users = await prisma.user.findMany({
+  where: { status: 'active' },
+ });
+
+ return users;
 }
 
 // ✅ 正しい実装：Repository経由でアクセス
-'use server';
+('use server');
 export async function getUsersAction() {
-  const getUsersUseCase = resolve('GetUsersUseCase');
-  // Infrastructure Layerに委譲
-  const users = await getUsersUseCase.execute();
-  return users;
+ const getUsersUseCase = resolve('GetUsersUseCase');
+ // Infrastructure Layerに委譲
+ const users = await getUsersUseCase.execute();
+ return users;
 }
 ```
 
@@ -326,30 +325,30 @@ export async function getUsersAction() {
 // ❌ 禁止：外部API直接呼び出し
 'use server';
 export async function sendEmailAction(email: string, message: string) {
-  // ❌ 外部APIを直接呼び出してはダメ
-  const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${process.env.SENDGRID_API_KEY}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      personalizations: [{ to: [{ email }] }],
-      from: { email: 'noreply@example.com' },
-      subject: 'お知らせ',
-      content: [{ type: 'text/plain', value: message }]
-    })
-  });
-  
-  return response.json();
+ // ❌ 外部APIを直接呼び出してはダメ
+ const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+  method: 'POST',
+  headers: {
+   Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
+   'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+   personalizations: [{ to: [{ email }] }],
+   from: { email: 'noreply@example.com' },
+   subject: 'お知らせ',
+   content: [{ type: 'text/plain', value: message }],
+  }),
+ });
+
+ return response.json();
 }
 
 // ✅ 正しい実装：Infrastructure Layer経由
-'use server';
+('use server');
 export async function sendEmailAction(email: string, message: string) {
-  const sendEmailUseCase = resolve('SendEmailUseCase');
-  // Infrastructure Layerに委譲
-  await sendEmailUseCase.execute({ email, message });
+ const sendEmailUseCase = resolve('SendEmailUseCase');
+ // Infrastructure Layerに委譲
+ await sendEmailUseCase.execute({ email, message });
 }
 ```
 
@@ -364,25 +363,25 @@ export function PriceCalculatorClient({ items }: { items: Item[] }) {
   const calculateTotal = () => {
     // ❌ 価格計算ロジックはDomain Layerの責務
     let total = 0;
-    
+
     items.forEach(item => {
       let price = item.basePrice;
-      
+
       // ❌ 割引ルールなどのビジネスロジック
       if (item.category === 'premium') {
         price *= 0.9; // 10%割引
       }
-      
+
       if (items.length >= 5) {
         price *= 0.95; // まとめ買い割引
       }
-      
+
       total += price * item.quantity;
     });
-    
+
     return total;
   };
-  
+
   return <div>合計: ¥{calculateTotal()}</div>;
 }
 
@@ -390,7 +389,7 @@ export function PriceCalculatorClient({ items }: { items: Item[] }) {
 export function PriceDisplayPage({ items }: { items: Item[] }) {
   // サーバーサイドで計算済みの値を受け取る
   const totalPrice = calculateTotalPrice(items); // Domain Serviceで計算
-  
+
   return <div>合計: ¥{totalPrice}</div>;
 }
 ```
@@ -408,11 +407,11 @@ graph TD
     B -->|Yes| D{状態管理必要？}
     D -->|No| E[Server Component + Server Action]
     D -->|Yes| F[Client Component]
-    
+
     C --> G[静的表示、データ取得]
     E --> H[フォーム送信、ナビゲーション]
     F --> I[リアルタイム更新、アニメーション]
-    
+
     style C fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style E fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style F fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
@@ -428,7 +427,7 @@ export default async function UsersPage() {
   // サーバーサイドでデータ取得
   const getUsersUseCase = resolve('GetUsersUseCase');
   const users = await getUsersUseCase.execute();
-  
+
   return (
     <div>
       <h1>ユーザー一覧</h1>
@@ -460,10 +459,10 @@ export async function createUserAction(formData: FormData) {
     name: formData.get('name') as string,
     email: formData.get('email') as string,
   };
-  
+
   const createUserUseCase = resolve('CreateUserUseCase');
   const user = await createUserUseCase.execute(userData);
-  
+
   revalidatePath('/users');
   redirect(`/users/${user.id}`);
 }
@@ -472,21 +471,21 @@ export async function createUserAction(formData: FormData) {
 export function CreateUserForm() {
   return (
     <form action={createUserAction} className="space-y-4">
-      <input 
-        name="name" 
-        placeholder="名前" 
-        required 
+      <input
+        name="name"
+        placeholder="名前"
+        required
         className="border rounded px-3 py-2"
       />
-      <input 
-        name="email" 
-        type="email" 
-        placeholder="メールアドレス" 
-        required 
+      <input
+        name="email"
+        type="email"
+        placeholder="メールアドレス"
+        required
         className="border rounded px-3 py-2"
       />
-      <button 
-        type="submit" 
+      <button
+        type="submit"
         className="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-600"
       >
         作成
@@ -504,11 +503,11 @@ export function CreateUserForm() {
 export function UserProfileClient({ initialUser }: { initialUser: User }) {
   const [isEditing, setIsEditing] = useState(false);
   const [user, setUser] = useState(initialUser);
-  
+
   return (
     <div>
       {isEditing ? (
-        <EditUserFormClient 
+        <EditUserFormClient
           user={user}
           onSave={(updatedUser) => {
             setUser(updatedUser);
@@ -517,7 +516,7 @@ export function UserProfileClient({ initialUser }: { initialUser: User }) {
           onCancel={() => setIsEditing(false)}
         />
       ) : (
-        <UserProfileView 
+        <UserProfileView
           user={user}
           onEdit={() => setIsEditing(true)}
         />
@@ -537,33 +536,33 @@ export function UserProfileClient({ initialUser }: { initialUser: User }) {
 // ✅ 適切なエラーハンドリング
 'use server';
 export async function createUserAction(formData: FormData) {
-  try {
-    const userData = {
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-    };
-    
-    const createUserUseCase = resolve('CreateUserUseCase');
-    const user = await createUserUseCase.execute(userData);
-    
-    revalidatePath('/users');
-    redirect(`/users/${user.id}`);
-    
-  } catch (error) {
-    // ドメインエラーの適切な処理
-    if (error instanceof DomainError) {
-      return {
-        error: error.message,
-        code: error.code
-      };
-    }
-    
-    // 予期しないエラーの処理
-    console.error('Unexpected error in createUserAction:', error);
-    return {
-      error: '予期しないエラーが発生しました。しばらく時間をおいて再度お試しください。'
-    };
+ try {
+  const userData = {
+   name: formData.get('name') as string,
+   email: formData.get('email') as string,
+  };
+
+  const createUserUseCase = resolve('CreateUserUseCase');
+  const user = await createUserUseCase.execute(userData);
+
+  revalidatePath('/users');
+  redirect(`/users/${user.id}`);
+ } catch (error) {
+  // ドメインエラーの適切な処理
+  if (error instanceof DomainError) {
+   return {
+    error: error.message,
+    code: error.code,
+   };
   }
+
+  // 予期しないエラーの処理
+  console.error('Unexpected error in createUserAction:', error);
+  return {
+   error:
+    '予期しないエラーが発生しました。しばらく時間をおいて再度お試しください。',
+  };
+ }
 }
 ```
 
@@ -575,20 +574,20 @@ export async function createUserAction(formData: FormData) {
 export function CreateUserFormClient() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const handleSubmit = async (formData: FormData) => {
     setIsSubmitting(true);
     setError(null);
-    
+
     const result = await createUserAction(formData);
-    
+
     if (result?.error) {
       setError(result.error);
     }
-    
+
     setIsSubmitting(false);
   };
-  
+
   return (
     <form action={handleSubmit}>
       {error && (
@@ -596,11 +595,11 @@ export function CreateUserFormClient() {
           {error}
         </div>
       )}
-      
+
       {/* フォーム要素 */}
-      
-      <button 
-        type="submit" 
+
+      <button
+        type="submit"
         disabled={isSubmitting}
         className="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-600 disabled:opacity-50"
       >
@@ -643,9 +642,9 @@ import dynamic from 'next/dynamic';
 
 const HeavyChartClient = dynamic(
   () => import('./HeavyChartClient'),
-  { 
+  {
     loading: () => <div className="animate-pulse bg-gray-200 h-64 rounded" />,
-    ssr: false 
+    ssr: false
   }
 );
 
@@ -678,10 +677,10 @@ graph TD
     A[実装したい処理] --> B{UIに関する処理？}
     B -->|Yes| C{ビジネスルール含む？}
     B -->|No| D[他のレイヤーに移動]
-    
+
     C -->|No| E[Presentation Layerで実装OK]
     C -->|Yes| F[Application/Domain Layerに委譲]
-    
+
     style E fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style F fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
     style D fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff

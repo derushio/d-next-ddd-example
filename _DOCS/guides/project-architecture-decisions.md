@@ -16,30 +16,30 @@ graph TB
         SA[Server Actions]
         API[API Routes]
     end
-    
+
     subgraph "📋 Application Layer"
         UC[Use Cases]
         DTO[DTOs・Request/Response]
     end
-    
+
     subgraph "🧠 Domain Layer"
         DS[Domain Services]
         ENT[Domain Entities]
         VAL[Validation Logic]
     end
-    
+
     subgraph "🗄️ Infrastructure Layer"
         REPO[Repository Implementations]
         IS[Infrastructure Services]
         DBF[DatabaseFactory]
     end
-    
+
     subgraph "🔧 External Systems"
         PRISMA[(Prisma/PostgreSQL)]
         AUTH[NextAuth.js]
         EXT[External APIs]
     end
-    
+
     PAGES --> SA
     COMP --> SA
     SA --> UC
@@ -52,7 +52,7 @@ graph TB
     IS --> AUTH
     IS --> EXT
     DBF --> PRISMA
-    
+
     classDef presentation fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     classDef application fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     classDef domain fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
@@ -62,12 +62,12 @@ graph TB
 
 ### ディレクトリマッピング
 
-| クリーンアーキテクチャ層 | 本プロジェクト | パス例 |
-|---------------------|---------------|-------|
-| **Enterprise Business Rules** | Domain Layer | `src/layers/domain/services/` |
-| **Application Business Rules** | Application Layer | `src/layers/application/usecases/` |
-| **Interface Adapters** | Infrastructure Layer | `src/layers/infrastructure/repositories/` |
-| **Frameworks & Drivers** | Presentation + External | `src/app/`, `src/layers/infrastructure/persistence/` |
+| クリーンアーキテクチャ層       | 本プロジェクト          | パス例                                               |
+| ------------------------------ | ----------------------- | ---------------------------------------------------- |
+| **Enterprise Business Rules**  | Domain Layer            | `src/layers/domain/services/`                        |
+| **Application Business Rules** | Application Layer       | `src/layers/application/usecases/`                   |
+| **Interface Adapters**         | Infrastructure Layer    | `src/layers/infrastructure/repositories/`            |
+| **Frameworks & Drivers**       | Presentation + External | `src/app/`, `src/layers/infrastructure/persistence/` |
 
 ---
 
@@ -78,29 +78,29 @@ graph TB
 ```typescript
 // 本プロジェクトの実装例
 export class CreateUserUseCase {
-  constructor(
-    private userRepository: IUserRepository,        // ← Repository パターン
-    private userDomainService: UserDomainService,   // ← Domain Service
-    private emailService: IEmailService,           // ← 外部サービス抽象化
-    private logger: ILogger                         // ← ロギング抽象化
-  ) {}
-  
-  async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
-    // ビジネスルール検証（Domain Service）
-    await this.userDomainService.validateUserUniqueness(new Email(request.email));
-    
-    // ドメインオブジェクト作成（Value Object活用）
-    const user = UserFactory.createNewUser(
-      new Email(request.email),
-      request.name,
-      RegistrationSource.DIRECT
-    );
-    
-    // 永続化（Repository パターン）
-    await this.userRepository.save(user);
-    
-    return this.mapToResponse(user);
-  }
+ constructor(
+  private userRepository: IUserRepository, // ← Repository パターン
+  private userDomainService: UserDomainService, // ← Domain Service
+  private emailService: IEmailService, // ← 外部サービス抽象化
+  private logger: ILogger, // ← ロギング抽象化
+ ) {}
+
+ async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
+  // ビジネスルール検証（Domain Service）
+  await this.userDomainService.validateUserUniqueness(new Email(request.email));
+
+  // ドメインオブジェクト作成（Value Object活用）
+  const user = UserFactory.createNewUser(
+   new Email(request.email),
+   request.name,
+   RegistrationSource.DIRECT,
+  );
+
+  // 永続化（Repository パターン）
+  await this.userRepository.save(user);
+
+  return this.mapToResponse(user);
+ }
 }
 ```
 
@@ -113,12 +113,12 @@ describe('CreateUserUseCase', () => {
     // 外部依存なし！瞬時に実行！
     const mockRepo = { save: vi.fn() };
     const mockDomainService = { validateUserUniqueness: vi.fn() };
-    
+
     const useCase = new CreateUserUseCase(mockRepo, mockDomainService, ...);
-    
+
     // ミリ秒で完了
     const result = await useCase.execute(validRequest);
-    
+
     expect(mockDomainService.validateUserUniqueness).toHaveBeenCalled();
   });
 });
@@ -129,24 +129,25 @@ describe('CreateUserUseCase', () => {
 ```typescript
 // Server Actions での活用
 'use server';
-export async function createUserAction(formData: FormData): Promise<ActionResult> {
-  try {
-    // DI コンテナから Use Case を取得
-    const createUserUseCase = resolve('CreateUserUseCase');
-    
-    // ビジネスロジックは Use Case に委譲
-    const user = await createUserUseCase.execute({
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-    });
-    
-    revalidatePath('/users');
-    redirect(`/users/${user.id}`);
-    
-  } catch (error) {
-    // エラーハンドリングも体系化
-    return handleDomainError(error);
-  }
+export async function createUserAction(
+ formData: FormData,
+): Promise<ActionResult> {
+ try {
+  // DI コンテナから Use Case を取得
+  const createUserUseCase = resolve('CreateUserUseCase');
+
+  // ビジネスロジックは Use Case に委譲
+  const user = await createUserUseCase.execute({
+   name: formData.get('name') as string,
+   email: formData.get('email') as string,
+  });
+
+  revalidatePath('/users');
+  redirect(`/users/${user.id}`);
+ } catch (error) {
+  // エラーハンドリングも体系化
+  return handleDomainError(error);
+ }
 }
 ```
 
@@ -161,7 +162,7 @@ graph TD
     SA[Server Actions] --> UC[Use Cases]
     SA --> DI[DI Container]
     COMP[Client Components] --> SA
-    
+
     note1["責務分離アーキテクチャ<br/>Client: UI担当, Server Actions: ビジネスロジック担当"]
 ```
 
@@ -175,12 +176,12 @@ graph TD
 export async function createUserServerAction(formData: FormData) {
   // サーバーサイドでDI解決
   const createUserUseCase = resolve<CreateUserUseCase>('CreateUserUseCase');
-  
+
   const result = await createUserUseCase.execute({
     name: formData.get('name') as string,
     email: formData.get('email') as string,
   });
-  
+
   // Next.js最適化：キャッシュ無効化とリダイレクト
   revalidatePath('/users');
   redirect(`/users/${result.id}`);
@@ -191,14 +192,14 @@ export async function createUserServerAction(formData: FormData) {
 export function UserManagementClient() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const handleCreateUser = async (formData: FormData) => {
     setIsLoading(true);
     // Server Actionにビジネスロジックを委譲
     await createUserServerAction(formData);
     setIsLoading(false);
   };
-  
+
   return (
     <form action={handleCreateUser}>
       <input name="name" placeholder="名前" required />
@@ -224,58 +225,58 @@ export function UserManagementClient() {
 ```typescript
 // ✅ DatabaseFactory による抽象化
 export class DatabaseFactory {
-  private static prismaClient: PrismaClient | null = null;
-  
-  public static getPrismaClient(): PrismaClient {
-    if (!this.prismaClient) {
-      this.prismaClient = new PrismaClient({
-        log: process.env.NODE_ENV === 'development' ? ['query'] : [],
-      });
-    }
-    return this.prismaClient;
+ private static prismaClient: PrismaClient | null = null;
+
+ public static getPrismaClient(): PrismaClient {
+  if (!this.prismaClient) {
+   this.prismaClient = new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['query'] : [],
+   });
   }
-  
-  public static async disconnect(): Promise<void> {
-    if (this.prismaClient) {
-      await this.prismaClient.$disconnect();
-      this.prismaClient = null;
-    }
+  return this.prismaClient;
+ }
+
+ public static async disconnect(): Promise<void> {
+  if (this.prismaClient) {
+   await this.prismaClient.$disconnect();
+   this.prismaClient = null;
   }
+ }
 }
 
 // ✅ Repository実装での活用
 export class PrismaUserRepository implements IUserRepository {
-  private prisma: PrismaClient;
-  
-  constructor() {
-    this.prisma = DatabaseFactory.getPrismaClient();
-  }
-  
-  async save(user: User): Promise<void> {
-    await this.prisma.user.upsert({
-      where: { id: user.id },
-      update: this.mapToUpdateData(user),
-      create: this.mapToCreateData(user),
-    });
-  }
-  
-  async findByEmail(email: string): Promise<User | null> {
-    const userData = await this.prisma.user.findUnique({
-      where: { email },
-    });
-    
-    return userData ? this.mapToDomain(userData) : null;
-  }
-  
-  private mapToDomain(userData: PrismaUser): User {
-    return new User({
-      id: new UserId(userData.id),
-      email: new Email(userData.email),
-      name: userData.name,
-      registrationSource: userData.registrationSource as RegistrationSource,
-      createdAt: userData.createdAt,
-    });
-  }
+ private prisma: PrismaClient;
+
+ constructor() {
+  this.prisma = DatabaseFactory.getPrismaClient();
+ }
+
+ async save(user: User): Promise<void> {
+  await this.prisma.user.upsert({
+   where: { id: user.id },
+   update: this.mapToUpdateData(user),
+   create: this.mapToCreateData(user),
+  });
+ }
+
+ async findByEmail(email: string): Promise<User | null> {
+  const userData = await this.prisma.user.findUnique({
+   where: { email },
+  });
+
+  return userData ? this.mapToDomain(userData) : null;
+ }
+
+ private mapToDomain(userData: PrismaUser): User {
+  return new User({
+   id: new UserId(userData.id),
+   email: new Email(userData.email),
+   name: userData.name,
+   registrationSource: userData.registrationSource as RegistrationSource,
+   createdAt: userData.createdAt,
+  });
+ }
 }
 ```
 
@@ -288,10 +289,10 @@ graph TB
         PIMPL[PrismaUserRepository]
         MOCK[TestMockRepository]
     end
-    
+
     IPR --> PIMPL
     IPR --> MOCK
-    
+
     note2[現在のニーズに最適化<br/>必要に応じて拡張可能]
 ```
 
@@ -300,38 +301,38 @@ graph TB
 ```typescript
 // Phase 1: シンプルなRepository
 export interface IUserRepository {
-  save(user: User): Promise<void>;
-  findByEmail(email: string): Promise<User | null>;
-  findById(id: UserId): Promise<User | null>;
+ save(user: User): Promise<void>;
+ findByEmail(email: string): Promise<User | null>;
+ findById(id: UserId): Promise<User | null>;
 }
 
 // Phase 2: 必要に応じて拡張
 export interface IUserRepository {
-  // 基本CRUD
-  save(user: User): Promise<void>;
-  findByEmail(email: string): Promise<User | null>;
-  findById(id: UserId): Promise<User | null>;
-  delete(id: UserId): Promise<void>;
-  
-  // 検索機能
-  findByName(name: string): Promise<User[]>;
-  findAll(options?: PaginationOptions): Promise<PaginatedResult<User>>;
-  
-  // ビジネス要件
-  findActiveUsers(): Promise<User[]>;
-  findPremiumUsers(): Promise<User[]>;
+ // 基本CRUD
+ save(user: User): Promise<void>;
+ findByEmail(email: string): Promise<User | null>;
+ findById(id: UserId): Promise<User | null>;
+ delete(id: UserId): Promise<void>;
+
+ // 検索機能
+ findByName(name: string): Promise<User[]>;
+ findAll(options?: PaginationOptions): Promise<PaginatedResult<User>>;
+
+ // ビジネス要件
+ findActiveUsers(): Promise<User[]>;
+ findPremiumUsers(): Promise<User[]>;
 }
 
 // Phase 3: 高度な要件対応
 export interface IUserRepository {
-  // ... 基本機能
-  
-  // トランザクション対応
-  saveWithTransaction(user: User, transaction: Transaction): Promise<void>;
-  
-  // パフォーマンス最適化
-  findWithCache(id: UserId): Promise<User | null>;
-  bulkSave(users: User[]): Promise<void>;
+ // ... 基本機能
+
+ // トランザクション対応
+ saveWithTransaction(user: User, transaction: Transaction): Promise<void>;
+
+ // パフォーマンス最適化
+ findWithCache(id: UserId): Promise<User | null>;
+ bulkSave(users: User[]): Promise<void>;
 }
 ```
 
@@ -349,7 +350,7 @@ sequenceDiagram
     participant REPO as Repository
     participant DBF as DatabaseFactory
     participant DB as PostgreSQL
-    
+
     SA->>UC: execute(request)
     UC->>DS: validateBusinessRules()
     DS->>UC: validation result
@@ -369,19 +370,19 @@ sequenceDiagram
 ```typescript
 // ✅ 関連データの一括取得
 export class PrismaUserRepository implements IUserRepository {
-  async findUsersWithProfiles(userIds: UserId[]): Promise<User[]> {
-    const usersData = await this.prisma.user.findMany({
-      where: {
-        id: { in: userIds.map(id => id.value) }
-      },
-      include: {
-        profile: true,
-        orders: true,
-      }
-    });
-    
-    return usersData.map(this.mapToDomainWithRelations);
-  }
+ async findUsersWithProfiles(userIds: UserId[]): Promise<User[]> {
+  const usersData = await this.prisma.user.findMany({
+   where: {
+    id: { in: userIds.map((id) => id.value) },
+   },
+   include: {
+    profile: true,
+    orders: true,
+   },
+  });
+
+  return usersData.map(this.mapToDomainWithRelations);
+ }
 }
 ```
 
@@ -390,29 +391,29 @@ export class PrismaUserRepository implements IUserRepository {
 ```typescript
 // ✅ Repository レベルでのキャッシュ
 export class CachedUserRepository implements IUserRepository {
-  constructor(
-    private baseRepository: IUserRepository,
-    private cache: ICacheService
-  ) {}
-  
-  async findById(id: UserId): Promise<User | null> {
-    const cacheKey = `user:${id.value}`;
-    
-    // キャッシュから取得試行
-    const cached = await this.cache.get<User>(cacheKey);
-    if (cached) {
-      return cached;
-    }
-    
-    // キャッシュにない場合はDBから取得
-    const user = await this.baseRepository.findById(id);
-    
-    if (user) {
-      await this.cache.set(cacheKey, user, { ttl: 300 }); // 5分キャッシュ
-    }
-    
-    return user;
+ constructor(
+  private baseRepository: IUserRepository,
+  private cache: ICacheService,
+ ) {}
+
+ async findById(id: UserId): Promise<User | null> {
+  const cacheKey = `user:${id.value}`;
+
+  // キャッシュから取得試行
+  const cached = await this.cache.get<User>(cacheKey);
+  if (cached) {
+   return cached;
   }
+
+  // キャッシュにない場合はDBから取得
+  const user = await this.baseRepository.findById(id);
+
+  if (user) {
+   await this.cache.set(cacheKey, user, { ttl: 300 }); // 5分キャッシュ
+  }
+
+  return user;
+ }
 }
 ```
 
@@ -425,35 +426,38 @@ export class CachedUserRepository implements IUserRepository {
 ```typescript
 // ✅ ビジネスロジックに集中
 export class UserDomainService {
-  constructor(private userRepository: IUserRepository) {}
-  
-  async validateUserUniqueness(email: Email): Promise<void> {
-    const existingUser = await this.userRepository.findByEmail(email.value);
-    if (existingUser) {
-      throw new DomainError(
-        'メールアドレスが既に使用されています',
-        'EMAIL_DUPLICATE'
-      );
-    }
+ constructor(private userRepository: IUserRepository) {}
+
+ async validateUserUniqueness(email: Email): Promise<void> {
+  const existingUser = await this.userRepository.findByEmail(email.value);
+  if (existingUser) {
+   throw new DomainError(
+    'メールアドレスが既に使用されています',
+    'EMAIL_DUPLICATE',
+   );
   }
-  
-  validateUserCreationRules(user: User): void {
-    if (!user.name || user.name.trim().length === 0) {
-      throw new DomainError('名前は必須です', 'NAME_REQUIRED');
-    }
-    
-    if (user.name.length > 100) {
-      throw new DomainError('名前は100文字以内である必要があります', 'NAME_TOO_LONG');
-    }
+ }
+
+ validateUserCreationRules(user: User): void {
+  if (!user.name || user.name.trim().length === 0) {
+   throw new DomainError('名前は必須です', 'NAME_REQUIRED');
   }
-  
-  canUserBePromoted(user: User): boolean {
-    // ビジネスルール：アカウント作成から30日経過かつアクティブ
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
-    return user.createdAt <= thirtyDaysAgo && user.isActive;
+
+  if (user.name.length > 100) {
+   throw new DomainError(
+    '名前は100文字以内である必要があります',
+    'NAME_TOO_LONG',
+   );
   }
+ }
+
+ canUserBePromoted(user: User): boolean {
+  // ビジネスルール：アカウント作成から30日経過かつアクティブ
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  return user.createdAt <= thirtyDaysAgo && user.isActive;
+ }
 }
 ```
 
@@ -462,24 +466,24 @@ export class UserDomainService {
 ```typescript
 // ✅ 抽象に依存し、テスト容易性を確保
 export interface IEmailService {
-  sendWelcomeEmail(to: string, userName: string): Promise<void>;
-  sendPasswordResetEmail(to: string, resetToken: string): Promise<void>;
+ sendWelcomeEmail(to: string, userName: string): Promise<void>;
+ sendPasswordResetEmail(to: string, resetToken: string): Promise<void>;
 }
 
 // 本番環境での実装
 export class SendGridEmailService implements IEmailService {
-  async sendWelcomeEmail(to: string, userName: string): Promise<void> {
-    // SendGrid API を使用した実装
-  }
+ async sendWelcomeEmail(to: string, userName: string): Promise<void> {
+  // SendGrid API を使用した実装
+ }
 }
 
 // テスト環境での実装
 export class MockEmailService implements IEmailService {
-  public sentEmails: Array<{ to: string; type: string; data: any }> = [];
-  
-  async sendWelcomeEmail(to: string, userName: string): Promise<void> {
-    this.sentEmails.push({ to, type: 'welcome', data: { userName } });
-  }
+ public sentEmails: Array<{ to: string; type: string; data: any }> = [];
+
+ async sendWelcomeEmail(to: string, userName: string): Promise<void> {
+  this.sentEmails.push({ to, type: 'welcome', data: { userName } });
+ }
 }
 ```
 
@@ -493,46 +497,46 @@ import type { User as PrismaUser } from '@prisma/client';
 
 // Domain層での型定義
 export class User {
-  constructor(
-    public readonly id: UserId,
-    public readonly email: Email,
-    public readonly name: string,
-    public readonly registrationSource: RegistrationSource,
-    public readonly createdAt: Date,
-    public readonly isActive: boolean = true
-  ) {}
-  
-  // ビジネスメソッド
-  activate(): void {
-    // ビジネスロジック
-  }
-  
-  deactivate(): void {
-    // ビジネスロジック
-  }
+ constructor(
+  public readonly id: UserId,
+  public readonly email: Email,
+  public readonly name: string,
+  public readonly registrationSource: RegistrationSource,
+  public readonly createdAt: Date,
+  public readonly isActive: boolean = true,
+ ) {}
+
+ // ビジネスメソッド
+ activate(): void {
+  // ビジネスロジック
+ }
+
+ deactivate(): void {
+  // ビジネスロジック
+ }
 }
 
 // マッピング用のユーティリティ
 export class UserMapper {
-  static toDomain(prismaUser: PrismaUser): User {
-    return new User(
-      new UserId(prismaUser.id),
-      new Email(prismaUser.email),
-      prismaUser.name,
-      prismaUser.registrationSource as RegistrationSource,
-      prismaUser.createdAt,
-      prismaUser.isActive
-    );
-  }
-  
-  static toPrisma(user: User): Omit<PrismaUser, 'id' | 'createdAt'> {
-    return {
-      email: user.email.value,
-      name: user.name,
-      registrationSource: user.registrationSource,
-      isActive: user.isActive,
-    };
-  }
+ static toDomain(prismaUser: PrismaUser): User {
+  return new User(
+   new UserId(prismaUser.id),
+   new Email(prismaUser.email),
+   prismaUser.name,
+   prismaUser.registrationSource as RegistrationSource,
+   prismaUser.createdAt,
+   prismaUser.isActive,
+  );
+ }
+
+ static toPrisma(user: User): Omit<PrismaUser, 'id' | 'createdAt'> {
+  return {
+   email: user.email.value,
+   name: user.name,
+   registrationSource: user.registrationSource,
+   isActive: user.isActive,
+  };
+ }
 }
 ```
 
@@ -553,21 +557,21 @@ export async function createUserServerAction(
       name: formData.get('name'),
       email: formData.get('email'),
     });
-    
+
     if (!parsed.success) {
       return {
         success: false,
         errors: parsed.error.flatten().fieldErrors,
       };
     }
-    
+
     // Use Case実行
     const createUserUseCase = resolve<CreateUserUseCase>('CreateUserUseCase');
     const user = await createUserUseCase.execute(parsed.data);
-    
+
     // Next.js最適化
     revalidatePath('/users');
-    
+
     return {
       success: true,
       data: { userId: user.id },
@@ -579,7 +583,7 @@ export async function createUserServerAction(
         errors: { _form: [error.message] },
       };
     }
-    
+
     throw error; // 予期しないエラーは再スロー
   }
 }
@@ -591,7 +595,7 @@ export function CreateUserForm() {
     success: false,
     errors: {},
   });
-  
+
   return (
     <form action={formAction} className="space-y-4">
       <div>
@@ -609,7 +613,7 @@ export function CreateUserForm() {
           <p className="error-message">{state.errors.name[0]}</p>
         )}
       </div>
-      
+
       <div>
         <label htmlFor="email">メールアドレス</label>
         <input
@@ -625,11 +629,11 @@ export function CreateUserForm() {
           <p className="error-message">{state.errors.email[0]}</p>
         )}
       </div>
-      
+
       <button type="submit" className="btn-primary">
         作成
       </button>
-      
+
       {state.errors?._form && (
         <p className="error-message">{state.errors._form[0]}</p>
       )}
@@ -647,77 +651,76 @@ export function CreateUserForm() {
 ```typescript
 // Domain層でのエラー定義
 export class DomainError extends Error {
-  constructor(
-    message: string,
-    public readonly code: string,
-    public readonly statusCode: number = 400
-  ) {
-    super(message);
-    this.name = 'DomainError';
-  }
+ constructor(
+  message: string,
+  public readonly code: string,
+  public readonly statusCode: number = 400,
+ ) {
+  super(message);
+  this.name = 'DomainError';
+ }
 }
 
 // 具体的なドメインエラー
 export class EmailDuplicateError extends DomainError {
-  constructor() {
-    super('メールアドレスが既に使用されています', 'EMAIL_DUPLICATE', 409);
-  }
+ constructor() {
+  super('メールアドレスが既に使用されています', 'EMAIL_DUPLICATE', 409);
+ }
 }
 
 export class UserNotFoundError extends DomainError {
-  constructor(userId: string) {
-    super(`ユーザーが見つかりません: ${userId}`, 'USER_NOT_FOUND', 404);
-  }
+ constructor(userId: string) {
+  super(`ユーザーが見つかりません: ${userId}`, 'USER_NOT_FOUND', 404);
+ }
 }
 
 // Application層でのエラーハンドリング
 export class CreateUserUseCase {
-  async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
-    try {
-      await this.userDomainService.validateUserUniqueness(
-        new Email(request.email)
-      );
-      
-      // ... ビジネスロジック
-      
-    } catch (error) {
-      if (error instanceof DomainError) {
-        this.logger.warn('ドメインエラー発生', {
-          error: error.message,
-          code: error.code,
-          request,
-        });
-        throw error; // ドメインエラーはそのまま上位に伝播
-      }
-      
-      // 予期しないエラーの場合
-      this.logger.error('予期しないエラー', { error, request });
-      throw new DomainError(
-        'ユーザー作成に失敗しました',
-        'USER_CREATION_FAILED',
-        500
-      );
-    }
+ async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
+  try {
+   await this.userDomainService.validateUserUniqueness(
+    new Email(request.email),
+   );
+
+   // ... ビジネスロジック
+  } catch (error) {
+   if (error instanceof DomainError) {
+    this.logger.warn('ドメインエラー発生', {
+     error: error.message,
+     code: error.code,
+     request,
+    });
+    throw error; // ドメインエラーはそのまま上位に伝播
+   }
+
+   // 予期しないエラーの場合
+   this.logger.error('予期しないエラー', { error, request });
+   throw new DomainError(
+    'ユーザー作成に失敗しました',
+    'USER_CREATION_FAILED',
+    500,
+   );
   }
+ }
 }
 
 // Presentation層でのエラーハンドリング
 export function handleDomainError(error: unknown): ActionResult {
-  if (error instanceof DomainError) {
-    return {
-      success: false,
-      errors: { _form: [error.message] },
-      statusCode: error.statusCode,
-    };
-  }
-  
-  // 予期しないエラー
-  console.error('Unexpected error:', error);
+ if (error instanceof DomainError) {
   return {
-    success: false,
-    errors: { _form: ['予期しないエラーが発生しました'] },
-    statusCode: 500,
+   success: false,
+   errors: { _form: [error.message] },
+   statusCode: error.statusCode,
   };
+ }
+
+ // 予期しないエラー
+ console.error('Unexpected error:', error);
+ return {
+  success: false,
+  errors: { _form: ['予期しないエラーが発生しました'] },
+  statusCode: 500,
+ };
 }
 ```
 
@@ -726,39 +729,45 @@ export function handleDomainError(error: unknown): ActionResult {
 ```typescript
 // 構造化ログ
 export interface ILogger {
-  info(message: string, meta?: Record<string, any>): void;
-  warn(message: string, meta?: Record<string, any>): void;
-  error(message: string, meta?: Record<string, any>): void;
-  debug(message: string, meta?: Record<string, any>): void;
+ info(message: string, meta?: Record<string, any>): void;
+ warn(message: string, meta?: Record<string, any>): void;
+ error(message: string, meta?: Record<string, any>): void;
+ debug(message: string, meta?: Record<string, any>): void;
 }
 
 export class StructuredLogger implements ILogger {
-  info(message: string, meta: Record<string, any> = {}): void {
-    console.log(JSON.stringify({
-      level: 'info',
-      message,
-      timestamp: new Date().toISOString(),
-      ...meta,
-    }));
-  }
-  
-  warn(message: string, meta: Record<string, any> = {}): void {
-    console.warn(JSON.stringify({
-      level: 'warn',
-      message,
-      timestamp: new Date().toISOString(),
-      ...meta,
-    }));
-  }
-  
-  error(message: string, meta: Record<string, any> = {}): void {
-    console.error(JSON.stringify({
-      level: 'error',
-      message,
-      timestamp: new Date().toISOString(),
-      ...meta,
-    }));
-  }
+ info(message: string, meta: Record<string, any> = {}): void {
+  console.log(
+   JSON.stringify({
+    level: 'info',
+    message,
+    timestamp: new Date().toISOString(),
+    ...meta,
+   }),
+  );
+ }
+
+ warn(message: string, meta: Record<string, any> = {}): void {
+  console.warn(
+   JSON.stringify({
+    level: 'warn',
+    message,
+    timestamp: new Date().toISOString(),
+    ...meta,
+   }),
+  );
+ }
+
+ error(message: string, meta: Record<string, any> = {}): void {
+  console.error(
+   JSON.stringify({
+    level: 'error',
+    message,
+    timestamp: new Date().toISOString(),
+    ...meta,
+   }),
+  );
+ }
 }
 ```
 
@@ -771,43 +780,41 @@ export class StructuredLogger implements ILogger {
 ```typescript
 // シングルトンパターンでの最適化
 export class OptimizedContainer {
-  private static instance: Container;
-  private singletonInstances = new Map<string, any>();
-  
-  static getInstance(): Container {
-    if (!this.instance) {
-      this.instance = new Container();
-      this.setupBindings();
+ private static instance: Container;
+ private singletonInstances = new Map<string, any>();
+
+ static getInstance(): Container {
+  if (!this.instance) {
+   this.instance = new Container();
+   this.setupBindings();
+  }
+  return this.instance;
+ }
+
+ private static setupBindings(): void {
+  const container = this.instance;
+
+  // Repository は singleton として登録
+  container.register<IUserRepository>('UserRepository', {
+   useFactory: () => {
+    if (!this.singletonInstances.has('UserRepository')) {
+     this.singletonInstances.set('UserRepository', new PrismaUserRepository());
     }
-    return this.instance;
-  }
-  
-  private static setupBindings(): void {
-    const container = this.instance;
-    
-    // Repository は singleton として登録
-    container.register<IUserRepository>('UserRepository', {
-      useFactory: () => {
-        if (!this.singletonInstances.has('UserRepository')) {
-          this.singletonInstances.set(
-            'UserRepository',
-            new PrismaUserRepository()
-          );
-        }
-        return this.singletonInstances.get('UserRepository');
-      }
-    });
-    
-    // Use Case は transient として登録
-    container.register<CreateUserUseCase>('CreateUserUseCase', {
-      useFactory: (container) => new CreateUserUseCase(
-        container.resolve('UserRepository'),
-        container.resolve('UserDomainService'),
-        container.resolve('EmailService'),
-        container.resolve('Logger')
-      )
-    });
-  }
+    return this.singletonInstances.get('UserRepository');
+   },
+  });
+
+  // Use Case は transient として登録
+  container.register<CreateUserUseCase>('CreateUserUseCase', {
+   useFactory: (container) =>
+    new CreateUserUseCase(
+     container.resolve('UserRepository'),
+     container.resolve('UserDomainService'),
+     container.resolve('EmailService'),
+     container.resolve('Logger'),
+    ),
+  });
+ }
 }
 ```
 
@@ -816,34 +823,34 @@ export class OptimizedContainer {
 ```typescript
 // 接続プールの管理
 export class OptimizedDatabaseFactory {
-  private static prismaClient: PrismaClient;
-  
-  public static getPrismaClient(): PrismaClient {
-    if (!this.prismaClient) {
-      this.prismaClient = new PrismaClient({
-        datasources: {
-          db: {
-            url: process.env.DATABASE_URL,
-          },
-        },
-        log: process.env.NODE_ENV === 'development' ? ['query'] : [],
-        // 接続プールの最適化
-        connectionTimeout: 5000,
-        pool: {
-          max: 10,
-          min: 2,
-          idle: 10000,
-        },
-      });
-      
-      // Graceful shutdown
-      process.on('beforeExit', async () => {
-        await this.prismaClient.$disconnect();
-      });
-    }
-    
-    return this.prismaClient;
+ private static prismaClient: PrismaClient;
+
+ public static getPrismaClient(): PrismaClient {
+  if (!this.prismaClient) {
+   this.prismaClient = new PrismaClient({
+    datasources: {
+     db: {
+      url: process.env.DATABASE_URL,
+     },
+    },
+    log: process.env.NODE_ENV === 'development' ? ['query'] : [],
+    // 接続プールの最適化
+    connectionTimeout: 5000,
+    pool: {
+     max: 10,
+     min: 2,
+     idle: 10000,
+    },
+   });
+
+   // Graceful shutdown
+   process.on('beforeExit', async () => {
+    await this.prismaClient.$disconnect();
+   });
   }
+
+  return this.prismaClient;
+ }
 }
 ```
 
@@ -857,25 +864,25 @@ export class OptimizedDatabaseFactory {
 // 実際の開発現場での声
 
 // ❌ DDD導入前
-"新しい機能を追加するたびに既存のテストが壊れる..."
-"どこにビジネスロジックを書けばいいかわからない..."
-"テストが遅すぎて開発が滞る..."
+'新しい機能を追加するたびに既存のテストが壊れる...';
+'どこにビジネスロジックを書けばいいかわからない...';
+'テストが遅すぎて開発が滞る...';
 
 // ✅ DDD導入後
-"新機能の追加が既存コードに影響しない！"
-"ビジネスロジックの場所が明確で実装が迷わない！"
-"テストが高速で開発のフィードバックが即座！"
+'新機能の追加が既存コードに影響しない！';
+'ビジネスロジックの場所が明確で実装が迷わない！';
+'テストが高速で開発のフィードバックが即座！';
 ```
 
 ### 具体的な改善指標
 
-| 項目 | 導入前 | 導入後 | 改善率 |
-|------|--------|--------|--------|
-| **テスト実行時間** | 5-10分 | 30秒 | 90%短縮 |
-| **CI/CD成功率** | 70% | 99% | 40%向上 |
-| **新機能開発速度** | 1週間 | 2-3日 | 60%向上 |
-| **バグ発生率** | 月10件 | 月2件 | 80%削減 |
-| **コードレビュー時間** | 2時間 | 30分 | 75%短縮 |
+| 項目                   | 導入前 | 導入後 | 改善率  |
+| ---------------------- | ------ | ------ | ------- |
+| **テスト実行時間**     | 5-10分 | 30秒   | 90%短縮 |
+| **CI/CD成功率**        | 70%    | 99%    | 40%向上 |
+| **新機能開発速度**     | 1週間  | 2-3日  | 60%向上 |
+| **バグ発生率**         | 月10件 | 月2件  | 80%削減 |
+| **コードレビュー時間** | 2時間  | 30分   | 75%短縮 |
 
 ---
 

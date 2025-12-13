@@ -7,11 +7,11 @@ PrismaUserRepository のテストで、モック設定が不十分でテスト�
 ```typescript
 // ❌ エラーになる例
 test('ユーザー更新', async () => {
-  const mockUser = createMockUser();
-  mockPrismaClient.user.update.mockResolvedValue(mockUser);
-  
-  const result = await repository.update(userId, updateData);
-  // ❌ TypeError: mockPrismaClient.user.findMany is not a function
+ const mockUser = createMockUser();
+ mockPrismaClient.user.update.mockResolvedValue(mockUser);
+
+ const result = await repository.update(userId, updateData);
+ // ❌ TypeError: mockPrismaClient.user.findMany is not a function
 });
 ```
 
@@ -24,11 +24,11 @@ PrismaClientのモックで、使用されるメソッドがすべて定義さ�
 ```typescript
 // ❌ 不十分なモック
 const mockPrismaClient = {
-  user: {
-    create: vi.fn(),
-    update: vi.fn(),
-    // findMany, count, upsert などが不足
-  }
+ user: {
+  create: vi.fn(),
+  update: vi.fn(),
+  // findMany, count, upsert などが不足
+ },
 } as any;
 ```
 
@@ -39,29 +39,29 @@ const mockPrismaClient = {
 ```typescript
 // ✅ 完全なモック設定
 export function createMockPrismaClient() {
-  return {
-    user: {
-      create: vi.fn(),
-      findUnique: vi.fn(),
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      upsert: vi.fn(),
-      count: vi.fn(),
-      aggregate: vi.fn(),
-      groupBy: vi.fn(),
-      createMany: vi.fn(),
-      updateMany: vi.fn(),
-      deleteMany: vi.fn(),
-    },
-    // 他のモデルも同様に定義...
-    $connect: vi.fn(),
-    $disconnect: vi.fn(),
-    $transaction: vi.fn(),
-    $executeRaw: vi.fn(),
-    $queryRaw: vi.fn(),
-  } as any;
+ return {
+  user: {
+   create: vi.fn(),
+   findUnique: vi.fn(),
+   findFirst: vi.fn(),
+   findMany: vi.fn(),
+   update: vi.fn(),
+   delete: vi.fn(),
+   upsert: vi.fn(),
+   count: vi.fn(),
+   aggregate: vi.fn(),
+   groupBy: vi.fn(),
+   createMany: vi.fn(),
+   updateMany: vi.fn(),
+   deleteMany: vi.fn(),
+  },
+  // 他のモデルも同様に定義...
+  $connect: vi.fn(),
+  $disconnect: vi.fn(),
+  $transaction: vi.fn(),
+  $executeRaw: vi.fn(),
+  $queryRaw: vi.fn(),
+ } as any;
 }
 ```
 
@@ -69,75 +69,75 @@ export function createMockPrismaClient() {
 
 ```typescript
 describe('PrismaUserRepository', () => {
-  let repository: PrismaUserRepository;
-  let mockPrismaClient: any;
+ let repository: PrismaUserRepository;
+ let mockPrismaClient: any;
 
-  beforeEach(() => {
-    // 完全なモッククライアント作成
-    mockPrismaClient = createMockPrismaClient();
-    repository = new PrismaUserRepository(mockPrismaClient);
+ beforeEach(() => {
+  // 完全なモッククライアント作成
+  mockPrismaClient = createMockPrismaClient();
+  repository = new PrismaUserRepository(mockPrismaClient);
+ });
+
+ afterEach(() => {
+  vi.clearAllMocks();
+ });
+
+ test('ユーザー作成', async () => {
+  // Arrange
+  const userData = createMockUserData();
+  const expectedUser = createMockUser();
+  mockPrismaClient.user.create.mockResolvedValue(expectedUser);
+
+  // Act
+  const result = await repository.create(userData);
+
+  // Assert
+  expect(mockPrismaClient.user.create).toHaveBeenCalledWith({
+   data: expect.objectContaining({
+    id: expect.any(String),
+    email: userData.email.getValue(),
+    name: userData.name,
+   }),
   });
+  expect(result).toBeDefined();
+ });
 
-  afterEach(() => {
-    vi.clearAllMocks();
+ test('メールアドレスでユーザー検索', async () => {
+  // Arrange
+  const email = new Email('test@example.com');
+  const expectedUser = createMockUser();
+  mockPrismaClient.user.findUnique.mockResolvedValue(expectedUser);
+
+  // Act
+  const result = await repository.findByEmail(email);
+
+  // Assert
+  expect(mockPrismaClient.user.findUnique).toHaveBeenCalledWith({
+   where: { email: email.getValue() },
   });
+  expect(result).toBeDefined();
+ });
 
-  test('ユーザー作成', async () => {
-    // Arrange
-    const userData = createMockUserData();
-    const expectedUser = createMockUser();
-    mockPrismaClient.user.create.mockResolvedValue(expectedUser);
+ test('ユーザー更新', async () => {
+  // Arrange
+  const userId = new UserId();
+  const updateData = { name: 'Updated Name' };
+  const expectedUser = createMockUser();
+  mockPrismaClient.user.update.mockResolvedValue(expectedUser);
 
-    // Act
-    const result = await repository.create(userData);
+  // Act
+  const result = await repository.update(userId, updateData);
 
-    // Assert
-    expect(mockPrismaClient.user.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        id: expect.any(String),
-        email: userData.email.getValue(),
-        name: userData.name,
-      }),
-    });
-    expect(result).toBeDefined();
+  // Assert
+  expect(mockPrismaClient.user.update).toHaveBeenCalledWith({
+   where: { id: userId.getValue() },
+   data: {
+    name: updateData.name,
+    updatedAt: expect.any(Date),
+   },
   });
-
-  test('メールアドレスでユーザー検索', async () => {
-    // Arrange  
-    const email = new Email('test@example.com');
-    const expectedUser = createMockUser();
-    mockPrismaClient.user.findUnique.mockResolvedValue(expectedUser);
-
-    // Act
-    const result = await repository.findByEmail(email);
-
-    // Assert
-    expect(mockPrismaClient.user.findUnique).toHaveBeenCalledWith({
-      where: { email: email.getValue() }
-    });
-    expect(result).toBeDefined();
-  });
-
-  test('ユーザー更新', async () => {
-    // Arrange
-    const userId = new UserId();
-    const updateData = { name: 'Updated Name' };
-    const expectedUser = createMockUser();
-    mockPrismaClient.user.update.mockResolvedValue(expectedUser);
-
-    // Act
-    const result = await repository.update(userId, updateData);
-
-    // Assert
-    expect(mockPrismaClient.user.update).toHaveBeenCalledWith({
-      where: { id: userId.getValue() },
-      data: {
-        name: updateData.name,
-        updatedAt: expect.any(Date),
-      },
-    });
-    expect(result).toBeDefined();
-  });
+  expect(result).toBeDefined();
+ });
 });
 ```
 
@@ -151,11 +151,11 @@ return prismaUser; // Prisma型をそのまま返す
 
 // ✅ Domain Entityに変換
 return User.reconstruct({
-  id: new UserId(prismaUser.id),
-  email: new Email(prismaUser.email),
-  name: prismaUser.name,
-  createdAt: prismaUser.createdAt,
-  updatedAt: prismaUser.updatedAt,
+ id: new UserId(prismaUser.id),
+ email: new Email(prismaUser.email),
+ name: prismaUser.name,
+ createdAt: prismaUser.createdAt,
+ updatedAt: prismaUser.updatedAt,
 });
 ```
 
@@ -164,14 +164,14 @@ return User.reconstruct({
 ```typescript
 // ❌ awaitを忘れる
 test('非同期テスト', () => {
-  const result = repository.create(userData); // awaitなし
-  expect(result).toBeDefined(); // Promiseオブジェクトになる
+ const result = repository.create(userData); // awaitなし
+ expect(result).toBeDefined(); // Promiseオブジェクトになる
 });
 
 // ✅ 正しい非同期テスト
 test('非同期テスト', async () => {
-  const result = await repository.create(userData);
-  expect(result).toBeDefined();
+ const result = await repository.create(userData);
+ expect(result).toBeDefined();
 });
 ```
 
@@ -189,7 +189,7 @@ test('非同期テスト', async () => {
 
 ## 検証済み環境
 
-- Vitest 3.2.3  
+- Vitest 3.2.3
 - Prisma 5.x
 - TypeScript 5.x
 - Clean Architecture + DDD

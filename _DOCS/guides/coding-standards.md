@@ -13,7 +13,7 @@
 ```bash
 # ✅ 正しい例
 ✨: ユーザー登録機能を追加
-🐛: サインイン時のバリデーションエラーを修正  
+🐛: サインイン時のバリデーションエラーを修正
 📝: READMEにセットアップ手順を追加
 🎨: UserComponentのスタイルを改善
 🔧: ESLintの設定を更新
@@ -28,29 +28,29 @@ feat: ユーザー登録機能追加    # conventional commitsスタイル
 
 **機能・修正系**
 
-| 絵文字 | 用途 | 例 |
-|--------|------|-----|
-| ✨ | 新機能追加 | `✨: ユーザープロフィール編集機能を追加` |
-| 🐛 | バグ修正 | `🐛: サインイン時のセッション切れ問題を修正` |
-| 🔧 | 設定・ツール変更 | `🔧: Tailwind CSS設定を最新化` |
-| ⚡ | パフォーマンス改善 | `⚡: 画像読み込み速度を最適化` |
-| 💄 | UI・スタイル改善 | `💄: ボタンのホバーエフェクトを改善` |
+| 絵文字 | 用途               | 例                                           |
+| ------ | ------------------ | -------------------------------------------- |
+| ✨     | 新機能追加         | `✨: ユーザープロフィール編集機能を追加`     |
+| 🐛     | バグ修正           | `🐛: サインイン時のセッション切れ問題を修正` |
+| 🔧     | 設定・ツール変更   | `🔧: Tailwind CSS設定を最新化`               |
+| ⚡     | パフォーマンス改善 | `⚡: 画像読み込み速度を最適化`               |
+| 💄     | UI・スタイル改善   | `💄: ボタンのホバーエフェクトを改善`         |
 
 **ドキュメント・テスト系**
 
-| 絵文字 | 用途 | 例 |
-|--------|------|-----|
-| 📝 | ドキュメント追加・更新 | `📝: API仕様書を更新` |
-| ✅ | テスト追加・修正 | `✅: UserServiceのテストケースを追加` |
-| 🧪 | 実験的機能 | `🧪: 新しいUI パターンを試験的に実装` |
+| 絵文字 | 用途                   | 例                                    |
+| ------ | ---------------------- | ------------------------------------- |
+| 📝     | ドキュメント追加・更新 | `📝: API仕様書を更新`                 |
+| ✅     | テスト追加・修正       | `✅: UserServiceのテストケースを追加` |
+| 🧪     | 実験的機能             | `🧪: 新しいUI パターンを試験的に実装` |
 
 **リファクタ・構造系**
 
-| 絵文字 | 用途 | 例 |
-|--------|------|-----|
-| ♻️ | リファクタリング | `♻️: UserRepositoryを依存注入パターンに変更` |
-| 🗃️ | データベース関連 | `🗃️: ユーザーテーブルにインデックスを追加` |
-| 🔥 | コード・ファイル削除 | `🔥: 未使用のユーティリティ関数を削除` |
+| 絵文字 | 用途                 | 例                                           |
+| ------ | -------------------- | -------------------------------------------- |
+| ♻️     | リファクタリング     | `♻️: UserRepositoryを依存注入パターンに変更` |
+| 🗃️     | データベース関連     | `🗃️: ユーザーテーブルにインデックスを追加`   |
+| 🔥     | コード・ファイル削除 | `🔥: 未使用のユーティリティ関数を削除`       |
 
 ### 実例とその理由
 
@@ -80,7 +80,7 @@ feat: ユーザー登録機能追加    # conventional commitsスタイル
 ```bash
 # ❌ 悪い例とその理由
 update           # 何を更新したかわからない
-fix bug          # どのバグを修正したかわからない  
+fix bug          # どのバグを修正したかわからない
 WIP              # 作業中の状態をコミットしてしまっている
 小さな修正        # 何の修正かわからない
 ```
@@ -96,40 +96,40 @@ WIP              # 作業中の状態をコミットしてしまっている
 ```typescript
 // ❌ テストで避けるべきロギング
 describe('UserService', () => {
-  it('ユーザー作成テスト', async () => {
-    try {
-      const result = await userService.create(userData);
-      expect(result).toBeDefined();
-    } catch (error) {
-      console.error('テスト失敗:', error); // ❌ エラーログは使わない
-      logger.error('Test failed', error);   // ❌ エラーログは使わない
-      throw error;
-    }
-  });
+ it('ユーザー作成テスト', async () => {
+  try {
+   const result = await userService.create(userData);
+   expect(result).toBeDefined();
+  } catch (error) {
+   console.error('テスト失敗:', error); // ❌ エラーログは使わない
+   logger.error('Test failed', error); // ❌ エラーログは使わない
+   throw error;
+  }
+ });
 });
 ```
 
 ```typescript
 // ✅ テストで推奨するロギング
 describe('UserService', () => {
-  it('ユーザー作成テスト', async () => {
-    console.log('ユーザー作成テスト開始'); // ✅ 情報ログはOK
-    
-    const result = await userService.create(userData);
-    
-    console.log('テスト結果:', result); // ✅ 状況把握のためのログ
-    expect(result).toBeDefined();
-  });
-  
-  it('異常系：バリデーションエラー', async () => {
-    console.info('バリデーションエラーテスト開始'); // ✅ infoレベルはOK
-    
-    await expect(
-      userService.create(invalidUserData)
-    ).rejects.toThrow('バリデーションエラー');
-    
-    // テストが正常に失敗した場合はエラーログ不要
-  });
+ it('ユーザー作成テスト', async () => {
+  console.log('ユーザー作成テスト開始'); // ✅ 情報ログはOK
+
+  const result = await userService.create(userData);
+
+  console.log('テスト結果:', result); // ✅ 状況把握のためのログ
+  expect(result).toBeDefined();
+ });
+
+ it('異常系：バリデーションエラー', async () => {
+  console.info('バリデーションエラーテスト開始'); // ✅ infoレベルはOK
+
+  await expect(userService.create(invalidUserData)).rejects.toThrow(
+   'バリデーションエラー',
+  );
+
+  // テストが正常に失敗した場合はエラーログ不要
+ });
 });
 ```
 
@@ -141,10 +141,10 @@ graph TD
     B -->|成功| C[console.log/info でOK]
     B -->|期待通りの失敗| D[エラーログ不要]
     B -->|予期しない失敗| E[テストフレームワークがエラー報告]
-    
+
     F[console.error使用] --> G[ログノイズ増加]
     G --> H[本当の問題が見つけにくい]
-    
+
     style C fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style D fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style E fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -159,48 +159,48 @@ graph TD
 ```typescript
 // ✅ 良いロギング例
 export class CreateUserUseCase {
-  async execute(data: CreateUserRequest): Promise<User> {
-    const logger = resolve('Logger');
-    
-    // 開始ログ
-    logger.info('ユーザー作成開始', { 
-      email: data.email,
-      requestId: generateRequestId() 
-    });
-    
-    try {
-      // ビジネスロジック実行
-      const user = await this.userRepository.create(data);
-      
-      // 成功ログ
-      logger.info('ユーザー作成成功', { 
-        userId: user.id, 
-        email: user.email,
-        createdAt: user.createdAt 
-      });
-      
-      return user;
-    } catch (error) {
-      // エラーログ（本番では必要）
-      logger.error('ユーザー作成失敗', { 
-        email: data.email,
-        error: error.message,
-        stack: error.stack 
-      });
-      throw error;
-    }
+ async execute(data: CreateUserRequest): Promise<User> {
+  const logger = resolve('Logger');
+
+  // 開始ログ
+  logger.info('ユーザー作成開始', {
+   email: data.email,
+   requestId: generateRequestId(),
+  });
+
+  try {
+   // ビジネスロジック実行
+   const user = await this.userRepository.create(data);
+
+   // 成功ログ
+   logger.info('ユーザー作成成功', {
+    userId: user.id,
+    email: user.email,
+    createdAt: user.createdAt,
+   });
+
+   return user;
+  } catch (error) {
+   // エラーログ（本番では必要）
+   logger.error('ユーザー作成失敗', {
+    email: data.email,
+    error: error.message,
+    stack: error.stack,
+   });
+   throw error;
   }
+ }
 }
 ```
 
 **ログレベルの使い分け**
 
-| レベル | 用途 | 例 |
-|--------|------|-----|
+| レベル         | 用途                           | 例                                  |
+| -------------- | ------------------------------ | ----------------------------------- |
 | `logger.error` | 予期しないエラー・システム障害 | データベース接続エラー、外部API障害 |
-| `logger.warn` | 警告・注意喚起 | 廃止予定機能の使用、設定値の問題 |
-| `logger.info` | 重要なビジネスイベント | ユーザー登録、重要な処理完了 |
-| `logger.debug` | 詳細なデバッグ情報 | 処理ステップの詳細、変数の値 |
+| `logger.warn`  | 警告・注意喚起                 | 廃止予定機能の使用、設定値の問題    |
+| `logger.info`  | 重要なビジネスイベント         | ユーザー登録、重要な処理完了        |
+| `logger.debug` | 詳細なデバッグ情報             | 処理ステップの詳細、変数の値        |
 
 ---
 
@@ -212,13 +212,13 @@ export class CreateUserUseCase {
 
 ```json
 {
-  "compilerOptions": {
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-    "noImplicitReturns": true,
-    "noImplicitOverride": true
-  }
+ "compilerOptions": {
+  "strict": true,
+  "noUncheckedIndexedAccess": true,
+  "exactOptionalPropertyTypes": true,
+  "noImplicitReturns": true,
+  "noImplicitOverride": true
+ }
 }
 ```
 
@@ -227,21 +227,21 @@ export class CreateUserUseCase {
 ```typescript
 // ✅ 推奨：明示的な型定義
 interface CreateUserRequest {
-  name: string;
-  email: string;
-  password: string;
-  age?: number; // オプショナルは明示的に
+ name: string;
+ email: string;
+ password: string;
+ age?: number; // オプショナルは明示的に
 }
 
 export async function createUser(
-  data: CreateUserRequest
+ data: CreateUserRequest,
 ): Promise<CreateUserResponse> {
-  // 実装
+ // 実装
 }
 
 // ❌ 避ける：any型の使用
 export async function createUser(data: any): Promise<any> {
-  // 型安全性が失われる
+ // 型安全性が失われる
 }
 ```
 
@@ -253,14 +253,14 @@ export async function createUser(data: any): Promise<any> {
 // ✅ Server Actions
 'use server';
 export async function createUser(formData: FormData) {
-  // Server側でのみ実行される処理
+ // Server側でのみ実行される処理
 }
 
-// ✅ Client Components  
-'use client';
+// ✅ Client Components
+('use client');
 export function InteractiveButton() {
-  const [count, setCount] = useState(0);
-  // Client側でのみ実行される処理
+ const [count, setCount] = useState(0);
+ // Client側でのみ実行される処理
 }
 ```
 
@@ -272,12 +272,12 @@ export function InteractiveButton() {
 import React, { useState } from 'react';
 
 export function MyComponent() {
-  // コンポーネント実装
+ // コンポーネント実装
 }
 
 // ❌ 間違った配置：インポート後
 import React, { useState } from 'react';
-'use client'; // インポート後は無効
+('use client'); // インポート後は無効
 ```
 
 ---
@@ -288,7 +288,7 @@ import React, { useState } from 'react';
 
 - **index.ts ファイル作成禁止**
 - **個別インポート必須**
-- **@/* alias使用必須**
+- **@/\* alias使用必須**
 - **相対パス禁止**
 
 ```typescript
@@ -297,8 +297,8 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
 // ❌ 禁止
-import { Button, Input } from '@/components/ui';  // index.ts経由
-import { Button } from '../../ui/Button';          // 相対パス
+import { Button, Input } from '@/components/ui'; // index.ts経由
+import { Button } from '../../ui/Button'; // 相対パス
 ```
 
 ---
@@ -364,23 +364,23 @@ test_CreateUser.ts       # 命名スタイル不統一
 ```typescript
 // ✅ 推奨パターン
 export interface CreateUserRequest {
-  name: string;
-  email: string;
-  password: string;
+ name: string;
+ email: string;
+ password: string;
 }
 
 export interface CreateUserResponse {
-  id: string;
-  name: string;
-  email: string;
-  createdAt: Date;
+ id: string;
+ name: string;
+ email: string;
+ createdAt: Date;
 }
 
 export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
+ success: boolean;
+ data?: T;
+ error?: string;
+ message?: string;
 }
 ```
 
@@ -390,22 +390,20 @@ export interface ApiResponse<T> {
 
 ```typescript
 export class DomainError extends Error {
-  constructor(
-    message: string,
-    public readonly code: string,
-    public readonly details?: Record<string, any>
-  ) {
-    super(message);
-    this.name = 'DomainError';
-  }
+ constructor(
+  message: string,
+  public readonly code: string,
+  public readonly details?: Record<string, any>,
+ ) {
+  super(message);
+  this.name = 'DomainError';
+ }
 }
 
 // 使用例
-throw new DomainError(
-  'ユーザーが見つかりません',
-  'USER_NOT_FOUND',
-  { userId: id }
-);
+throw new DomainError('ユーザーが見つかりません', 'USER_NOT_FOUND', {
+ userId: id,
+});
 ```
 
 ---
@@ -442,14 +440,14 @@ pnpm format --check
 ```javascript
 // eslint.config.mjs
 export default [
-  {
-    rules: {
-      '@typescript-eslint/no-unused-vars': 'error',
-      '@typescript-eslint/explicit-function-return-type': 'warn',
-      'react-hooks/exhaustive-deps': 'error',
-      'prefer-const': 'error',
-    },
+ {
+  rules: {
+   '@typescript-eslint/no-unused-vars': 'error',
+   '@typescript-eslint/explicit-function-return-type': 'warn',
+   'react-hooks/exhaustive-deps': 'error',
+   'prefer-const': 'error',
   },
+ },
 ];
 ```
 
@@ -473,7 +471,7 @@ graph LR
     C --> D[リント・フォーマット]
     D --> E[適切なコミットメッセージ]
     E --> F[コミット]
-    
+
     style A fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style B fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style C fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff

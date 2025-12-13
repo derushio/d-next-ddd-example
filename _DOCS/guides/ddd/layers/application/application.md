@@ -15,19 +15,19 @@ graph TD
     PRES[🎨 Presentation Layer] --> APP[📋 Application Layer]
     APP --> DOMAIN[👑 Domain Layer]
     APP --> INFRA[🔧 Infrastructure Layer]
-    
+
     subgraph "Application Layer の構成"
         UC[Use Cases]
         DTO[DTOs]
         SERVICE[Application Services]
         FLOW[Business Flow Control]
     end
-    
+
     APP --> UC
     APP --> DTO
     APP --> SERVICE
     APP --> FLOW
-    
+
     style PRES fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style APP fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style DOMAIN fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -46,7 +46,7 @@ sequenceDiagram
     participant App as 📋 Application
     participant Domain as 👑 Domain
     participant Infra as 🔧 Infrastructure
-    
+
     Pres->>App: Server Action呼び出し
     App->>App: DTOでデータ変換
     App->>Domain: ビジネスルール実行
@@ -63,16 +63,19 @@ sequenceDiagram
 ### 責務 📋
 
 1. **ユースケース（Use Case）の実装**
+
    - ビジネスフローの制御
    - 複数のDomain Serviceの組み合わせ
    - トランザクション境界の管理
 
 2. **データ変換（DTO）**
+
    - Presentation ↔ Domain 間のデータ変換
    - レイヤー間の結合度低減
    - APIの安定性確保
 
 3. **認可・権限チェック**
+
    - ユーザー権限の検証
    - セキュリティルールの適用
    - アクセス制御
@@ -107,6 +110,7 @@ sequenceDiagram
    ```typescript
    // ❌ 禁止：直接的なDB操作
    import { PrismaClient } from '@prisma/client';
+
    const result = await prisma.user.findMany();
    ```
 
@@ -115,7 +119,7 @@ sequenceDiagram
    ```typescript
    // ❌ 禁止：ビジネスルールをApplication Layerで実装
    const calculateUserLevel = (experiencePoints: number) => {
-     return Math.floor(experiencePoints / 1000) + 1; // Domain Layerの責務
+    return Math.floor(experiencePoints / 1000) + 1; // Domain Layerの責務
    };
    ```
 
@@ -124,6 +128,7 @@ sequenceDiagram
    ```typescript
    // ❌ 禁止：具体的なAPI実装
    import axios from 'axios';
+
    const response = await axios.post('https://api.example.com/users');
    ```
 
@@ -139,17 +144,17 @@ graph TD
         SA[Server Actions]
         UI[UI Components]
     end
-    
+
     subgraph "Application Layer"
         UC[Use Cases]
         DTO[DTOs]
     end
-    
+
     SA --> UC
     UC --> DTO
     DTO --> SA
     SA --> UI
-    
+
     style SA fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style UI fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style UC fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
@@ -170,18 +175,18 @@ graph TD
         UC[Use Cases]
         AS[Application Services]
     end
-    
+
     subgraph "Domain Layer"
         ENTITY[Entities]
         DS[Domain Services]
         REPO_IF[Repository Interfaces]
     end
-    
+
     UC --> DS
     UC --> ENTITY
     AS --> DS
     AS --> REPO_IF
-    
+
     style UC fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style AS fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style ENTITY fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -203,17 +208,17 @@ graph TD
         UC[Use Cases]
         DTO[DTOs]
     end
-    
+
     subgraph "Infrastructure Layer"
         REPO_IMPL[Repository Implementations]
         EXT_SERVICE[External Services]
         DB[Database Factory]
     end
-    
+
     UC --> REPO_IMPL
     UC --> EXT_SERVICE
     UC --> DB
-    
+
     style UC fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style DTO fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
     style REPO_IMPL fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
@@ -272,17 +277,25 @@ Application Layer は以下のコンポーネントで構成されています�
 ```typescript
 // ✅ 良い例：単一のユースケースに集中
 export class CreateUserUseCase {
-  async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
-    // ユーザー作成に関連する処理のみ
-  }
+ async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
+  // ユーザー作成に関連する処理のみ
+ }
 }
 
 // ❌ 悪い例：複数の責務を持つ
 export class UserManagementUseCase {
-  async createUser() { /* ... */ }
-  async updateUser() { /* ... */ }
-  async deleteUser() { /* ... */ }
-  async sendEmail() { /* ... */ } // メール送信は別の責務
+ async createUser() {
+  /* ... */
+ }
+ async updateUser() {
+  /* ... */
+ }
+ async deleteUser() {
+  /* ... */
+ }
+ async sendEmail() {
+  /* ... */
+ } // メール送信は別の責務
 }
 ```
 
@@ -291,21 +304,21 @@ export class UserManagementUseCase {
 ```typescript
 // ✅ 推薦：Use Case レベルでのトランザクション管理
 export class TransferPointsUseCase {
-  async execute(request: TransferPointsRequest): Promise<void> {
-    const transaction = await this.databaseFactory.beginTransaction();
-    
-    try {
-      // 複数の操作を同一トランザクション内で実行
-      await this.userRepository.save(sender, transaction);
-      await this.userRepository.save(receiver, transaction);
-      await this.transactionRepository.save(record, transaction);
-      
-      await transaction.commit();
-    } catch (error) {
-      await transaction.rollback();
-      throw error;
-    }
+ async execute(request: TransferPointsRequest): Promise<void> {
+  const transaction = await this.databaseFactory.beginTransaction();
+
+  try {
+   // 複数の操作を同一トランザクション内で実行
+   await this.userRepository.save(sender, transaction);
+   await this.userRepository.save(receiver, transaction);
+   await this.transactionRepository.save(record, transaction);
+
+   await transaction.commit();
+  } catch (error) {
+   await transaction.rollback();
+   throw error;
   }
+ }
 }
 ```
 
@@ -314,29 +327,28 @@ export class TransferPointsUseCase {
 ```typescript
 // ✅ 推薦：レイヤー固有のエラー処理
 export class CreateUserUseCase {
-  async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
-    try {
-      // ドメインロジック実行
-      const user = await this.userDomainService.createUser(request);
-      
-      // インフラストラクチャ処理
-      await this.userRepository.save(user);
-      await this.emailService.sendWelcomeEmail(user.getEmail());
-      
-    } catch (error) {
-      if (error instanceof DomainError) {
-        // ドメインエラーはそのまま上位に
-        throw error;
-      } else if (error instanceof InfrastructureError) {
-        // インフラエラーは適切にハンドリング
-        this.logger.error('Infrastructure error occurred', error);
-        throw new ApplicationError('システムエラーが発生しました');
-      }
-      
-      // 予期しないエラー
-      throw new ApplicationError('予期しないエラーが発生しました');
-    }
+ async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
+  try {
+   // ドメインロジック実行
+   const user = await this.userDomainService.createUser(request);
+
+   // インフラストラクチャ処理
+   await this.userRepository.save(user);
+   await this.emailService.sendWelcomeEmail(user.getEmail());
+  } catch (error) {
+   if (error instanceof DomainError) {
+    // ドメインエラーはそのまま上位に
+    throw error;
+   } else if (error instanceof InfrastructureError) {
+    // インフラエラーは適切にハンドリング
+    this.logger.error('Infrastructure error occurred', error);
+    throw new ApplicationError('システムエラーが発生しました');
+   }
+
+   // 予期しないエラー
+   throw new ApplicationError('予期しないエラーが発生しました');
   }
+ }
 }
 ```
 
@@ -345,38 +357,38 @@ export class CreateUserUseCase {
 ```typescript
 // ✅ 推薦：明確で型安全なDTO設計
 export interface CreateUserRequest {
-  readonly name: string;
-  readonly email: string;
-  readonly password: string;
+ readonly name: string;
+ readonly email: string;
+ readonly password: string;
 }
 
 export interface CreateUserResponse {
-  readonly id: string;
-  readonly name: string;
-  readonly email: string;
-  readonly level: number;
-  readonly createdAt: Date;
+ readonly id: string;
+ readonly name: string;
+ readonly email: string;
+ readonly level: number;
+ readonly createdAt: Date;
 }
 
 // 変換ロジックの分離
 export class UserDTOMapper {
-  static toCreateUserRequest(formData: FormData): CreateUserRequest {
-    return {
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      password: formData.get('password') as string,
-    };
-  }
-  
-  static toCreateUserResponse(user: User): CreateUserResponse {
-    return {
-      id: user.getId().toString(),
-      name: user.getName(),
-      email: user.getEmail().toString(),
-      level: user.getLevel(),
-      createdAt: user.getCreatedAt(),
-    };
-  }
+ static toCreateUserRequest(formData: FormData): CreateUserRequest {
+  return {
+   name: formData.get('name') as string,
+   email: formData.get('email') as string,
+   password: formData.get('password') as string,
+  };
+ }
+
+ static toCreateUserResponse(user: User): CreateUserResponse {
+  return {
+   id: user.getId().toString(),
+   name: user.getName(),
+   email: user.getEmail().toString(),
+   level: user.getLevel(),
+   createdAt: user.getCreatedAt(),
+  };
+ }
 }
 ```
 
@@ -404,16 +416,16 @@ export class UserDTOMapper {
 // ✅ 推薦：コンストラクタインジェクション
 @injectable()
 export class CreateUserUseCase {
-  constructor(
-    @inject('IUserRepository') private userRepository: IUserRepository,
-    @inject('IUserDomainService') private userDomainService: IUserDomainService,
-    @inject('IEmailService') private emailService: IEmailService,
-    @inject('ILogger') private logger: ILogger
-  ) {}
-  
-  async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
-    // 実装...
-  }
+ constructor(
+  @inject('IUserRepository') private userRepository: IUserRepository,
+  @inject('IUserDomainService') private userDomainService: IUserDomainService,
+  @inject('IEmailService') private emailService: IEmailService,
+  @inject('ILogger') private logger: ILogger,
+ ) {}
+
+ async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
+  // 実装...
+ }
 }
 ```
 

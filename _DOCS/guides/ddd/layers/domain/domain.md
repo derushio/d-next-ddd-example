@@ -13,7 +13,7 @@ Domain Layer は、ビジネスルールとドメイン知識を実装する最�
 ```mermaid
 graph TD
     APP[📋 Application Layer] --> DOMAIN[👑 Domain Layer]
-    
+
     subgraph "Domain Layer の構成"
         ENTITY[Entities]
         VO[Value Objects]
@@ -22,14 +22,14 @@ graph TD
         DOMAIN_EVENT[Domain Events]
         FACTORY[Factories]
     end
-    
+
     DOMAIN --> ENTITY
     DOMAIN --> VO
     DOMAIN --> DS
     DOMAIN --> REPO_IF
     DOMAIN --> DOMAIN_EVENT
     DOMAIN --> FACTORY
-    
+
     style APP fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style DOMAIN fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style ENTITY fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
@@ -49,28 +49,28 @@ graph TD
         RULES[Business Rules]
         INVARIANTS[Invariants]
     end
-    
+
     subgraph "外部依存（禁止）"
         FRAMEWORK[Frameworks]
         DB[Database]
         API[External APIs]
         UI[UI Libraries]
     end
-    
+
     PURE -.-> FRAMEWORK
     RULES -.-> DB
     INVARIANTS -.-> API
     PURE -.-> UI
-    
+
     style PURE fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style RULES fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style INVARIANTS fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
-    
+
     style FRAMEWORK fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style DB fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style API fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style UI fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
-    
+
     classDef forbidden stroke-dasharray: 5 5,stroke:#f44336
     class PURE-->FRAMEWORK,RULES-->DB,INVARIANTS-->API,PURE-->UI forbidden
 ```
@@ -82,16 +82,19 @@ graph TD
 ### 責務 📋
 
 1. **ビジネスルールの実装**
+
    - 企業・業界固有のルール
    - データの妥当性検証
    - 不変条件の保証
 
 2. **ドメインオブジェクトの管理**
+
    - Entity（エンティティ）の設計・実装
    - Value Object（値オブジェクト）の定義
    - オブジェクト間の関係性の表現
 
 3. **ドメインサービスの提供**
+
    - 単一のEntityでは表現できないビジネスロジック
    - 複数オブジェクト間の協調処理
    - ドメイン固有の計算・判定
@@ -118,8 +121,8 @@ graph TD
 
    ```typescript
    // ❌ 禁止：フレームワーク依存
-   import { NextRequest } from 'next/server';
    import { PrismaClient } from '@prisma/client';
+   import { NextRequest } from 'next/server';
    ```
 
 2. **具体的なデータベース操作**
@@ -127,10 +130,10 @@ graph TD
    ```typescript
    // ❌ 禁止：直接的なDB操作
    export class User {
-     async save() {
-       const prisma = new PrismaClient();
-       await prisma.user.create({ data: this });
-     }
+    async save() {
+     const prisma = new PrismaClient();
+     await prisma.user.create({ data: this });
+    }
    }
    ```
 
@@ -139,9 +142,9 @@ graph TD
    ```typescript
    // ❌ 禁止：表示フォーマット等
    export class User {
-     getDisplayName(): string {
-       return `${this.firstName} ${this.lastName}様`; // 表示用フォーマット
-     }
+    getDisplayName(): string {
+     return `${this.firstName} ${this.lastName}様`; // 表示用フォーマット
+    }
    }
    ```
 
@@ -150,10 +153,11 @@ graph TD
    ```typescript
    // ❌ 禁止：外部サービス直接アクセス
    import axios from 'axios';
+
    export class User {
-     async sendEmail() {
-       await axios.post('https://api.sendgrid.com/...');
-     }
+    async sendEmail() {
+     await axios.post('https://api.sendgrid.com/...');
+    }
    }
    ```
 
@@ -162,10 +166,11 @@ graph TD
    ```typescript
    // ❌ 禁止：ファイルシステム等
    import fs from 'fs';
+
    export class User {
-     saveToFile() {
-       fs.writeFileSync('./user.json', JSON.stringify(this));
-     }
+    saveToFile() {
+     fs.writeFileSync('./user.json', JSON.stringify(this));
+    }
    }
    ```
 
@@ -181,18 +186,18 @@ graph TD
         UC[Use Cases]
         AS[Application Services]
     end
-    
+
     subgraph "Domain Layer"
         ENTITY[Entities]
         DS[Domain Services]
         REPO_IF[Repository Interfaces]
     end
-    
+
     UC --> DS
     UC --> ENTITY
     AS --> DS
     AS --> REPO_IF
-    
+
     style UC fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style AS fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style ENTITY fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -213,16 +218,16 @@ graph TD
     subgraph "Domain Layer"
         REPO_IF[Repository Interface]
     end
-    
+
     subgraph "Infrastructure Layer"
         REPO_IMPL[Repository Implementation]
     end
-    
+
     REPO_IMPL -.-> REPO_IF
-    
+
     style REPO_IF fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style REPO_IMPL fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
-    
+
     classDef dependencyInversion stroke-dasharray: 5 5,stroke:#4caf50
     class REPO_IMPL-->REPO_IF dependencyInversion
 ```
@@ -236,11 +241,11 @@ graph TD
     PRES[🎨 Presentation Layer] -.-> DOMAIN[👑 Domain Layer]
     PRES --> APP[📋 Application Layer]
     APP --> DOMAIN
-    
+
     style PRES fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style APP fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style DOMAIN fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
-    
+
     classDef forbidden stroke-dasharray: 5 5,stroke:#f44336
     class PRES-->DOMAIN forbidden
 ```
@@ -304,40 +309,40 @@ Domain Layer は以下のコンポーネントで構成されています：
 ```typescript
 // ✅ 推薦：ビジネスロジックをEntityに集約
 export class User {
-  private constructor(
-    private readonly id: UserId,
-    private email: Email,
-    private experiencePoints: number,
-    private level: number
-  ) {
-    this.validateInvariants();
+ private constructor(
+  private readonly id: UserId,
+  private email: Email,
+  private experiencePoints: number,
+  private level: number,
+ ) {
+  this.validateInvariants();
+ }
+
+ // ビジネスメソッド
+ addExperiencePoints(points: number): void {
+  if (points <= 0) {
+   throw new DomainError('経験値は正の値である必要があります');
   }
-  
-  // ビジネスメソッド
-  addExperiencePoints(points: number): void {
-    if (points <= 0) {
-      throw new DomainError('経験値は正の値である必要があります');
-    }
-    
-    this.experiencePoints += points;
-    this.checkLevelUp();
-    this.validateInvariants();
+
+  this.experiencePoints += points;
+  this.checkLevelUp();
+  this.validateInvariants();
+ }
+
+ // 不変条件の保証
+ private validateInvariants(): void {
+  if (this.experiencePoints < 0) {
+   throw new DomainError('経験値は0以上である必要があります');
   }
-  
-  // 不変条件の保証
-  private validateInvariants(): void {
-    if (this.experiencePoints < 0) {
-      throw new DomainError('経験値は0以上である必要があります');
-    }
-  }
+ }
 }
 
 // ❌ 避ける：Anemic Domain Model（贫血模型）
 export class User {
-  id: string;
-  email: string;
-  experiencePoints: number;
-  level: number; // データだけでロジックがない
+ id: string;
+ email: string;
+ experiencePoints: number;
+ level: number; // データだけでロジックがない
 }
 ```
 
@@ -346,23 +351,23 @@ export class User {
 ```typescript
 // ✅ 推薦：常に妥当な状態を保証
 export class Email {
-  private readonly value: string;
-  
-  constructor(email: string) {
-    this.validateEmail(email);
-    this.value = email.toLowerCase().trim();
+ private readonly value: string;
+
+ constructor(email: string) {
+  this.validateEmail(email);
+  this.value = email.toLowerCase().trim();
+ }
+
+ private validateEmail(email: string): void {
+  if (!email || email.trim().length === 0) {
+   throw new DomainError('メールアドレスは必須です');
   }
-  
-  private validateEmail(email: string): void {
-    if (!email || email.trim().length === 0) {
-      throw new DomainError('メールアドレスは必須です');
-    }
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      throw new DomainError('メールアドレスの形式が正しくありません');
-    }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+   throw new DomainError('メールアドレスの形式が正しくありません');
   }
+ }
 }
 ```
 
@@ -371,22 +376,19 @@ export class Email {
 ```typescript
 // ✅ 推薦：ビジネス上重要な出来事を通知
 export class User {
-  promote(): void {
-    if (!this.canPromote()) {
-      throw new DomainError('昇格条件を満たしていません');
-    }
-    
-    const oldLevel = this.level;
-    this.level += 1;
-    
-    // ドメインイベント発行
-    DomainEvents.raise(new UserPromotedEvent(
-      this.id,
-      oldLevel,
-      this.level,
-      new Date()
-    ));
+ promote(): void {
+  if (!this.canPromote()) {
+   throw new DomainError('昇格条件を満たしていません');
   }
+
+  const oldLevel = this.level;
+  this.level += 1;
+
+  // ドメインイベント発行
+  DomainEvents.raise(
+   new UserPromotedEvent(this.id, oldLevel, this.level, new Date()),
+  );
+ }
 }
 ```
 
@@ -395,16 +397,16 @@ export class User {
 ```typescript
 // ✅ 推薦：Domain LayerでInterfaceを定義
 export interface IUserRepository {
-  findById(id: UserId): Promise<User | null>;
-  findByEmail(email: Email): Promise<User | null>;
-  save(user: User): Promise<void>;
-  delete(id: UserId): Promise<void>;
+ findById(id: UserId): Promise<User | null>;
+ findByEmail(email: Email): Promise<User | null>;
+ save(user: User): Promise<void>;
+ delete(id: UserId): Promise<void>;
 }
 
 // Infrastructure LayerでImplementation
 // （Infrastructure Layerで実装）
 export class PrismaUserRepository implements IUserRepository {
-  // 具体的な実装...
+ // 具体的な実装...
 }
 ```
 
@@ -427,25 +429,25 @@ export class PrismaUserRepository implements IUserRepository {
 ```typescript
 // ✅ ドメインテストの例
 describe('User Entity', () => {
-  it('経験値追加時にレベルアップが発生する', () => {
-    // Arrange
-    const user = User.create(
-      new UserId('user-123'),
-      new Email('test@example.com'),
-      'テストユーザー'
-    );
-    
-    // Act
-    user.addExperiencePoints(1000);
-    
-    // Assert
-    expect(user.getLevel()).toBe(2);
-    
-    // ドメインイベントの確認
-    const events = DomainEvents.getEvents();
-    expect(events).toHaveLength(1);
-    expect(events[0]).toBeInstanceOf(UserLevelUpEvent);
-  });
+ it('経験値追加時にレベルアップが発生する', () => {
+  // Arrange
+  const user = User.create(
+   new UserId('user-123'),
+   new Email('test@example.com'),
+   'テストユーザー',
+  );
+
+  // Act
+  user.addExperiencePoints(1000);
+
+  // Assert
+  expect(user.getLevel()).toBe(2);
+
+  // ドメインイベントの確認
+  const events = DomainEvents.getEvents();
+  expect(events).toHaveLength(1);
+  expect(events[0]).toBeInstanceOf(UserLevelUpEvent);
+ });
 });
 ```
 

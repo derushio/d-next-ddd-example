@@ -31,32 +31,32 @@ graph TB
         A -->|new PrismaUserRepository| B
         B --> C[PostgreSQL]
     end
-    
+
     subgraph "問題点"
         D[🚫 テストが困難]
         E[🚫 変更に弱い]
         F[🚫 再利用性が低い]
     end
-    
+
     subgraph "✅ 良い例：依存性注入（疎結合）"
         G[UserService] -->|インターフェース経由| H[IUserRepository]
         I[PrismaUserRepository] -->|implements| H
         J[外部] -->|注入| G
         I --> K[PostgreSQL]
     end
-    
+
     subgraph "メリット"
         L[✅ テスト可能]
         M[✅ 変更に強い]
         N[✅ 再利用性が高い]
     end
-    
+
     style A fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style B fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style D fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
     style E fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
     style F fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
-    
+
     style G fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style H fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style I fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -81,14 +81,14 @@ graph TD
         A --> D[調味料を自分で作る]
         A --> E[料理を作る]
     end
-    
+
     subgraph "✅ DI あり（良い例）"
         F[シェフ] --> G[調理に専念]
         H[野菜農家] --> F
         I[魚屋] --> F
         J[調味料メーカー] --> F
     end
-    
+
     style A fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style F fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style G fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -107,7 +107,7 @@ graph LR
         C[再利用しやすい] --> D
         E[責任が明確] --> D
     end
-    
+
     style D fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style A fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style B fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -130,20 +130,20 @@ graph TD
         B --> C[組み立て]
         C --> D[完成品配送]
     end
-    
+
     subgraph "登録された設計図"
         E[UserService] --> F[IUserRepository]
         G[Logger] --> H[ILogger]
         I[HashService] --> J[IHashService]
     end
-    
+
     subgraph "リクエスト"
         K[「UserServiceください！」]
     end
-    
+
     K --> A
     D --> L[完成したUserService]
-    
+
     style A fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style B fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style C fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
@@ -170,7 +170,7 @@ flowchart TD
     E --> F[Step5: Repository作成]
     F --> G[Step6: DomainService作成]
     G --> H[Step7: UserService作成]
-    
+
     I[依存関係管理] --> J["Config → Logger"]
     I --> K["Config → HashService"]
     I --> L["Prisma → Repository"]
@@ -180,7 +180,7 @@ flowchart TD
     I --> P["DomainService → UserService"]
     I --> Q["HashService → UserService"]
     I --> R["Logger → UserService"]
-    
+
     style A fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style H fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style I fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
@@ -194,12 +194,12 @@ flowchart TD
     B --> C[📦 DIコンテナ]
     C --> D[🔄 自動依存関係解決]
     D --> E[✨ 完成したUserService]
-    
+
     F[DIコンテナの働き] --> G[依存関係を自動検出]
     F --> H[正しい順序で初期化]
     F --> I[循環依存をチェック]
     F --> J[エラー時は起動時に失敗]
-    
+
     style A fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style C fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style E fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -208,11 +208,11 @@ flowchart TD
 
 #### 📊 効果の比較
 
-| 項目 | 手動管理 | DI自動管理 |
-|---|---|---|
-| **作業量** | 7ステップ + 依存管理 | 1行のみ |
-| **エラー率** | 高い（依存順序ミス等） | 低い（起動時チェック） |
-| **保守性** | 低い（変更時に全箇所修正） | 高い（DI設定のみ修正） |
+| 項目         | 手動管理                   | DI自動管理             |
+| ------------ | -------------------------- | ---------------------- |
+| **作業量**   | 7ステップ + 依存管理       | 1行のみ                |
+| **エラー率** | 高い（依存順序ミス等）     | 低い（起動時チェック） |
+| **保守性**   | 低い（変更時に全箇所修正） | 高い（DI設定のみ修正） |
 | **テスト性** | 困難（モック差し込み複雑） | 簡単（モック自動注入） |
 
 ---
@@ -229,17 +229,17 @@ flowchart TD
 graph TD
     subgraph "DIコンテナの階層構造"
         A[Application Container] --> B[Domain Container]
-        B --> C[Infrastructure Container] 
+        B --> C[Infrastructure Container]
         C --> D[Core Container]
     end
-    
+
     subgraph "各レイヤーの役割"
         E[Use Cases] --> A
         F[Domain Services] --> B
         G[Repository実装] --> C
         H[Database/Config] --> D
     end
-    
+
     style A fill:#831843,stroke:#be185d,stroke-width:2px,color:#ffffff
     style B fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style C fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -276,13 +276,15 @@ src/
 ```typescript
 // 型安全なトークン定義
 export const INJECTION_TOKENS = {
-  UserRepository: Symbol('UserRepository'),
-  Logger: Symbol('Logger'),
-  HashService: Symbol('HashService'),
+ UserRepository: Symbol('UserRepository'),
+ Logger: Symbol('Logger'),
+ HashService: Symbol('HashService'),
 } as const;
 
 // 型安全な取得
-const userRepository = resolve<IUserRepository>(INJECTION_TOKENS.UserRepository);
+const userRepository = resolve<IUserRepository>(
+ INJECTION_TOKENS.UserRepository,
+);
 ```
 
 ### 🔍 実際の使用例
@@ -292,22 +294,22 @@ const userRepository = resolve<IUserRepository>(INJECTION_TOKENS.UserRepository)
 ```typescript
 // インターフェース定義
 export interface IUserRepository {
-  save(user: User): Promise<User>;
-  findByEmail(email: string): Promise<User | null>;
+ save(user: User): Promise<User>;
+ findByEmail(email: string): Promise<User | null>;
 }
 
 // 実装
 @injectable()
 export class PrismaUserRepository implements IUserRepository {
-  constructor(
-    @inject(INJECTION_TOKENS.PrismaClient) private prisma: PrismaClient,
-    @inject(INJECTION_TOKENS.Logger) private logger: ILogger
-  ) {}
+ constructor(
+  @inject(INJECTION_TOKENS.PrismaClient) private prisma: PrismaClient,
+  @inject(INJECTION_TOKENS.Logger) private logger: ILogger,
+ ) {}
 
-  async save(user: User): Promise<User> {
-    this.logger.info('ユーザーを保存します');
-    // 実装...
-  }
+ async save(user: User): Promise<User> {
+  this.logger.info('ユーザーを保存します');
+  // 実装...
+ }
 }
 ```
 
@@ -326,21 +328,25 @@ container.register(INJECTION_TOKENS.PrismaClient, { useValue: prisma });
 // Use Case での使用
 @injectable()
 export class CreateUserUseCase {
-  constructor(
-    @inject(INJECTION_TOKENS.UserRepository) private userRepository: IUserRepository,
-    @inject(INJECTION_TOKENS.Logger) private logger: ILogger
-  ) {}
+ constructor(
+  @inject(INJECTION_TOKENS.UserRepository)
+  private userRepository: IUserRepository,
+  @inject(INJECTION_TOKENS.Logger) private logger: ILogger,
+ ) {}
 
-  async execute(request: CreateUserRequest): Promise<User> {
-    this.logger.info('ユーザー作成開始');
-    return await this.userRepository.save(new User(request.name, request.email));
-  }
+ async execute(request: CreateUserRequest): Promise<User> {
+  this.logger.info('ユーザー作成開始');
+  return await this.userRepository.save(new User(request.name, request.email));
+ }
 }
 
 // Presentation Layer での使用
 export async function createUserAction(formData: FormData) {
-  const useCase = resolve<CreateUserUseCase>(INJECTION_TOKENS.CreateUserUseCase);
-  return await useCase.execute({ name: formData.get('name'), email: formData.get('email') });
+ const useCase = resolve<CreateUserUseCase>(INJECTION_TOKENS.CreateUserUseCase);
+ return await useCase.execute({
+  name: formData.get('name'),
+  email: formData.get('email'),
+ });
 }
 ```
 
@@ -387,14 +393,14 @@ graph TB
         G --> I[テスト完了 6秒後]
         H --> I
     end
-    
+
     subgraph "問題点"
         J[🔥 実際のメール送信]
         K[💸 課金発生]
         L[🐌 6秒の実行時間]
         M[🔄 ネットワーク依存で不安定]
     end
-    
+
     style E fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style F fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style H fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
@@ -418,20 +424,20 @@ graph TB
         S --> T[モック呼び出し検証]
         T --> U[テスト完了 0.01秒後]
     end
-    
+
     subgraph "メリット"
         V[✅ メール送信なし]
         W[✅ 課金なし]
         X[✅ 0.01秒の実行時間]
         Y[✅ 外部依存なしで安定]
     end
-    
+
     subgraph "速度比較"
         Z[DI なし: 6秒]
         AA[DI あり: 0.01秒]
         BB[🚀 600倍高速！]
     end
-    
+
     style O fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style P fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style Q fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -447,13 +453,13 @@ graph TB
 
 ### 🔧 実際のテストコード比較
 
-| 項目 | DI なし | DI あり |
-|------|---------|---------|
-| **テスト実行時間** | 6秒（DB接続） | 0.01秒（モック） |
-| **外部依存** | あり（DB、メール） | なし（モック） |
-| **安全性** | 危険（実際の処理） | 安全（モック） |
-| **安定性** | 不安定（ネットワーク） | 安定（ローカル） |
-| **コスト** | 高い（課金発生） | 無料（モック） |
+| 項目               | DI なし                | DI あり          |
+| ------------------ | ---------------------- | ---------------- |
+| **テスト実行時間** | 6秒（DB接続）          | 0.01秒（モック） |
+| **外部依存**       | あり（DB、メール）     | なし（モック）   |
+| **安全性**         | 危険（実際の処理）     | 安全（モック）   |
+| **安定性**         | 不安定（ネットワーク） | 安定（ローカル） |
+| **コスト**         | 高い（課金発生）       | 無料（モック）   |
 
 ### 🎭 モックの力
 
@@ -465,14 +471,14 @@ graph TD
         B --> D[PostgreSQL]
         C --> E[SendGrid API]
     end
-    
+
     subgraph "テスト環境"
         F[UserService] --> G[MockRepository]
         F --> H[MockEmailService]
         G --> I[メモリ内データ]
         H --> J[何もしない]
     end
-    
+
     style D fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style E fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style I fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -501,35 +507,35 @@ console.timeEnd('DI ありのテスト');
 ```typescript
 // vitest + vitest-mock-extended を使用
 describe('CreateUserUseCase', () => {
-  test('ユーザー作成時にパスワードハッシュ化とログ出力が実行される', async () => {
-    // Arrange: モックを自動生成（型安全）
-    const mockUserRepository = createMockProxy<IUserRepository>();
-    const mockHashService = createMockProxy<IHashService>();
-    const mockLogger = createMockProxy<ILogger>();
-    
-    // この時点でAIは以下を理解する：
-    // 1. IHashService インターフェースが必要
-    // 2. ILogger インターフェースが必要  
-    // 3. IUserRepository インターフェースが必要
-    // 4. これらはDIで注入される必要がある
-    
-    mockHashService.hash.mockResolvedValue('hashed_password');
-    mockUserRepository.save.mockResolvedValue(expectedUser);
-    
-    // DIコンテナでモック注入
-    container.register(TOKENS.HashService, { useValue: mockHashService });
-    container.register(TOKENS.Logger, { useValue: mockLogger });
-    container.register(TOKENS.UserRepository, { useValue: mockUserRepository });
-    
-    const useCase = container.resolve(CreateUserUseCase);
-    
-    // Act & Assert
-    const result = await useCase.execute(userRequest);
-    
-    expect(mockHashService.hash).toHaveBeenCalledWith('password123');
-    expect(mockLogger.info).toHaveBeenCalledWith('ユーザー作成開始');
-    expect(result.name).toBe('テストユーザー');
-  });
+ test('ユーザー作成時にパスワードハッシュ化とログ出力が実行される', async () => {
+  // Arrange: モックを自動生成（型安全）
+  const mockUserRepository = createMockProxy<IUserRepository>();
+  const mockHashService = createMockProxy<IHashService>();
+  const mockLogger = createMockProxy<ILogger>();
+
+  // この時点でAIは以下を理解する：
+  // 1. IHashService インターフェースが必要
+  // 2. ILogger インターフェースが必要
+  // 3. IUserRepository インターフェースが必要
+  // 4. これらはDIで注入される必要がある
+
+  mockHashService.hash.mockResolvedValue('hashed_password');
+  mockUserRepository.save.mockResolvedValue(expectedUser);
+
+  // DIコンテナでモック注入
+  container.register(TOKENS.HashService, { useValue: mockHashService });
+  container.register(TOKENS.Logger, { useValue: mockLogger });
+  container.register(TOKENS.UserRepository, { useValue: mockUserRepository });
+
+  const useCase = container.resolve(CreateUserUseCase);
+
+  // Act & Assert
+  const result = await useCase.execute(userRequest);
+
+  expect(mockHashService.hash).toHaveBeenCalledWith('password123');
+  expect(mockLogger.info).toHaveBeenCalledWith('ユーザー作成開始');
+  expect(result.name).toBe('テストユーザー');
+ });
 });
 ```
 
@@ -597,7 +603,7 @@ graph TD
         E[テストコード増加] --> D
         F[アーキテクチャ設計負荷] --> D
     end
-    
+
     style A fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style B fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style C fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
@@ -624,7 +630,7 @@ graph TD
     subgraph "🎯 開発者の自然言語指示"
         A["「ユーザー作成機能を作ってください。<br/>- Clean Architecture で設計<br/>- 依存性注入を使用<br/>- Repository パターンで実装<br/>- テストしやすい構造にして」"]
     end
-    
+
     subgraph "✨ AIが自動生成（約2分で完了）"
         B[IUserRepository<br/>インターフェース]
         C[IHashService<br/>インターフェース]
@@ -632,25 +638,25 @@ graph TD
         E[DIコンテナ設定<br/>container.register()]
         F[テストコード<br/>vitest + mock]
     end
-    
+
     A --> B
     A --> C
     A --> D
     A --> E
     A --> F
-    
+
     subgraph "生成内容の特徴"
         G[✅ 型安全なDI設計]
         H[✅ 完全なインターフェース分離]
         I[✅ テスト可能な構造]
         J[✅ ベストプラクティス準拠]
     end
-    
+
     B --> G
     C --> H
     D --> I
     E --> J
-    
+
     style A fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style B fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style C fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -674,13 +680,13 @@ xychart-beta
     bar [0.5, 0.17, 1, 0.5]
 ```
 
-| 作業内容 | 従来の手動作業 | Vibe Coding | 効率化率 |
-|----------|---------------|------------|----------|
-| インターフェース設計 | 30分-1時間 | **30秒** | **99%削減** |
-| DIコンテナ設定 | 20分-40分 | **10秒** | **98%削減** |
-| Use Case実装 | 1-2時間 | **1分** | **95%削減** |
-| テストコード作成 | 1-3時間 | **30秒** | **98%削減** |
-| **合計** | **3-6時間** | **2分** | **99%削減** |
+| 作業内容             | 従来の手動作業 | Vibe Coding | 効率化率    |
+| -------------------- | -------------- | ----------- | ----------- |
+| インターフェース設計 | 30分-1時間     | **30秒**    | **99%削減** |
+| DIコンテナ設定       | 20分-40分      | **10秒**    | **98%削減** |
+| Use Case実装         | 1-2時間        | **1分**     | **95%削減** |
+| テストコード作成     | 1-3時間        | **30秒**    | **98%削減** |
+| **合計**             | **3-6時間**    | **2分**     | **99%削減** |
 
 ```mermaid
 pie title 開発時間の内訳比較
@@ -697,13 +703,13 @@ graph LR
         B[ベストプラクティス学習] --> D
         C[大量のコード知識] --> D
     end
-    
+
     subgraph "DI設計の特徴"
         E[定型的なパターン] --> A
         F[確立されたルール] --> B
         G[豊富な実装例] --> C
     end
-    
+
     style A fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style B fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style C fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -748,18 +754,18 @@ graph TD
         E --> F[テスト作成]
         F --> G[デバッグ]
     end
-    
+
     subgraph "Vibe Coding フロー"
         H[要件を自然言語で記述] --> I[AI生成]
         I --> J[動作確認]
         J --> K[必要に応じて調整]
     end
-    
+
     subgraph "時間比較"
-        L[従来: 1-2日] 
+        L[従来: 1-2日]
         M[Vibe Coding: 5-10分]
     end
-    
+
     style A fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style B fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style C fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
@@ -768,7 +774,7 @@ graph TD
     style F fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style G fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style L fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
-    
+
     style H fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style I fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style J fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -837,13 +843,13 @@ graph TD
         B --> E[セキュリティ脆弱性]
         B --> F[非効率な実装]
     end
-    
+
     subgraph "テストコードによる品質保証"
         G[人間が作成したテスト] --> H[AI実装の検証]
         H --> I[品質基準の明確化]
         I --> J[信頼できるコード]
     end
-    
+
     style C fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style D fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style E fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
@@ -875,7 +881,7 @@ graph LR
         E --> F
         F --> G[完全なDI実装]
     end
-    
+
     style A fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style B fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style F fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -911,13 +917,13 @@ graph TD
         D -->|失敗| F[AIが修正]
         F --> C
     end
-    
+
     subgraph "DI設計の最適化"
         G[テスト要件] --> H[必要な依存関係を特定]
         H --> I[AIが適切なDI実装]
         I --> J[モック注入でテスト高速化]
     end
-    
+
     style A fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style E fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style J fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff

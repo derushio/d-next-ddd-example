@@ -14,21 +14,21 @@ Presentation Layer は、ユーザーと直接やり取りを行う最上位の�
 graph TD
     USER[👤 ユーザー] --> PRES[🎨 Presentation Layer]
     PRES --> APP[📋 Application Layer]
-    
+
     subgraph "Presentation Layer の構成"
         UI[UI Components]
         SA[Server Actions]
         STATE[UI State Management]
         EVENT[Event Handling]
     end
-    
+
     PRES --> UI
     PRES --> SA
     PRES --> STATE
     PRES --> EVENT
-    
+
     SA --> APP
-    
+
     style PRES fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style APP fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style UI fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
@@ -47,7 +47,7 @@ sequenceDiagram
     participant UC as 📋 Use Case
     participant Domain as 👑 Domain
     participant Infra as 🔧 Infrastructure
-    
+
     User->>UI: ボタンクリック
     UI->>SA: フォームデータ送信
     SA->>UC: execute(request)
@@ -65,16 +65,19 @@ sequenceDiagram
 ### 責務 📋
 
 1. **ユーザーインターフェースの提供**
+
    - 画面の描画とレイアウト
    - ユーザーが操作できる要素の提供
    - レスポンシブデザインの実現
 
 2. **ユーザー操作の受付**
+
    - フォーム入力の処理
    - ボタンクリックの受付
    - ファイルアップロードの処理
 
 3. **UI状態の管理**
+
    - モーダルの開閉状態
    - タブの選択状態
    - ローディング状態の表示
@@ -102,9 +105,9 @@ sequenceDiagram
    ```typescript
    // ❌ 禁止：ビジネスルールをPresentation Layerで実装
    const calculateDiscount = (price: number, userLevel: number) => {
-     if (userLevel >= 10) return price * 0.2;
-     if (userLevel >= 5) return price * 0.1;
-     return 0;
+    if (userLevel >= 10) return price * 0.2;
+    if (userLevel >= 5) return price * 0.1;
+    return 0;
    };
    ```
 
@@ -113,6 +116,7 @@ sequenceDiagram
    ```typescript
    // ❌ 禁止：Presentation LayerからDB直接アクセス
    import { PrismaClient } from '@prisma/client';
+
    const prisma = new PrismaClient();
    ```
 
@@ -129,7 +133,7 @@ sequenceDiagram
    ```typescript
    // ❌ 禁止：複雑なビジネスルールバリデーション
    const validateBusinessRule = (userData) => {
-     // 複雑なビジネスルール... → Domain Layerの責務
+    // 複雑なビジネスルール... → Domain Layerの責務
    };
    ```
 
@@ -145,17 +149,17 @@ graph TD
         SA[Server Actions]
         UI[UI Components]
     end
-    
+
     subgraph "Application Layer"
         UC[Use Cases]
         DTO[DTOs]
     end
-    
+
     SA --> UC
     UC --> DTO
     DTO --> SA
     SA --> UI
-    
+
     style SA fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style UI fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style UC fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
@@ -175,11 +179,11 @@ graph TD
     PRES[Presentation Layer] -.-> DOMAIN[Domain Layer]
     PRES --> APP[Application Layer]
     APP --> DOMAIN
-    
+
     style PRES fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style APP fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style DOMAIN fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
-    
+
     classDef forbidden stroke-dasharray: 5 5,stroke:#f44336
     class PRES-->DOMAIN forbidden
 ```
@@ -193,11 +197,11 @@ graph TD
     PRES[Presentation Layer] -.-> INFRA[Infrastructure Layer]
     PRES --> APP[Application Layer]
     APP --> INFRA
-    
+
     style PRES fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style APP fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style INFRA fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
-    
+
     classDef forbidden stroke-dasharray: 5 5,stroke:#f44336
     class PRES-->INFRA forbidden
 ```
@@ -271,15 +275,15 @@ export function UserListClient() {
 ```typescript
 // ✅ 良い例：表示用フォーマットのみ
 export function formatUserLevel(level: number): string {
-  if (level >= 10) return '🏆 マスター';
-  if (level >= 5) return '⭐ エキスパート';
-  return '🌱 ビギナー';
+ if (level >= 10) return '🏆 マスター';
+ if (level >= 5) return '⭐ エキスパート';
+ return '🌱 ビギナー';
 }
 
 // ❌ 悪い例：ビジネスロジックが混入
 export function calculateAndFormatUserLevel(experiencePoints: number): string {
-  const level = Math.floor(experiencePoints / 1000) + 1; // ビジネスロジック
-  return formatUserLevel(level);
+ const level = Math.floor(experiencePoints / 1000) + 1; // ビジネスロジック
+ return formatUserLevel(level);
 }
 ```
 
@@ -289,16 +293,16 @@ export function calculateAndFormatUserLevel(experiencePoints: number): string {
 // ✅ 推薦：ユーザーフレンドリーなエラー表示
 'use server';
 export async function createUserAction(formData: FormData) {
-  try {
-    const createUserUseCase = resolve('CreateUserUseCase');
-    await createUserUseCase.execute(extractUserData(formData));
-    redirect('/users');
-  } catch (error) {
-    if (error instanceof DomainError) {
-      return { error: error.message }; // ユーザー向けメッセージ
-    }
-    return { error: '予期しないエラーが発生しました' };
+ try {
+  const createUserUseCase = resolve('CreateUserUseCase');
+  await createUserUseCase.execute(extractUserData(formData));
+  redirect('/users');
+ } catch (error) {
+  if (error instanceof DomainError) {
+   return { error: error.message }; // ユーザー向けメッセージ
   }
+  return { error: '予期しないエラーが発生しました' };
+ }
 }
 ```
 

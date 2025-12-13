@@ -18,7 +18,7 @@ graph TD
         style A1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
         style B1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     end
-    
+
     subgraph "✅ 推奨するドーナツ構造"
         A2[Page Component <br/>Server Component] --> B2[Container<br/>Server Component]
         B2 --> C2[Interactive Part<br/>use client]
@@ -37,7 +37,7 @@ graph TD
 'use client';
 export default function UserProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
-  
+
   return (
     <div>
       <header>プロフィール</header> {/* 静的コンテンツもClient側に */}
@@ -54,7 +54,7 @@ export default function UserProfilePage() {
 // Server Component（外側）
 export default async function UserProfilePage() {
   const userData = await getUserData(); // サーバーでデータ取得
-  
+
   return (
     <div>
       <header>プロフィール</header> {/* 静的コンテンツはサーバー側 */}
@@ -68,7 +68,7 @@ export default async function UserProfilePage() {
 'use client';
 function UserProfileClient({ initialData }: { initialData: UserData }) {
   const [isEditing, setIsEditing] = useState(false);
-  
+
   return (
     <>
       <EditButton onClick={() => setIsEditing(!isEditing)} />
@@ -95,7 +95,7 @@ graph TD
     B -->|No| D[Server Component]
     C -->|Yes| E[Client Component]
     C -->|No| F[Server Component + Server Action]
-    
+
     style D fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style E fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
     style F fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -103,13 +103,13 @@ graph TD
 
 **判断基準：**
 
-| 機能 | Component種別 | 理由 |
-|------|---------------|------|
-| 静的コンテンツ表示 | Server Component | サーバーサイドレンダリングで十分 |
-| データ取得・表示 | Server Component | サーバーでデータ取得が効率的 |
-| フォーム送信 | Server Component + Server Action | サーバーサイドで処理可能 |
-| リアルタイム状態管理 | Client Component | ブラウザでの状態管理が必要 |
-| アニメーション・UI状態 | Client Component | ユーザーインタラクションが必要 |
+| 機能                   | Component種別                    | 理由                             |
+| ---------------------- | -------------------------------- | -------------------------------- |
+| 静的コンテンツ表示     | Server Component                 | サーバーサイドレンダリングで十分 |
+| データ取得・表示       | Server Component                 | サーバーでデータ取得が効率的     |
+| フォーム送信           | Server Component + Server Action | サーバーサイドで処理可能         |
+| リアルタイム状態管理   | Client Component                 | ブラウザでの状態管理が必要       |
+| アニメーション・UI状態 | Client Component                 | ユーザーインタラクションが必要   |
 
 **具体例：検索フォーム**
 
@@ -134,7 +134,7 @@ async function SearchForm() {
     // サーバーサイドで検索処理
     redirect(`/search/results?q=${query}`);
   }
-  
+
   return (
     <form action={handleSearch}>
       <input name="query" placeholder="検索キーワード" />
@@ -147,13 +147,13 @@ async function SearchForm() {
 'use client';
 function SearchFilterClient() {
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
-  
+
   return (
     <div>
       {/* リアルタイムフィルタリング */}
-      <FilterButtons 
-        filters={activeFilters} 
-        onChange={setActiveFilters} 
+      <FilterButtons
+        filters={activeFilters}
+        onChange={setActiveFilters}
       />
     </div>
   );
@@ -166,13 +166,13 @@ function SearchFilterClient() {
 
 ```typescript
 // ✅ 推奨：Clientサフィックス
-SignInFormClient.tsx
-UserProfileClient.tsx  
-SearchFilterClient.tsx
+SignInFormClient.tsx;
+UserProfileClient.tsx;
+SearchFilterClient.tsx;
 
 // ❌ 非推奨：不明確な命名
-SignInForm.tsx // Server/Client区別不明
-UserProfile.tsx // Server/Client区別不明
+SignInForm.tsx; // Server/Client区別不明
+UserProfile.tsx; // Server/Client区別不明
 ```
 
 ---
@@ -188,7 +188,7 @@ UserProfile.tsx // Server/Client区別不明
 <div className="bg-black bg-opacity-50">
 <div className="text-gray-500 text-opacity-80">
 
-// ✅ TailwindCSS v4（推奨）  
+// ✅ TailwindCSS v4（推奨）
 <div className="bg-black/50">
 <div className="text-gray-500/80">
 ```
@@ -199,11 +199,11 @@ UserProfile.tsx // Server/Client区別不明
 graph LR
     A[色指定] --> B[/透明度]
     B --> C[最終クラス]
-    
+
     example1[bg-blue-500] --> slash1[/30] --> result1[bg-blue-500/30]
     example2[text-red-600] --> slash2[/75] --> result2[text-red-600/75]
     example3[border-gray-300] --> slash3[/50] --> result3[border-gray-300/50]
-    
+
     style result1 fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style result2 fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style result3 fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
@@ -264,17 +264,17 @@ export function ActionButtons() {
     <div className="space-x-4">
       {/* 基本的なshadcn/uiボタン */}
       <Button variant="default">標準ボタン</Button>
-      
+
       {/* 既存システム機能統合（gradient + loading） */}
-      <Button 
-        variant="primary" 
-        gradient={true} 
+      <Button
+        variant="primary"
+        gradient={true}
         loading={isLoading}
         fullWidth={false}
       >
         拡張機能ボタン
       </Button>
-      
+
       {/* shadcn/ui標準variants */}
       <Button variant="destructive">削除</Button>
       <Button variant="outline">アウトライン</Button>
@@ -416,7 +416,7 @@ export function ConfirmDialog() {
   ボタン
 </button>
 
-<div 
+<div
   className="cursor-pointer hover:bg-blue-50 transition-colors"
   onClick={handleClick}
 >
@@ -436,10 +436,10 @@ graph TD
     A[ユーザーがホバー] --> B{cursor-pointerあり？}
     B -->|Yes| C[クリック可能と認識]
     B -->|No| D[クリック可能と気づかない]
-    
+
     C --> E[良いUX]
     D --> F[混乱・離脱]
-    
+
     style C fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style D fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style E fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -464,8 +464,8 @@ import Image from 'next/image';
 />
 
 // ❌ 非推奨：通常のimg要素
-<img 
-  src="/profile.jpg" 
+<img
+  src="/profile.jpg"
   alt="プロフィール画像"
   className="w-[300px] h-[300px] rounded-full cursor-pointer"
 />
@@ -479,7 +479,7 @@ import dynamic from 'next/dynamic';
 // ✅ 重いコンポーネントの遅延読み込み
 const HeavyChartClient = dynamic(
   () => import('./HeavyChartClient'),
-  { 
+  {
     loading: () => <div className="animate-pulse bg-gray-200 h-64" />,
     ssr: false // クライアントサイドのみで実行
   }
@@ -586,16 +586,16 @@ import { Button } from '@/components/ui-bridge';
 
 export function ActionButtonGroup() {
   const [isLoading, setIsLoading] = useState(false);
-  
+
   return (
     <div className="flex flex-col sm:flex-row gap-4">
       {/* shadcn/ui標準機能 */}
       <Button variant="default" size="lg">
         標準アクション
       </Button>
-      
+
       {/* 既存システム機能統合 */}
-      <Button 
+      <Button
         variant="primary"
         gradient={true}
         loading={isLoading}
@@ -605,12 +605,12 @@ export function ActionButtonGroup() {
       >
         グラデーション＋ローディング
       </Button>
-      
+
       {/* ステート色活用 */}
       <Button variant="success" size="lg">
         成功アクション
       </Button>
-      
+
       <Button variant="destructive" size="lg">
         危険アクション
       </Button>
@@ -632,7 +632,7 @@ export function StatusAlerts() {
           標準的な情報メッセージです。
         </AlertDescription>
       </Alert>
-      
+
       {/* 既存システムステート色統合 */}
       <Alert variant="success">
         <CheckCircle className="h-4 w-4" />
@@ -640,14 +640,14 @@ export function StatusAlerts() {
           操作が正常に完了しました。
         </AlertDescription>
       </Alert>
-      
+
       <Alert variant="error">
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
           エラーが発生しました。もう一度お試しください。
         </AlertDescription>
       </Alert>
-      
+
       <Alert variant="warning">
         <AlertTriangle className="h-4 w-4" />
         <AlertDescription>
@@ -673,7 +673,7 @@ function DataFetcher<T>({ url, children }: DataFetcherProps<T>) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   useEffect(() => {
     fetch(url)
       .then(response => response.json())
@@ -681,7 +681,7 @@ function DataFetcher<T>({ url, children }: DataFetcherProps<T>) {
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   }, [url]);
-  
+
   return children(data, loading, error);
 }
 
@@ -690,7 +690,7 @@ function DataFetcher<T>({ url, children }: DataFetcherProps<T>) {
   {(users, loading, error) => {
     if (loading) return <div className="animate-pulse">読み込み中...</div>;
     if (error) return <div className="text-red-500">エラー: {error}</div>;
-    
+
     return (
       <div className="space-y-2">
         {users?.map(user => (
@@ -727,15 +727,15 @@ class ErrorBoundary extends React.Component<
     super(props);
     this.state = { hasError: false, error: null };
   }
-  
+
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error };
   }
-  
+
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Error caught by boundary:', error, errorInfo);
   }
-  
+
   render() {
     if (this.state.hasError) {
       return this.props.fallback || (
@@ -746,7 +746,7 @@ class ErrorBoundary extends React.Component<
           <p className="text-gray-600 mb-4">
             {this.state.error?.message || '予期しないエラーが発生しました'}
           </p>
-          <button 
+          <button
             className="px-4 py-2 bg-blue-600 text-white rounded cursor-pointer hover:bg-blue-700"
             onClick={() => this.setState({ hasError: false, error: null })}
           >
@@ -755,7 +755,7 @@ class ErrorBoundary extends React.Component<
         </div>
       );
     }
-    
+
     return this.props.children;
   }
 }
@@ -792,7 +792,7 @@ class ErrorBoundary extends React.Component<
 
    ```typescript
    // ✅ 推奨：Bridge経由でコンポーネント使用
-   import { Button, Card, Alert } from '@/components/ui-bridge';
+   import { Alert, Button, Card } from '@/components/ui-bridge';
    ```
 
 2. **Enhanced Components活用**
@@ -807,7 +807,7 @@ class ErrorBoundary extends React.Component<
    ```typescript
    // shadcn/ui標準：HSL変数
    <div className="bg-primary text-primary-foreground">
-   
+
    // 既存システム：HEX変数（グラデーション等）
    <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)]">
    ```

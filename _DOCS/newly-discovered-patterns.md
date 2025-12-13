@@ -19,25 +19,25 @@
 ```css
 /* globals.css - Aurora Gradient Variables */
 :root {
-  /* Aurora Primary - Purple to Pink to Blue */
-  --aurora-primary-start: #8b5cf6;
-  --aurora-primary-mid: #ec4899;
-  --aurora-primary-end: #06b6d4;
-  
-  /* Aurora Sunset - Orange to Pink to Purple */
-  --aurora-sunset-start: #f97316;
-  --aurora-sunset-mid: #ec4899;
-  --aurora-sunset-end: #8b5cf6;
-  
-  /* Aurora Ocean - Teal to Blue to Indigo */
-  --aurora-ocean-start: #0891b2;
-  --aurora-ocean-mid: #06b6d4;
-  --aurora-ocean-end: #3b82f6;
-  
-  /* Aurora Cosmic - Red to Purple to Blue */
-  --aurora-cosmic-start: #dc2626;
-  --aurora-cosmic-mid: #8b5cf6;
-  --aurora-cosmic-end: #3b82f6;
+ /* Aurora Primary - Purple to Pink to Blue */
+ --aurora-primary-start: #8b5cf6;
+ --aurora-primary-mid: #ec4899;
+ --aurora-primary-end: #06b6d4;
+
+ /* Aurora Sunset - Orange to Pink to Purple */
+ --aurora-sunset-start: #f97316;
+ --aurora-sunset-mid: #ec4899;
+ --aurora-sunset-end: #8b5cf6;
+
+ /* Aurora Ocean - Teal to Blue to Indigo */
+ --aurora-ocean-start: #0891b2;
+ --aurora-ocean-mid: #06b6d4;
+ --aurora-ocean-end: #3b82f6;
+
+ /* Aurora Cosmic - Red to Purple to Blue */
+ --aurora-cosmic-start: #dc2626;
+ --aurora-cosmic-mid: #8b5cf6;
+ --aurora-cosmic-end: #3b82f6;
 }
 ```
 
@@ -45,19 +45,20 @@
 
 ```typescript
 // button-enhanced.tsx - Aurora Variants
-const buttonVariants = cva(
-  "inline-flex items-center justify-center",
-  {
-    variants: {
-      variant: {
-        aurora: 'bg-gradient-to-r from-violet-500 via-pink-500 to-cyan-500 text-white shadow-xl hover:shadow-2xl',
-        sunset: 'bg-gradient-to-r from-orange-500 via-pink-400 to-purple-500 text-white shadow-xl hover:shadow-2xl',
-        ocean: 'bg-gradient-to-r from-teal-500 via-blue-400 to-indigo-500 text-white shadow-xl hover:shadow-2xl',
-        cosmic: 'bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 text-white shadow-xl hover:shadow-2xl',
-      }
-    }
-  }
-);
+const buttonVariants = cva('inline-flex items-center justify-center', {
+ variants: {
+  variant: {
+   aurora:
+    'bg-gradient-to-r from-violet-500 via-pink-500 to-cyan-500 text-white shadow-xl hover:shadow-2xl',
+   sunset:
+    'bg-gradient-to-r from-orange-500 via-pink-400 to-purple-500 text-white shadow-xl hover:shadow-2xl',
+   ocean:
+    'bg-gradient-to-r from-teal-500 via-blue-400 to-indigo-500 text-white shadow-xl hover:shadow-2xl',
+   cosmic:
+    'bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 text-white shadow-xl hover:shadow-2xl',
+  },
+ },
+});
 ```
 
 ### 実装効果
@@ -95,17 +96,18 @@ export { Card } from '@/components/ui-shadcn/card-enhanced'; // Default
 
 ```typescript
 // Enhanced Button: 既存機能 + shadcn/ui標準機能の融合
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, 
+interface ButtonProps
+ extends React.ButtonHTMLAttributes<HTMLButtonElement>,
   VariantProps<typeof buttonVariants> {
-  // 既存システム機能
-  gradient?: boolean;
-  loading?: boolean;
-  fullWidth?: boolean;
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
-  
-  // shadcn/ui標準機能は自動継承
-  // variant, size, etc.
+ // 既存システム機能
+ gradient?: boolean;
+ loading?: boolean;
+ fullWidth?: boolean;
+ leftIcon?: React.ReactNode;
+ rightIcon?: React.ReactNode;
+
+ // shadcn/ui標準機能は自動継承
+ // variant, size, etc.
 }
 ```
 
@@ -133,35 +135,39 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>,
 export type Result<T> = Success<T> | Failure;
 
 export interface Success<T> {
-  success: true;
-  data: T;
+ success: true;
+ data: T;
 }
 
 export interface Failure {
-  success: false;
-  error: {
-    message: string;
-    code: string;
-    details?: Record<string, unknown>;
-  };
+ success: false;
+ error: {
+  message: string;
+  code: string;
+  details?: Record<string, unknown>;
+ };
 }
 
 // Helper Functions
 export function success<T>(data: T): Success<T> {
-  return { success: true, data };
+ return { success: true, data };
 }
 
-export function failure(message: string, code: string, details?: Record<string, unknown>): Failure {
-  return { success: false, error: { message, code, details } };
+export function failure(
+ message: string,
+ code: string,
+ details?: Record<string, unknown>,
+): Failure {
+ return { success: false, error: { message, code, details } };
 }
 
 // Type Guards
 export function isSuccess<T>(result: Result<T>): result is Success<T> {
-  return result.success === true;
+ return result.success === true;
 }
 
 export function isFailure<T>(result: Result<T>): result is Failure {
-  return result.success === false;
+ return result.success === false;
 }
 ```
 
@@ -170,30 +176,32 @@ export function isFailure<T>(result: Result<T>): result is Failure {
 ```typescript
 // 統一されたUseCase実装パターン
 class ChangePasswordUseCase {
-  async execute(request: ChangePasswordRequest): Promise<Result<ChangePasswordResponse>> {
-    try {
-      // 1. バリデーション
-      const validation = await this.validate(request);
-      if (!validation.isValid) {
-        return failure(validation.message, 'VALIDATION_ERROR');
-      }
-      
-      // 2. ビジネスロジック実行
-      const user = await this.userRepository.findById(request.userId);
-      if (!user) {
-        return failure('ユーザーが見つかりません', 'USER_NOT_FOUND');
-      }
-      
-      // 3. 成功レスポンス
-      return success({ message: 'パスワードを変更しました' });
-    } catch (error) {
-      // 4. Domain/Infrastructure エラーをResult型に変換
-      if (error instanceof DomainError) {
-        return failure(error.message, error.code);
-      }
-      return failure('予期しないエラー', 'UNEXPECTED_ERROR');
-    }
+ async execute(
+  request: ChangePasswordRequest,
+ ): Promise<Result<ChangePasswordResponse>> {
+  try {
+   // 1. バリデーション
+   const validation = await this.validate(request);
+   if (!validation.isValid) {
+    return failure(validation.message, 'VALIDATION_ERROR');
+   }
+
+   // 2. ビジネスロジック実行
+   const user = await this.userRepository.findById(request.userId);
+   if (!user) {
+    return failure('ユーザーが見つかりません', 'USER_NOT_FOUND');
+   }
+
+   // 3. 成功レスポンス
+   return success({ message: 'パスワードを変更しました' });
+  } catch (error) {
+   // 4. Domain/Infrastructure エラーをResult型に変換
+   if (error instanceof DomainError) {
+    return failure(error.message, error.code);
+   }
+   return failure('予期しないエラー', 'UNEXPECTED_ERROR');
   }
+ }
 }
 ```
 
@@ -221,14 +229,13 @@ TypeScriptインターフェースから自動的にモックを生成し、完�
 import { mock, MockProxy } from 'vitest-mock-extended';
 
 // 🤖 完全自動生成ファクトリー
-export const createAutoMockUserRepository = (): MockProxy<IUserRepository> => 
-  mock<IUserRepository>();
+export const createAutoMockUserRepository = (): MockProxy<IUserRepository> =>
+ mock<IUserRepository>();
 
-export const createAutoMockHashService = (): MockProxy<IHashService> => 
-  mock<IHashService>();
+export const createAutoMockHashService = (): MockProxy<IHashService> =>
+ mock<IHashService>();
 
-export const createAutoMockLogger = (): MockProxy<ILogger> => 
-  mock<ILogger>();
+export const createAutoMockLogger = (): MockProxy<ILogger> => mock<ILogger>();
 
 // 20+ サービスの自動モック対応
 ```
@@ -238,47 +245,50 @@ export const createAutoMockLogger = (): MockProxy<ILogger> =>
 ```typescript
 // Result型パターン対応テスト
 describe('ChangePasswordUseCase', () => {
-  let mockUserRepository: MockProxy<IUserRepository>;
-  let useCase: ChangePasswordUseCase;
+ let mockUserRepository: MockProxy<IUserRepository>;
+ let useCase: ChangePasswordUseCase;
 
-  beforeEach(() => {
-    // 🚀 1行で完全型安全モック生成
-    mockUserRepository = createAutoMockUserRepository();
-    
-    // DI連携
-    container.registerInstance(INJECTION_TOKENS.UserRepository, mockUserRepository);
-    useCase = container.resolve(ChangePasswordUseCase);
-  });
+ beforeEach(() => {
+  // 🚀 1行で完全型安全モック生成
+  mockUserRepository = createAutoMockUserRepository();
 
-  it('should successfully change password', async () => {
-    // Arrange
-    mockUserRepository.findById.mockResolvedValue(mockUser);
-    mockUserRepository.update.mockResolvedValue(undefined);
-    
-    // Act
-    const result = await useCase.execute(validInput);
-    
-    // Assert - Result型対応
-    expect(isSuccess(result)).toBe(true);
-    if (isSuccess(result)) {
-      expect(result.data).toEqual({ message: 'パスワードを変更しました' });
-    }
-  });
+  // DI連携
+  container.registerInstance(
+   INJECTION_TOKENS.UserRepository,
+   mockUserRepository,
+  );
+  useCase = container.resolve(ChangePasswordUseCase);
+ });
 
-  it('should return failure when user not found', async () => {
-    // Arrange
-    mockUserRepository.findById.mockResolvedValue(null);
-    
-    // Act
-    const result = await useCase.execute(validInput);
-    
-    // Assert - Result型エラーハンドリング
-    expect(isFailure(result)).toBe(true);
-    if (isFailure(result)) {
-      expect(result.error.message).toBe('ユーザーが見つかりません');
-      expect(result.error.code).toBe('USER_NOT_FOUND');
-    }
-  });
+ it('should successfully change password', async () => {
+  // Arrange
+  mockUserRepository.findById.mockResolvedValue(mockUser);
+  mockUserRepository.update.mockResolvedValue(undefined);
+
+  // Act
+  const result = await useCase.execute(validInput);
+
+  // Assert - Result型対応
+  expect(isSuccess(result)).toBe(true);
+  if (isSuccess(result)) {
+   expect(result.data).toEqual({ message: 'パスワードを変更しました' });
+  }
+ });
+
+ it('should return failure when user not found', async () => {
+  // Arrange
+  mockUserRepository.findById.mockResolvedValue(null);
+
+  // Act
+  const result = await useCase.execute(validInput);
+
+  // Assert - Result型エラーハンドリング
+  expect(isFailure(result)).toBe(true);
+  if (isFailure(result)) {
+   expect(result.error.message).toBe('ユーザーが見つかりません');
+   expect(result.error.code).toBe('USER_NOT_FOUND');
+  }
+ });
 });
 ```
 
@@ -303,49 +313,52 @@ describe('ChangePasswordUseCase', () => {
 
 ```typescript
 // tests/e2e/auth/sign-in.spec.ts
-test('サインインページアクセス時にNextエラーが発生しないことを確認', async ({ page }) => {
-  const consoleErrors: string[] = [];
-  const networkErrors: string[] = [];
-  const pageErrors: Error[] = [];
+test('サインインページアクセス時にNextエラーが発生しないことを確認', async ({
+ page,
+}) => {
+ const consoleErrors: string[] = [];
+ const networkErrors: string[] = [];
+ const pageErrors: Error[] = [];
 
-  // 🔍 包括的エラー監視システム
-  page.on('console', (msg) => {
-    if (msg.type() === 'error') {
-      const text = msg.text();
-      consoleErrors.push(text);
-      console.log('Console Error:', text);
-    }
-  });
+ // 🔍 包括的エラー監視システム
+ page.on('console', (msg) => {
+  if (msg.type() === 'error') {
+   const text = msg.text();
+   consoleErrors.push(text);
+   console.log('Console Error:', text);
+  }
+ });
 
-  page.on('response', (response) => {
-    if (response.status() >= 400) {
-      networkErrors.push(`${response.status()}: ${response.url()}`);
-    }
-  });
+ page.on('response', (response) => {
+  if (response.status() >= 400) {
+   networkErrors.push(`${response.status()}: ${response.url()}`);
+  }
+ });
 
-  page.on('pageerror', (error) => {
-    pageErrors.push(error);
-    console.log('Page Error:', error.message);
-  });
+ page.on('pageerror', (error) => {
+  pageErrors.push(error);
+  console.log('Page Error:', error.message);
+ });
 
-  await page.goto('/auth/sign-in');
+ await page.goto('/auth/sign-in');
 
-  // 🚨 セキュリティクリティカルエラー検出
-  const criticalErrors = consoleErrors.filter(error => 
-    error.includes('JWT_SESSION_ERROR') ||
-    error.includes('NEXTAUTH_SECRET') ||
-    error.includes('decryption operation failed') ||
-    error.includes('Error:') ||
-    error.includes('TypeError:') ||
-    error.includes('ReferenceError:')
-  );
+ // 🚨 セキュリティクリティカルエラー検出
+ const criticalErrors = consoleErrors.filter(
+  (error) =>
+   error.includes('JWT_SESSION_ERROR') ||
+   error.includes('NEXTAUTH_SECRET') ||
+   error.includes('decryption operation failed') ||
+   error.includes('Error:') ||
+   error.includes('TypeError:') ||
+   error.includes('ReferenceError:'),
+ );
 
-  // 品質保証アサーション
-  expect(criticalErrors).toHaveLength(0);
-  expect(pageErrors).toHaveLength(0);
-  
-  const serverErrors = networkErrors.filter(error => error.startsWith('5'));
-  expect(serverErrors).toHaveLength(0);
+ // 品質保証アサーション
+ expect(criticalErrors).toHaveLength(0);
+ expect(pageErrors).toHaveLength(0);
+
+ const serverErrors = networkErrors.filter((error) => error.startsWith('5'));
+ expect(serverErrors).toHaveLength(0);
 });
 ```
 
@@ -353,29 +366,34 @@ test('サインインページアクセス時にNextエラーが発生しない�
 
 ```typescript
 // 複数回アクセスでのメモリリーク・パフォーマンス劣化検出
-test('複数回のページリロードでもNextエラーが発生しないことを確認', async ({ page }) => {
-  const consoleErrors: string[] = [];
+test('複数回のページリロードでもNextエラーが発生しないことを確認', async ({
+ page,
+}) => {
+ const consoleErrors: string[] = [];
 
-  page.on('console', (msg) => {
-    if (msg.type() === 'error') {
-      consoleErrors.push(msg.text());
-    }
-  });
-
-  // 3回連続でページにアクセス（メモリリーク検出）
-  for (let i = 0; i < 3; i++) {
-    await page.goto('/auth/sign-in');
-    await expect(page.locator('h2.text-3xl')).toContainText('アカウントにサインイン');
-    await page.waitForTimeout(1000);
+ page.on('console', (msg) => {
+  if (msg.type() === 'error') {
+   consoleErrors.push(msg.text());
   }
+ });
 
-  const criticalErrors = consoleErrors.filter(error => 
-    error.includes('JWT_SESSION_ERROR') ||
-    error.includes('NEXTAUTH_SECRET') ||
-    error.includes('decryption operation failed')
+ // 3回連続でページにアクセス（メモリリーク検出）
+ for (let i = 0; i < 3; i++) {
+  await page.goto('/auth/sign-in');
+  await expect(page.locator('h2.text-3xl')).toContainText(
+   'アカウントにサインイン',
   );
+  await page.waitForTimeout(1000);
+ }
 
-  expect(criticalErrors).toHaveLength(0);
+ const criticalErrors = consoleErrors.filter(
+  (error) =>
+   error.includes('JWT_SESSION_ERROR') ||
+   error.includes('NEXTAUTH_SECRET') ||
+   error.includes('decryption operation failed'),
+ );
+
+ expect(criticalErrors).toHaveLength(0);
 });
 ```
 
@@ -401,33 +419,43 @@ shadcn/ui標準（HSL変数）と既存システム（HEX変数）のハイブ�
 ```css
 /* globals.css - Dual Variable System */
 :root {
-  /* 🎯 shadcn/ui標準 (HSL変数) */
-  --shadcn-background: 0 0% 100%;
-  --shadcn-foreground: 240 10% 3.9%;
-  --shadcn-primary: 240 5.9% 10%;
-  --shadcn-primary-foreground: 0 0% 98%;
-  --shadcn-destructive: 0 84.2% 60.2%;
-  --shadcn-destructive-foreground: 0 0% 98%;
-  
-  /* 🌈 既存システム (HEX変数) - グラデーション対応 */
-  --primary: #1a1a1a;
-  --secondary: #f5f5f5;
-  --success: #10b981;
-  --error: #ef4444;
-  --warning: #f59e0b;
-  --info: #3b82f6;
-  
-  /* 🌟 Aurora Gradient Variables */
-  --aurora-primary: linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #06b6d4 100%);
-  --aurora-sunset: linear-gradient(135deg, #f97316 0%, #ec4899 50%, #8b5cf6 100%);
+ /* 🎯 shadcn/ui標準 (HSL変数) */
+ --shadcn-background: 0 0% 100%;
+ --shadcn-foreground: 240 10% 3.9%;
+ --shadcn-primary: 240 5.9% 10%;
+ --shadcn-primary-foreground: 0 0% 98%;
+ --shadcn-destructive: 0 84.2% 60.2%;
+ --shadcn-destructive-foreground: 0 0% 98%;
+
+ /* 🌈 既存システム (HEX変数) - グラデーション対応 */
+ --primary: #1a1a1a;
+ --secondary: #f5f5f5;
+ --success: #10b981;
+ --error: #ef4444;
+ --warning: #f59e0b;
+ --info: #3b82f6;
+
+ /* 🌟 Aurora Gradient Variables */
+ --aurora-primary: linear-gradient(
+  135deg,
+  #8b5cf6 0%,
+  #ec4899 50%,
+  #06b6d4 100%
+ );
+ --aurora-sunset: linear-gradient(
+  135deg,
+  #f97316 0%,
+  #ec4899 50%,
+  #8b5cf6 100%
+ );
 }
 
 .dark {
-  /* ダークモード完全対応 */
-  --shadcn-background: 240 10% 3.9%;
-  --shadcn-foreground: 0 0% 98%;
-  --primary: #f5f5f5;
-  --secondary: #1a1a1a;
+ /* ダークモード完全対応 */
+ --shadcn-background: 240 10% 3.9%;
+ --shadcn-foreground: 0 0% 98%;
+ --primary: #f5f5f5;
+ --secondary: #1a1a1a;
 }
 ```
 

@@ -22,7 +22,7 @@ graph TD
     B --> C[独立性]
     C --> D[可読性]
     D --> A
-    
+
     style A fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style B fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style C fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
@@ -41,361 +41,397 @@ graph TD
 ### 1.1 基本的なUseCaseテスト
 
 ```typescript
-import { describe, it, expect, beforeEach } from 'vitest';
-import { CreateUserUseCase } from '@/usecases/user/CreateUserUseCase';
 import { container } from '@/di/container';
 import { resolve } from '@/di/resolver';
 import { INJECTION_TOKENS } from '@/di/tokens';
+import { CreateUserUseCase } from '@/usecases/user/CreateUserUseCase';
+
+import { beforeEach, describe, expect, it } from 'vitest';
+
 import {
-  createMockUserRepository,
-  createMockUserDomainService,
-  createMockLogger,
-} from '../../utils/mocks/commonMocks';
-import {
-  setupTestEnvironment,
-  setupMockReturnValues,
-  expectMockCalledWith,
-  expectMockNotCalled,
-  createTestUser,
+ createTestUser,
+ expectMockCalledWith,
+ expectMockNotCalled,
+ setupMockReturnValues,
+ setupTestEnvironment,
 } from '../../utils/helpers/testHelpers';
+import {
+ createMockLogger,
+ createMockUserDomainService,
+ createMockUserRepository,
+} from '../../utils/mocks/commonMocks';
 
 describe('CreateUserUseCase', () => {
-  let createUserUseCase: CreateUserUseCase;
-  let mockUserRepository: ReturnType<typeof createMockUserRepository>;
-  let mockUserDomainService: ReturnType<typeof createMockUserDomainService>;
-  let mockLogger: ReturnType<typeof createMockLogger>;
+ let createUserUseCase: CreateUserUseCase;
+ let mockUserRepository: ReturnType<typeof createMockUserRepository>;
+ let mockUserDomainService: ReturnType<typeof createMockUserDomainService>;
+ let mockLogger: ReturnType<typeof createMockLogger>;
 
-  // テスト環境の自動セットアップ
-  setupTestEnvironment();
+ // テスト環境の自動セットアップ
+ setupTestEnvironment();
 
-  beforeEach(() => {
-    // モックの作成
-    mockUserRepository = createMockUserRepository();
-    mockUserDomainService = createMockUserDomainService();
-    mockLogger = createMockLogger();
+ beforeEach(() => {
+  // モックの作成
+  mockUserRepository = createMockUserRepository();
+  mockUserDomainService = createMockUserDomainService();
+  mockLogger = createMockLogger();
 
-    // DIコンテナにモックを登録
-    container.registerInstance(INJECTION_TOKENS.UserRepository, mockUserRepository);
-    container.registerInstance(INJECTION_TOKENS.UserDomainService, mockUserDomainService);
-    container.registerInstance(INJECTION_TOKENS.Logger, mockLogger);
+  // DIコンテナにモックを登録
+  container.registerInstance(
+   INJECTION_TOKENS.UserRepository,
+   mockUserRepository,
+  );
+  container.registerInstance(
+   INJECTION_TOKENS.UserDomainService,
+   mockUserDomainService,
+  );
+  container.registerInstance(INJECTION_TOKENS.Logger, mockLogger);
 
-    // UseCaseインスタンスをDIコンテナから取得（型安全）
-    createUserUseCase = resolve('CreateUserUseCase');
+  // UseCaseインスタンスをDIコンテナから取得（型安全）
+  createUserUseCase = resolve('CreateUserUseCase');
+ });
+
+ describe('execute', () => {
+  const validInput = {
+   name: 'John Doe',
+   email: 'john@example.com',
+   password: 'password123',
+  };
+
+  it('should successfully create a user', async () => {
+   // Arrange
+   const hashedPassword = 'hashed_password';
+   const createdUser = createTestUser({
+    name: validInput.name,
+    email: validInput.email,
+    passwordHash: hashedPassword,
+   });
+
+   setupMockReturnValues(mockUserDomainService, {
+    validateUserData: null,
+    hashPassword: hashedPassword,
+   });
+   setupMockReturnValues(mockUserRepository, {
+    findByEmail: null,
+    create: createdUser,
+   });
+
+   // Act
+   const result = await createUserUseCase.execute(validInput);
+
+   // Assert
+   expect(result).toEqual({
+    id: createdUser.id,
+    name: createdUser.name,
+    email: createdUser.email,
+   });
+
+   // モック呼び出しの確認
+   expectMockCalledWith(mockUserDomainService.validateUserData, [validInput]);
+   expectMockCalledWith(mockUserRepository.findByEmail, [validInput.email]);
+   expectMockCalledWith(mockUserDomainService.hashPassword, [
+    validInput.password,
+   ]);
+   expectMockCalledWith(mockUserRepository.create, [
+    {
+     name: validInput.name,
+     email: validInput.email,
+     passwordHash: hashedPassword,
+    },
+   ]);
   });
 
-  describe('execute', () => {
-    const validInput = {
-      name: 'John Doe',
-      email: 'john@example.com',
-      password: 'password123',
-    };
+  it('should throw error for validation failure', async () => {
+   // Arrange
+   const validationError = new Error('有効なメールアドレスを入力してください');
+   setupMockReturnValues(mockUserDomainService, {
+    validateUserData: validationError,
+   });
 
-    it('should successfully create a user', async () => {
-      // Arrange
-      const hashedPassword = 'hashed_password';
-      const createdUser = createTestUser({
-        name: validInput.name,
-        email: validInput.email,
-        passwordHash: hashedPassword,
-      });
+   // Act & Assert
+   await expect(createUserUseCase.execute(validInput)).rejects.toThrow(
+    '有効なメールアドレスを入力してください',
+   );
 
-      setupMockReturnValues(mockUserDomainService, {
-        validateUserData: null,
-        hashPassword: hashedPassword,
-      });
-      setupMockReturnValues(mockUserRepository, {
-        findByEmail: null,
-        create: createdUser,
-      });
-
-      // Act
-      const result = await createUserUseCase.execute(validInput);
-
-      // Assert
-      expect(result).toEqual({
-        id: createdUser.id,
-        name: createdUser.name,
-        email: createdUser.email,
-      });
-
-      // モック呼び出しの確認
-      expectMockCalledWith(mockUserDomainService.validateUserData, [validInput]);
-      expectMockCalledWith(mockUserRepository.findByEmail, [validInput.email]);
-      expectMockCalledWith(mockUserDomainService.hashPassword, [validInput.password]);
-      expectMockCalledWith(mockUserRepository.create, [
-        {
-          name: validInput.name,
-          email: validInput.email,
-          passwordHash: hashedPassword,
-        },
-      ]);
-    });
-
-    it('should throw error for validation failure', async () => {
-      // Arrange
-      const validationError = new Error('有効なメールアドレスを入力してください');
-      setupMockReturnValues(mockUserDomainService, {
-        validateUserData: validationError,
-      });
-
-      // Act & Assert
-      await expect(createUserUseCase.execute(validInput)).rejects.toThrow(
-        '有効なメールアドレスを入力してください'
-      );
-
-      expectMockCalledWith(mockUserDomainService.validateUserData, [validInput]);
-      expectMockNotCalled(mockUserRepository.findByEmail);
-    });
-
-    it('should throw error when email already exists', async () => {
-      // Arrange
-      const existingUser = createTestUser({ email: validInput.email });
-
-      setupMockReturnValues(mockUserDomainService, {
-        validateUserData: null,
-      });
-      setupMockReturnValues(mockUserRepository, {
-        findByEmail: existingUser,
-      });
-
-      // Act & Assert
-      await expect(createUserUseCase.execute(validInput)).rejects.toThrow(
-        'このメールアドレスは既に使用されています'
-      );
-
-      expectMockCalledWith(mockUserDomainService.validateUserData, [validInput]);
-      expectMockCalledWith(mockUserRepository.findByEmail, [validInput.email]);
-      expectMockNotCalled(mockUserDomainService.hashPassword);
-    });
+   expectMockCalledWith(mockUserDomainService.validateUserData, [validInput]);
+   expectMockNotCalled(mockUserRepository.findByEmail);
   });
+
+  it('should throw error when email already exists', async () => {
+   // Arrange
+   const existingUser = createTestUser({ email: validInput.email });
+
+   setupMockReturnValues(mockUserDomainService, {
+    validateUserData: null,
+   });
+   setupMockReturnValues(mockUserRepository, {
+    findByEmail: existingUser,
+   });
+
+   // Act & Assert
+   await expect(createUserUseCase.execute(validInput)).rejects.toThrow(
+    'このメールアドレスは既に使用されています',
+   );
+
+   expectMockCalledWith(mockUserDomainService.validateUserData, [validInput]);
+   expectMockCalledWith(mockUserRepository.findByEmail, [validInput.email]);
+   expectMockNotCalled(mockUserDomainService.hashPassword);
+  });
+ });
 });
 ```
 
 ### 1.2 Domain Service テスト
 
 ```typescript
-import { describe, it, expect, beforeEach } from 'vitest';
 import { UserDomainService } from '@/services/domain/UserDomainService';
-import { createMockHashService, createMockConfigService } from '../../utils/mocks/commonMocks';
-import { setupMockReturnValues, createTestUser } from '../../utils/helpers/testHelpers';
+
+import { beforeEach, describe, expect, it } from 'vitest';
+
+import {
+ createTestUser,
+ setupMockReturnValues,
+} from '../../utils/helpers/testHelpers';
+import {
+ createMockConfigService,
+ createMockHashService,
+} from '../../utils/mocks/commonMocks';
 
 describe('UserDomainService', () => {
-  let userDomainService: UserDomainService;
-  let mockHashService: ReturnType<typeof createMockHashService>;
-  let mockConfigService: ReturnType<typeof createMockConfigService>;
+ let userDomainService: UserDomainService;
+ let mockHashService: ReturnType<typeof createMockHashService>;
+ let mockConfigService: ReturnType<typeof createMockConfigService>;
 
-  beforeEach(() => {
-    mockHashService = createMockHashService();
-    mockConfigService = createMockConfigService();
-    
-    userDomainService = new UserDomainService(mockHashService, mockConfigService);
+ beforeEach(() => {
+  mockHashService = createMockHashService();
+  mockConfigService = createMockConfigService();
+
+  userDomainService = new UserDomainService(mockHashService, mockConfigService);
+ });
+
+ describe('validateUserData', () => {
+  it('should validate correct user data', () => {
+   // Arrange
+   const validData = {
+    name: 'John Doe',
+    email: 'john@example.com',
+    password: 'password123',
+   };
+
+   // Act & Assert
+   expect(() => userDomainService.validateUserData(validData)).not.toThrow();
   });
 
-  describe('validateUserData', () => {
-    it('should validate correct user data', () => {
-      // Arrange
-      const validData = {
-        name: 'John Doe',
-        email: 'john@example.com',
-        password: 'password123',
-      };
+  it('should throw error for invalid email', () => {
+   // Arrange
+   const invalidData = {
+    name: 'John Doe',
+    email: 'invalid-email',
+    password: 'password123',
+   };
 
-      // Act & Assert
-      expect(() => userDomainService.validateUserData(validData)).not.toThrow();
-    });
-
-    it('should throw error for invalid email', () => {
-      // Arrange
-      const invalidData = {
-        name: 'John Doe',
-        email: 'invalid-email',
-        password: 'password123',
-      };
-
-      // Act & Assert
-      expect(() => userDomainService.validateUserData(invalidData)).toThrow(
-        '有効なメールアドレスを入力してください'
-      );
-    });
-
-    it('should throw error for short password', () => {
-      // Arrange
-      const invalidData = {
-        name: 'John Doe',
-        email: 'john@example.com',
-        password: '123',
-      };
-
-      // Act & Assert
-      expect(() => userDomainService.validateUserData(invalidData)).toThrow(
-        'パスワードは8文字以上である必要があります'
-      );
-    });
+   // Act & Assert
+   expect(() => userDomainService.validateUserData(invalidData)).toThrow(
+    '有効なメールアドレスを入力してください',
+   );
   });
 
-  describe('hashPassword', () => {
-    it('should hash password successfully', async () => {
-      // Arrange
-      const password = 'password123';
-      const hashedPassword = 'hashed_password_123';
-      
-      setupMockReturnValues(mockHashService, {
-        generateHash: hashedPassword,
-      });
+  it('should throw error for short password', () => {
+   // Arrange
+   const invalidData = {
+    name: 'John Doe',
+    email: 'john@example.com',
+    password: '123',
+   };
 
-      // Act
-      const result = await userDomainService.hashPassword(password);
+   // Act & Assert
+   expect(() => userDomainService.validateUserData(invalidData)).toThrow(
+    'パスワードは8文字以上である必要があります',
+   );
+  });
+ });
 
-      // Assert
-      expect(result).toBe(hashedPassword);
-      expect(mockHashService.generateHash).toHaveBeenCalledWith(password, 10);
-    });
+ describe('hashPassword', () => {
+  it('should hash password successfully', async () => {
+   // Arrange
+   const password = 'password123';
+   const hashedPassword = 'hashed_password_123';
 
-    it('should throw error when hashing fails', async () => {
-      // Arrange
-      const password = 'password123';
-      const hashError = new Error('Hashing failed');
-      
-      setupMockReturnValues(mockHashService, {
-        generateHash: hashError,
-      });
+   setupMockReturnValues(mockHashService, {
+    generateHash: hashedPassword,
+   });
 
-      // Act & Assert
-      await expect(userDomainService.hashPassword(password)).rejects.toThrow('Hashing failed');
-    });
+   // Act
+   const result = await userDomainService.hashPassword(password);
+
+   // Assert
+   expect(result).toBe(hashedPassword);
+   expect(mockHashService.generateHash).toHaveBeenCalledWith(password, 10);
   });
 
-  describe('verifyPassword', () => {
-    it('should verify password successfully', async () => {
-      // Arrange
-      const password = 'password123';
-      const hashedPassword = 'hashed_password_123';
-      
-      setupMockReturnValues(mockHashService, {
-        compareHash: true,
-      });
+  it('should throw error when hashing fails', async () => {
+   // Arrange
+   const password = 'password123';
+   const hashError = new Error('Hashing failed');
 
-      // Act
-      const result = await userDomainService.verifyPassword(password, hashedPassword);
+   setupMockReturnValues(mockHashService, {
+    generateHash: hashError,
+   });
 
-      // Assert
-      expect(result).toBe(true);
-      expect(mockHashService.compareHash).toHaveBeenCalledWith(password, hashedPassword);
-    });
-
-    it('should return false for incorrect password', async () => {
-      // Arrange
-      const password = 'wrongpassword';
-      const hashedPassword = 'hashed_password_123';
-      
-      setupMockReturnValues(mockHashService, {
-        compareHash: false,
-      });
-
-      // Act
-      const result = await userDomainService.verifyPassword(password, hashedPassword);
-
-      // Assert
-      expect(result).toBe(false);
-    });
+   // Act & Assert
+   await expect(userDomainService.hashPassword(password)).rejects.toThrow(
+    'Hashing failed',
+   );
   });
+ });
+
+ describe('verifyPassword', () => {
+  it('should verify password successfully', async () => {
+   // Arrange
+   const password = 'password123';
+   const hashedPassword = 'hashed_password_123';
+
+   setupMockReturnValues(mockHashService, {
+    compareHash: true,
+   });
+
+   // Act
+   const result = await userDomainService.verifyPassword(
+    password,
+    hashedPassword,
+   );
+
+   // Assert
+   expect(result).toBe(true);
+   expect(mockHashService.compareHash).toHaveBeenCalledWith(
+    password,
+    hashedPassword,
+   );
+  });
+
+  it('should return false for incorrect password', async () => {
+   // Arrange
+   const password = 'wrongpassword';
+   const hashedPassword = 'hashed_password_123';
+
+   setupMockReturnValues(mockHashService, {
+    compareHash: false,
+   });
+
+   // Act
+   const result = await userDomainService.verifyPassword(
+    password,
+    hashedPassword,
+   );
+
+   // Assert
+   expect(result).toBe(false);
+  });
+ });
 });
 ```
 
 ### 1.3 Repository テスト
 
 ```typescript
-import { describe, it, expect, beforeEach } from 'vitest';
 import { PrismaUserRepository } from '@/repositories/implementations/PrismaUserRepository';
+
+import { beforeEach, describe, expect, it } from 'vitest';
+
+import {
+ createTestUser,
+ setupMockReturnValues,
+} from '../../utils/helpers/testHelpers';
 import { createMockPrismaClient } from '../../utils/mocks/commonMocks';
-import { setupMockReturnValues, createTestUser } from '../../utils/helpers/testHelpers';
 
 describe('PrismaUserRepository', () => {
-  let userRepository: PrismaUserRepository;
-  let mockPrismaClient: ReturnType<typeof createMockPrismaClient>;
+ let userRepository: PrismaUserRepository;
+ let mockPrismaClient: ReturnType<typeof createMockPrismaClient>;
 
-  beforeEach(() => {
-    mockPrismaClient = createMockPrismaClient();
-    userRepository = new PrismaUserRepository(mockPrismaClient);
+ beforeEach(() => {
+  mockPrismaClient = createMockPrismaClient();
+  userRepository = new PrismaUserRepository(mockPrismaClient);
+ });
+
+ describe('create', () => {
+  it('should create user successfully', async () => {
+   // Arrange
+   const userData = {
+    name: 'John Doe',
+    email: 'john@example.com',
+    passwordHash: 'hashed_password',
+   };
+   const createdUser = createTestUser(userData);
+
+   setupMockReturnValues(mockPrismaClient.user, {
+    create: createdUser,
+   });
+
+   // Act
+   const result = await userRepository.create(userData);
+
+   // Assert
+   expect(result).toEqual(createdUser);
+   expect(mockPrismaClient.user.create).toHaveBeenCalledWith({
+    data: userData,
+   });
   });
 
-  describe('create', () => {
-    it('should create user successfully', async () => {
-      // Arrange
-      const userData = {
-        name: 'John Doe',
-        email: 'john@example.com',
-        passwordHash: 'hashed_password',
-      };
-      const createdUser = createTestUser(userData);
+  it('should throw error when creation fails', async () => {
+   // Arrange
+   const userData = {
+    name: 'John Doe',
+    email: 'john@example.com',
+    passwordHash: 'hashed_password',
+   };
+   const dbError = new Error('Database error');
 
-      setupMockReturnValues(mockPrismaClient.user, {
-        create: createdUser,
-      });
+   setupMockReturnValues(mockPrismaClient.user, {
+    create: dbError,
+   });
 
-      // Act
-      const result = await userRepository.create(userData);
+   // Act & Assert
+   await expect(userRepository.create(userData)).rejects.toThrow(
+    'Database error',
+   );
+  });
+ });
 
-      // Assert
-      expect(result).toEqual(createdUser);
-      expect(mockPrismaClient.user.create).toHaveBeenCalledWith({
-        data: userData,
-      });
-    });
+ describe('findByEmail', () => {
+  it('should find user by email', async () => {
+   // Arrange
+   const email = 'john@example.com';
+   const foundUser = createTestUser({ email });
 
-    it('should throw error when creation fails', async () => {
-      // Arrange
-      const userData = {
-        name: 'John Doe',
-        email: 'john@example.com',
-        passwordHash: 'hashed_password',
-      };
-      const dbError = new Error('Database error');
+   setupMockReturnValues(mockPrismaClient.user, {
+    findUnique: foundUser,
+   });
 
-      setupMockReturnValues(mockPrismaClient.user, {
-        create: dbError,
-      });
+   // Act
+   const result = await userRepository.findByEmail(email);
 
-      // Act & Assert
-      await expect(userRepository.create(userData)).rejects.toThrow('Database error');
-    });
+   // Assert
+   expect(result).toEqual(foundUser);
+   expect(mockPrismaClient.user.findUnique).toHaveBeenCalledWith({
+    where: { email },
+   });
   });
 
-  describe('findByEmail', () => {
-    it('should find user by email', async () => {
-      // Arrange
-      const email = 'john@example.com';
-      const foundUser = createTestUser({ email });
+  it('should return null when user not found', async () => {
+   // Arrange
+   const email = 'notfound@example.com';
 
-      setupMockReturnValues(mockPrismaClient.user, {
-        findUnique: foundUser,
-      });
+   setupMockReturnValues(mockPrismaClient.user, {
+    findUnique: null,
+   });
 
-      // Act
-      const result = await userRepository.findByEmail(email);
+   // Act
+   const result = await userRepository.findByEmail(email);
 
-      // Assert
-      expect(result).toEqual(foundUser);
-      expect(mockPrismaClient.user.findUnique).toHaveBeenCalledWith({
-        where: { email },
-      });
-    });
-
-    it('should return null when user not found', async () => {
-      // Arrange
-      const email = 'notfound@example.com';
-
-      setupMockReturnValues(mockPrismaClient.user, {
-        findUnique: null,
-      });
-
-      // Act
-      const result = await userRepository.findByEmail(email);
-
-      // Assert
-      expect(result).toBeNull();
-    });
+   // Assert
+   expect(result).toBeNull();
   });
+ });
 });
 ```
 
@@ -412,14 +448,14 @@ graph TB
         COMP[Component Tests<br/>React Testing Library<br/>UI振る舞い]
         UNIT[Unit Tests<br/>Vitest<br/>ビジネスロジック]
     end
-    
+
     subgraph "🏗️ クリーンアーキテクチャレイヤー"
         PRES[Presentation Layer]
         APP[Application Layer]
         DOM[Domain Layer]
         INFRA[Infrastructure Layer]
     end
-    
+
     subgraph "🎯 テスト対象と手法"
         E2E --> PRES
         COMP --> PRES
@@ -428,17 +464,17 @@ graph TB
         UNIT --> DOM
         UNIT --> INFRA
     end
-    
+
     subgraph "⚡ テスト特性"
         SLOW[遅い・少数・統合的]
         MID[中程度・適量・機能的]
         FAST[高速・多数・独立的]
     end
-    
+
     E2E --> SLOW
     COMP --> MID
     UNIT --> FAST
-    
+
     style E2E fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style COMP fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style UNIT fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -457,20 +493,20 @@ graph TB
         C[createMockLogger] --> C1[ILogger型]
         D[createMockPrismaClient] --> D1[PrismaClient型]
     end
-    
+
     subgraph "🔧 Test Helper Functions"
         E[setupMockReturnValues] --> E1[モック戻り値設定]
         F[expectMockCalledWith] --> F1[呼び出し検証]
         G[expectMockNotCalled] --> G1[未呼び出し検証]
         H[createTestUser] --> H1[テストデータ生成]
     end
-    
+
     subgraph "🎪 Test Environment"
         I[setupTestEnvironment] --> I1[DIコンテナリセット]
         I --> I2[テスト間独立性確保]
         I --> I3[beforeEach自動実行]
     end
-    
+
     subgraph "🔄 Test Flow"
         J[Arrange] --> K[モック作成・設定]
         K --> L[DIコンテナ登録]
@@ -478,7 +514,7 @@ graph TB
         M --> N[Assert: 結果検証]
         N --> O[モック呼び出し検証]
     end
-    
+
     A --> K
     B --> K
     C --> K
@@ -487,7 +523,7 @@ graph TB
     G --> O
     H --> K
     I --> L
-    
+
     style A fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style E fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style I fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -502,91 +538,93 @@ graph TB
 
 ```typescript
 // tests/utils/mocks/commonMocks.ts
-export const createMockUserRepository = (): IUserRepository => ({
+export const createMockUserRepository = (): IUserRepository =>
+ ({
   create: vi.fn(),
   findByEmail: vi.fn(),
-}) as any;
+ }) as any;
 
-export const createMockUserDomainService = (): UserDomainService => ({
+export const createMockUserDomainService = (): UserDomainService =>
+ ({
   validateUserData: vi.fn(),
   hashPassword: vi.fn(),
   verifyPassword: vi.fn(),
-}) as any;
+ }) as any;
 ```
 
 ### 2.2 テストヘルパー関数
 
 ```typescript
 // tests/utils/helpers/testHelpers.ts
-import { vi, expect, beforeEach } from 'vitest';
+import { beforeEach, expect, vi } from 'vitest';
 
 /**
  * モックの戻り値を設定するヘルパー
  */
 export const setupMockReturnValues = (
-  mocks: Record<string, any>,
-  values: Record<string, any>,
+ mocks: Record<string, any>,
+ values: Record<string, any>,
 ) => {
-  Object.entries(values).forEach(([key, value]) => {
-    if (mocks[key]) {
-      if (value instanceof Error) {
-        mocks[key].mockRejectedValue(value);
-      } else if (
-        key === 'compareHash' ||
-        key === 'generateHash' ||
-        key === 'create' ||
-        key === 'findUnique' ||
-        key === 'findFirst'
-      ) {
-        // 非同期メソッドはPromiseとして扱う
-        mocks[key].mockResolvedValue(value);
-      } else {
-        // 同期的な値
-        mocks[key].mockReturnValue(value);
-      }
-    }
-  });
+ Object.entries(values).forEach(([key, value]) => {
+  if (mocks[key]) {
+   if (value instanceof Error) {
+    mocks[key].mockRejectedValue(value);
+   } else if (
+    key === 'compareHash' ||
+    key === 'generateHash' ||
+    key === 'create' ||
+    key === 'findUnique' ||
+    key === 'findFirst'
+   ) {
+    // 非同期メソッドはPromiseとして扱う
+    mocks[key].mockResolvedValue(value);
+   } else {
+    // 同期的な値
+    mocks[key].mockReturnValue(value);
+   }
+  }
+ });
 };
 
 /**
  * 期待されるモック呼び出しをアサートするヘルパー
  */
 export const expectMockCalledWith = (
-  mockFn: any,
-  expectedArgs: any[],
-  callIndex = 0,
+ mockFn: any,
+ expectedArgs: any[],
+ callIndex = 0,
 ) => {
-  return expect(mockFn).toHaveBeenNthCalledWith(callIndex + 1, ...expectedArgs);
+ return expect(mockFn).toHaveBeenNthCalledWith(callIndex + 1, ...expectedArgs);
 };
 
 /**
  * モックが呼ばれていないことをアサートするヘルパー
  */
 export const expectMockNotCalled = (mockFn: any) => {
-  return expect(mockFn).not.toHaveBeenCalled();
+ return expect(mockFn).not.toHaveBeenCalled();
 };
 
 /**
  * テストデータファクトリー
  */
 export const createTestUser = (overrides = {}) => ({
-  id: 'test-user-1',
-  name: 'Test User',
-  email: 'test@example.com',
-  passwordHash: 'hashed_password_123',
-  createdAt: new Date('2024-01-01T00:00:00Z'),
-  updatedAt: new Date('2024-01-01T00:00:00Z'),
-  ...overrides,
+ id: 'test-user-1',
+ name: 'Test User',
+ email: 'test@example.com',
+ passwordHash: 'hashed_password_123',
+ createdAt: new Date('2024-01-01T00:00:00Z'),
+ updatedAt: new Date('2024-01-01T00:00:00Z'),
+ ...overrides,
 });
 
 /**
  * テスト環境のセットアップ
  */
 export function setupTestEnvironment() {
-  beforeEach(() => {
-    // DIコンテナのリセット
-    container.clearInstances();
-  });
+ beforeEach(() => {
+  // DIコンテナのリセット
+  container.clearInstances();
+ });
 }
 ```
 
@@ -598,19 +636,19 @@ import { resolve } from '@/di/resolver';
 import { INJECTION_TOKENS } from '@/di/tokens';
 
 describe('DIコンテナを使ったテスト', () => {
-  setupTestEnvironment(); // 自動的にbeforeEachでコンテナをクリア
+ setupTestEnvironment(); // 自動的にbeforeEachでコンテナをクリア
 
-  beforeEach(() => {
-    // モックをDIコンテナに登録
-    const mockRepository = createMockUserRepository();
-    const mockService = createMockUserDomainService();
-    
-    container.registerInstance(INJECTION_TOKENS.UserRepository, mockRepository);
-    container.registerInstance(INJECTION_TOKENS.UserDomainService, mockService);
+ beforeEach(() => {
+  // モックをDIコンテナに登録
+  const mockRepository = createMockUserRepository();
+  const mockService = createMockUserDomainService();
 
-    // 型安全にUseCaseを取得
-    const useCase = resolve('CreateUserUseCase');
-  });
+  container.registerInstance(INJECTION_TOKENS.UserRepository, mockRepository);
+  container.registerInstance(INJECTION_TOKENS.UserDomainService, mockService);
+
+  // 型安全にUseCaseを取得
+  const useCase = resolve('CreateUserUseCase');
+ });
 });
 ```
 
@@ -738,39 +776,41 @@ describe('UserProfile', () => {
 ### 4.1 基本的なE2Eテスト
 
 ```typescript
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('User Registration Flow', () => {
-  test('should register new user successfully', async ({ page }) => {
-    // Arrange
-    await page.goto('/register');
+ test('should register new user successfully', async ({ page }) => {
+  // Arrange
+  await page.goto('/register');
 
-    // Act
-    await page.fill('[data-testid="name-input"]', 'John Doe');
-    await page.fill('[data-testid="email-input"]', 'john@example.com');
-    await page.fill('[data-testid="password-input"]', 'password123');
-    await page.click('[data-testid="register-button"]');
+  // Act
+  await page.fill('[data-testid="name-input"]', 'John Doe');
+  await page.fill('[data-testid="email-input"]', 'john@example.com');
+  await page.fill('[data-testid="password-input"]', 'password123');
+  await page.click('[data-testid="register-button"]');
 
-    // Assert
-    await expect(page).toHaveURL('/dashboard');
-    await expect(page.locator('[data-testid="welcome-message"]')).toContainText('John Doe');
-  });
+  // Assert
+  await expect(page).toHaveURL('/dashboard');
+  await expect(page.locator('[data-testid="welcome-message"]')).toContainText(
+   'John Doe',
+  );
+ });
 
-  test('should show error for duplicate email', async ({ page }) => {
-    // Arrange
-    await page.goto('/register');
+ test('should show error for duplicate email', async ({ page }) => {
+  // Arrange
+  await page.goto('/register');
 
-    // Act
-    await page.fill('[data-testid="email-input"]', 'existing@example.com');
-    await page.fill('[data-testid="name-input"]', 'John Doe');
-    await page.fill('[data-testid="password-input"]', 'password123');
-    await page.click('[data-testid="register-button"]');
+  // Act
+  await page.fill('[data-testid="email-input"]', 'existing@example.com');
+  await page.fill('[data-testid="name-input"]', 'John Doe');
+  await page.fill('[data-testid="password-input"]', 'password123');
+  await page.click('[data-testid="register-button"]');
 
-    // Assert
-    await expect(page.locator('[data-testid="error-message"]')).toContainText(
-      'このメールアドレスは既に使用されています'
-    );
-  });
+  // Assert
+  await expect(page.locator('[data-testid="error-message"]')).toContainText(
+   'このメールアドレスは既に使用されています',
+  );
+ });
 });
 ```
 
@@ -799,7 +839,7 @@ pnpm test
 ```mermaid
 flowchart TD
     A[🚀 Push/PR トリガー] --> B{並列実行}
-    
+
     subgraph "🧪 Unit Tests Job"
         B --> C1[Ubuntu環境セットアップ]
         C1 --> C2[コードチェックアウト]
@@ -808,7 +848,7 @@ flowchart TD
         C4 --> C5[pnpm test:unit<br/>⚡ 高速実行]
         C5 --> C6[✅ Unit Tests完了]
     end
-    
+
     subgraph "🎭 E2E Tests Job"
         B --> D1[Ubuntu環境セットアップ]
         D1 --> D2[コードチェックアウト]
@@ -818,25 +858,25 @@ flowchart TD
         D5 --> D6[pnpm test:e2e<br/>🎯 ブラウザテスト]
         D6 --> D7[✅ E2E Tests完了]
     end
-    
+
     C6 --> E{両方成功？}
     D7 --> E
     E -->|Yes| F[🎉 CI/CD Success]
     E -->|No| G[❌ CI/CD Failed]
-    
+
     subgraph "⏱️ 実行時間比較"
         H[Unit Tests: ~30秒]
         I[E2E Tests: ~2-5分]
         J[並列実行で時間短縮]
     end
-    
+
     subgraph "🔧 テスト環境特徴"
         K[✅ 外部依存なし]
         L[✅ 高速フィードバック]
         M[✅ 安定した実行]
         N[✅ コスト効率良い]
     end
-    
+
     style A fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style C5 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style D6 fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
@@ -860,24 +900,24 @@ graph LR
         A3 --> A4[クリーンアップ：2分]
         A4 --> A5[合計：17分]
     end
-    
+
     subgraph "✅ クリーンアーキテクチャ"
         B1[モック中心のUnit Tests] --> B2[環境構築：30秒]
         B2 --> B3[テスト実行：30秒]
         B3 --> B4[E2E（必要最小限）：3分]
         B4 --> B5[合計：4分]
     end
-    
+
     subgraph "改善効果"
         C1[⚡ 4倍高速化]
         C2[💰 CIコスト削減]
         C3[🔄 高頻度実行可能]
         C4[👥 開発者体験向上]
     end
-    
+
     A5 --> C1
     B5 --> C1
-    
+
     style A1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style A5 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style B1 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -896,16 +936,16 @@ graph LR
 
 ```typescript
 it('should create user successfully', async () => {
-  // Arrange: テストデータとモックの準備
-  const userData = { name: 'John', email: 'john@example.com' };
-  setupMockReturnValues(mockRepository, { create: createTestUser(userData) });
+ // Arrange: テストデータとモックの準備
+ const userData = { name: 'John', email: 'john@example.com' };
+ setupMockReturnValues(mockRepository, { create: createTestUser(userData) });
 
-  // Act: テスト対象の実行
-  const result = await useCase.execute(userData);
+ // Act: テスト対象の実行
+ const result = await useCase.execute(userData);
 
-  // Assert: 結果の検証
-  expect(result).toBeDefined();
-  expectMockCalledWith(mockRepository.create, [userData]);
+ // Assert: 結果の検証
+ expect(result).toBeDefined();
+ expectMockCalledWith(mockRepository.create, [userData]);
 });
 ```
 
@@ -913,13 +953,13 @@ it('should create user successfully', async () => {
 
 ```typescript
 describe('UserService', () => {
-  setupTestEnvironment(); // 各テスト前にDIコンテナをクリア
+ setupTestEnvironment(); // 各テスト前にDIコンテナをクリア
 
-  beforeEach(() => {
-    // 各テストで新しいモックを作成
-    mockRepository = createMockUserRepository();
-    mockService = createMockUserDomainService();
-  });
+ beforeEach(() => {
+  // 各テストで新しいモックを作成
+  mockRepository = createMockUserRepository();
+  mockService = createMockUserDomainService();
+ });
 });
 ```
 
@@ -927,15 +967,17 @@ describe('UserService', () => {
 
 ```typescript
 it('should handle database errors gracefully', async () => {
-  // Arrange
-  const dbError = new Error('Database connection failed');
-  setupMockReturnValues(mockRepository, { create: dbError });
+ // Arrange
+ const dbError = new Error('Database connection failed');
+ setupMockReturnValues(mockRepository, { create: dbError });
 
-  // Act & Assert
-  await expect(useCase.execute(userData)).rejects.toThrow('Database connection failed');
-  
-  // 後続処理が実行されないことを確認
-  expectMockNotCalled(mockEmailService.sendWelcomeEmail);
+ // Act & Assert
+ await expect(useCase.execute(userData)).rejects.toThrow(
+  'Database connection failed',
+ );
+
+ // 後続処理が実行されないことを確認
+ expectMockNotCalled(mockEmailService.sendWelcomeEmail);
 });
 ```
 
@@ -945,17 +987,20 @@ it('should handle database errors gracefully', async () => {
 
 ```typescript
 it('should log user creation info', async () => {
-  // Arrange
-  const userData = { name: 'John', email: 'john@example.com' };
-  const consoleSpy = vi.spyOn(console, 'info');
+ // Arrange
+ const userData = { name: 'John', email: 'john@example.com' };
+ const consoleSpy = vi.spyOn(console, 'info');
 
-  // Act
-  await useCase.execute(userData);
+ // Act
+ await useCase.execute(userData);
 
-  // Assert
-  expect(consoleSpy).toHaveBeenCalledWith('ユーザー作成完了', expect.any(Object));
-  
-  consoleSpy.mockRestore();
+ // Assert
+ expect(consoleSpy).toHaveBeenCalledWith(
+  'ユーザー作成完了',
+  expect.any(Object),
+ );
+
+ consoleSpy.mockRestore();
 });
 ```
 

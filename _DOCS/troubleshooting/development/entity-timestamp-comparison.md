@@ -7,14 +7,14 @@ User entityなどのテストで、`updatedAt`フィールドの時刻比較が�
 ```typescript
 // ❌ 失敗するテスト例
 test('プロフィール更新でupdatedAtが更新される', () => {
-  const user = User.create(validData);
-  const originalUpdatedAt = user.getUpdatedAt();
-  
-  user.updateProfile({ name: 'New Name' });
-  const newUpdatedAt = user.getUpdatedAt();
-  
-  expect(newUpdatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
-  // ❌ 同じ時刻になってしまいテストが失敗
+ const user = User.create(validData);
+ const originalUpdatedAt = user.getUpdatedAt();
+
+ user.updateProfile({ name: 'New Name' });
+ const newUpdatedAt = user.getUpdatedAt();
+
+ expect(newUpdatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
+ // ❌ 同じ時刻になってしまいテストが失敗
 });
 ```
 
@@ -31,16 +31,16 @@ JavaScript/TypeScriptの`new Date()`は**ミリ秒単位**で時刻を生成し�
 ```typescript
 // ✅ 正常に動作するテスト
 test('プロフィール更新でupdatedAtが更新される', async () => {
-  const user = User.create(validData);
-  const originalUpdatedAt = user.getUpdatedAt();
-  
-  // 10ms待機して時刻差を保証
-  await new Promise(resolve => setTimeout(resolve, 10));
-  
-  user.updateProfile({ name: 'New Name' });
-  const newUpdatedAt = user.getUpdatedAt();
-  
-  expect(newUpdatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
+ const user = User.create(validData);
+ const originalUpdatedAt = user.getUpdatedAt();
+
+ // 10ms待機して時刻差を保証
+ await new Promise((resolve) => setTimeout(resolve, 10));
+
+ user.updateProfile({ name: 'New Name' });
+ const newUpdatedAt = user.getUpdatedAt();
+
+ expect(newUpdatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
 });
 ```
 
@@ -48,23 +48,23 @@ test('プロフィール更新でupdatedAtが更新される', async () => {
 
 ```typescript
 test('プロフィール更新でupdatedAtが更新される', () => {
-  let mockTime = Date.now();
-  const mockDate = vi.spyOn(global, 'Date').mockImplementation(() => {
-    return new Date(mockTime) as any;
-  });
-  
-  const user = User.create(validData);
-  const originalUpdatedAt = user.getUpdatedAt();
-  
-  // 時刻を進める
-  mockTime += 1000;
-  
-  user.updateProfile({ name: 'New Name' });
-  const newUpdatedAt = user.getUpdatedAt();
-  
-  expect(newUpdatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
-  
-  mockDate.mockRestore();
+ let mockTime = Date.now();
+ const mockDate = vi.spyOn(global, 'Date').mockImplementation(() => {
+  return new Date(mockTime) as any;
+ });
+
+ const user = User.create(validData);
+ const originalUpdatedAt = user.getUpdatedAt();
+
+ // 時刻を進める
+ mockTime += 1000;
+
+ user.updateProfile({ name: 'New Name' });
+ const newUpdatedAt = user.getUpdatedAt();
+
+ expect(newUpdatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
+
+ mockDate.mockRestore();
 });
 ```
 

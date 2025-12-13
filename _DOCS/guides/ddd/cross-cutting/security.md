@@ -14,39 +14,39 @@ graph TD
         XSS[XSS Prevention]
         INPUT[Input Sanitization]
     end
-    
+
     subgraph "📋 Application Layer"
         AUTH[Authentication]
         AUTHZ[Authorization]
         VALID[Input Validation]
         RATE[Rate Limiting]
     end
-    
+
     subgraph "🧠 Domain Layer"
         BIZ[Business Rules]
         PERM[Permission Logic]
         ENCRYPT[Data Encryption]
     end
-    
+
     subgraph "🗄️ Infrastructure Layer"
         DB_SEC[Database Security]
         API_SEC[API Security]
         LOG_SEC[Secure Logging]
     end
-    
+
     CSP --> AUTH
     CSRF --> AUTHZ
     XSS --> VALID
     INPUT --> RATE
-    
+
     AUTH --> BIZ
     AUTHZ --> PERM
     VALID --> ENCRYPT
-    
+
     BIZ --> DB_SEC
     PERM --> API_SEC
     ENCRYPT --> LOG_SEC
-    
+
     style CSP fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style AUTH fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
     style BIZ fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -64,37 +64,40 @@ graph TD
 ```typescript
 // ✅ Server Actionsでの自動CSRF保護
 'use server';
-export async function updateUserAction(formData: FormData): Promise<ActionResult> {
-  // Next.js Server Actionsは自動的にCSRF保護が有効
-  
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return {
-      success: false,
-      error: '認証が必要です',
-      code: 'UNAUTHORIZED'
-    };
-  }
-  
-  // ... 処理
-}
 
 // ✅ カスタムCSRFトークン（必要に応じて）
 import { generateCSRFToken, validateCSRFToken } from '@/lib/csrf';
 
-export async function sensitiveAction(
-  formData: FormData,
-  csrfToken: string
+export async function updateUserAction(
+ formData: FormData,
 ): Promise<ActionResult> {
-  if (!validateCSRFToken(csrfToken)) {
-    return {
-      success: false,
-      error: 'Invalid CSRF token',
-      code: 'CSRF_ERROR'
-    };
-  }
-  
-  // ... 処理
+ // Next.js Server Actionsは自動的にCSRF保護が有効
+
+ const session = await getServerSession(authOptions);
+ if (!session?.user) {
+  return {
+   success: false,
+   error: '認証が必要です',
+   code: 'UNAUTHORIZED',
+  };
+ }
+
+ // ... 処理
+}
+
+export async function sensitiveAction(
+ formData: FormData,
+ csrfToken: string,
+): Promise<ActionResult> {
+ if (!validateCSRFToken(csrfToken)) {
+  return {
+   success: false,
+   error: 'Invalid CSRF token',
+   code: 'CSRF_ERROR',
+  };
+ }
+
+ // ... 処理
 }
 ```
 
@@ -114,9 +117,9 @@ export function sanitizeHtml(input: string): string {
 // ✅ React での安全な表示
 export function UserContent({ content }: { content: string }) {
   const sanitizedContent = sanitizeHtml(content);
-  
+
   return (
-    <div 
+    <div
       dangerouslySetInnerHTML={{ __html: sanitizedContent }}
       className="user-content"
     />
@@ -128,7 +131,7 @@ export function createNotification(userName: string, action: string): string {
   // HTMLエスケープを確実に行う
   const escapedUserName = escapeHtml(userName);
   const escapedAction = escapeHtml(action);
-  
+
   return `${escapedUserName}さんが${escapedAction}しました`;
 }
 ```
@@ -138,35 +141,35 @@ export function createNotification(userName: string, action: string): string {
 ```typescript
 // ✅ next.config.js でのCSP設定
 const nextConfig = {
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // 開発時のみ
-              "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: https:",
-              "font-src 'self'",
-              "connect-src 'self'",
-              "frame-ancestors 'none'"
-            ].join('; ')
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY'
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff'
-          }
-        ]
-      }
-    ];
-  }
+ async headers() {
+  return [
+   {
+    source: '/(.*)',
+    headers: [
+     {
+      key: 'Content-Security-Policy',
+      value: [
+       "default-src 'self'",
+       "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // 開発時のみ
+       "style-src 'self' 'unsafe-inline'",
+       "img-src 'self' data: https:",
+       "font-src 'self'",
+       "connect-src 'self'",
+       "frame-ancestors 'none'",
+      ].join('; '),
+     },
+     {
+      key: 'X-Frame-Options',
+      value: 'DENY',
+     },
+     {
+      key: 'X-Content-Type-Options',
+      value: 'nosniff',
+     },
+    ],
+   },
+  ];
+ },
 };
 ```
 
@@ -179,60 +182,56 @@ const nextConfig = {
 ```typescript
 // ✅ 認証チェック付きUse Case
 export class UpdateUserProfileUseCase {
-  async execute(
-    request: UpdateUserProfileRequest,
-    currentUserId: string
-  ): Promise<UpdateUserProfileResponse> {
-    
-    // 認証チェック
-    if (!currentUserId) {
-      throw new SecurityError(
-        '認証が必要です',
-        'AUTHENTICATION_REQUIRED'
-      );
-    }
-    
-    // 認可チェック
-    if (request.targetUserId !== currentUserId) {
-      const hasPermission = await this.permissionService.canUpdateUser(
-        currentUserId,
-        request.targetUserId
-      );
-      
-      if (!hasPermission) {
-        throw new SecurityError(
-          'このユーザーを更新する権限がありません',
-          'AUTHORIZATION_FAILED'
-        );
-      }
-    }
-    
-    // 入力値検証
-    const validatedRequest = await this.validateRequest(request);
-    
-    // ... ビジネスロジック実行
+ async execute(
+  request: UpdateUserProfileRequest,
+  currentUserId: string,
+ ): Promise<UpdateUserProfileResponse> {
+  // 認証チェック
+  if (!currentUserId) {
+   throw new SecurityError('認証が必要です', 'AUTHENTICATION_REQUIRED');
   }
-  
-  private async validateRequest(
-    request: UpdateUserProfileRequest
-  ): Promise<UpdateUserProfileRequest> {
-    // SQLインジェクション対策
-    if (this.containsSqlInjection(request.bio)) {
-      throw new ValidationError(
-        '不正な文字が含まれています',
-        'bio',
-        request.bio,
-        'INVALID_INPUT'
-      );
-    }
-    
-    // XSS対策
-    return {
-      ...request,
-      bio: sanitizeHtml(request.bio),
-      name: escapeHtml(request.name)
-    };
+
+  // 認可チェック
+  if (request.targetUserId !== currentUserId) {
+   const hasPermission = await this.permissionService.canUpdateUser(
+    currentUserId,
+    request.targetUserId,
+   );
+
+   if (!hasPermission) {
+    throw new SecurityError(
+     'このユーザーを更新する権限がありません',
+     'AUTHORIZATION_FAILED',
+    );
+   }
   }
+
+  // 入力値検証
+  const validatedRequest = await this.validateRequest(request);
+
+  // ... ビジネスロジック実行
+ }
+
+ private async validateRequest(
+  request: UpdateUserProfileRequest,
+ ): Promise<UpdateUserProfileRequest> {
+  // SQLインジェクション対策
+  if (this.containsSqlInjection(request.bio)) {
+   throw new ValidationError(
+    '不正な文字が含まれています',
+    'bio',
+    request.bio,
+    'INVALID_INPUT',
+   );
+  }
+
+  // XSS対策
+  return {
+   ...request,
+   bio: sanitizeHtml(request.bio),
+   name: escapeHtml(request.name),
+  };
+ }
 }
 ```
 
@@ -241,43 +240,43 @@ export class UpdateUserProfileUseCase {
 ```typescript
 // ✅ レート制限の実装
 export class RateLimitService {
-  private redis: Redis;
-  
-  async checkRateLimit(
-    key: string,
-    limit: number,
-    windowMs: number
-  ): Promise<boolean> {
-    const current = await this.redis.incr(key);
-    
-    if (current === 1) {
-      await this.redis.expire(key, Math.ceil(windowMs / 1000));
-    }
-    
-    return current <= limit;
+ private redis: Redis;
+
+ async checkRateLimit(
+  key: string,
+  limit: number,
+  windowMs: number,
+ ): Promise<boolean> {
+  const current = await this.redis.incr(key);
+
+  if (current === 1) {
+   await this.redis.expire(key, Math.ceil(windowMs / 1000));
   }
+
+  return current <= limit;
+ }
 }
 
 // ✅ Use Caseでの使用
 export class CreateUserUseCase {
-  async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
-    const rateLimitKey = `create_user:${request.ip}`;
-    
-    const allowed = await this.rateLimitService.checkRateLimit(
-      rateLimitKey,
-      5, // 5回まで
-      60 * 1000 // 1分間
-    );
-    
-    if (!allowed) {
-      throw new SecurityError(
-        'リクエストが多すぎます。しばらく時間をおいて再度お試しください',
-        'RATE_LIMIT_EXCEEDED'
-      );
-    }
-    
-    // ... 処理続行
+ async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
+  const rateLimitKey = `create_user:${request.ip}`;
+
+  const allowed = await this.rateLimitService.checkRateLimit(
+   rateLimitKey,
+   5, // 5回まで
+   60 * 1000, // 1分間
+  );
+
+  if (!allowed) {
+   throw new SecurityError(
+    'リクエストが多すぎます。しばらく時間をおいて再度お試しください',
+    'RATE_LIMIT_EXCEEDED',
+   );
   }
+
+  // ... 処理続行
+ }
 }
 ```
 
@@ -290,49 +289,52 @@ export class CreateUserUseCase {
 ```typescript
 // ✅ ドメインレベルでの権限チェック
 export class User {
-  canEditPost(post: Post): boolean {
-    // 投稿者本人または管理者のみ編集可能
-    return post.getAuthorId().equals(this.id) || this.hasRole(UserRole.ADMIN);
-  }
-  
-  canViewPrivateProfile(targetUser: User): boolean {
-    // 本人、友達、または管理者のみ閲覧可能
-    return this.id.equals(targetUser.getId()) ||
-           this.isFriendWith(targetUser) ||
-           this.hasRole(UserRole.ADMIN);
-  }
-  
-  canPromoteUser(targetUser: User): boolean {
-    // 管理者のみ、かつ自分より下位レベルのユーザーのみ昇格可能
-    return this.hasRole(UserRole.ADMIN) &&
-           this.getLevel() > targetUser.getLevel();
-  }
+ canEditPost(post: Post): boolean {
+  // 投稿者本人または管理者のみ編集可能
+  return post.getAuthorId().equals(this.id) || this.hasRole(UserRole.ADMIN);
+ }
+
+ canViewPrivateProfile(targetUser: User): boolean {
+  // 本人、友達、または管理者のみ閲覧可能
+  return (
+   this.id.equals(targetUser.getId()) ||
+   this.isFriendWith(targetUser) ||
+   this.hasRole(UserRole.ADMIN)
+  );
+ }
+
+ canPromoteUser(targetUser: User): boolean {
+  // 管理者のみ、かつ自分より下位レベルのユーザーのみ昇格可能
+  return (
+   this.hasRole(UserRole.ADMIN) && this.getLevel() > targetUser.getLevel()
+  );
+ }
 }
 
 // ✅ 権限チェック付きドメインサービス
 export class PostDomainService {
-  async updatePost(
-    post: Post,
-    updates: PostUpdates,
-    currentUser: User
-  ): Promise<void> {
-    if (!currentUser.canEditPost(post)) {
-      throw new DomainError(
-        'この投稿を編集する権限がありません',
-        'POST_EDIT_FORBIDDEN'
-      );
-    }
-    
-    // 管理者以外は公開状態を変更できない
-    if (updates.isPublic !== undefined && !currentUser.hasRole(UserRole.ADMIN)) {
-      throw new DomainError(
-        '公開状態を変更する権限がありません',
-        'POST_VISIBILITY_CHANGE_FORBIDDEN'
-      );
-    }
-    
-    post.update(updates);
+ async updatePost(
+  post: Post,
+  updates: PostUpdates,
+  currentUser: User,
+ ): Promise<void> {
+  if (!currentUser.canEditPost(post)) {
+   throw new DomainError(
+    'この投稿を編集する権限がありません',
+    'POST_EDIT_FORBIDDEN',
+   );
   }
+
+  // 管理者以外は公開状態を変更できない
+  if (updates.isPublic !== undefined && !currentUser.hasRole(UserRole.ADMIN)) {
+   throw new DomainError(
+    '公開状態を変更する権限がありません',
+    'POST_VISIBILITY_CHANGE_FORBIDDEN',
+   );
+  }
+
+  post.update(updates);
+ }
 }
 ```
 
@@ -341,69 +343,71 @@ export class PostDomainService {
 ```typescript
 // ✅ 機密データの暗号化
 export class PersonalInfo {
-  constructor(
-    private encryptedPhoneNumber: string,
-    private encryptedAddress: string,
-    private encryptionService: IEncryptionService
-  ) {}
-  
-  getPhoneNumber(): string {
-    return this.encryptionService.decrypt(this.encryptedPhoneNumber);
-  }
-  
-  getAddress(): string {
-    return this.encryptionService.decrypt(this.encryptedAddress);
-  }
-  
-  static create(
-    phoneNumber: string,
-    address: string,
-    encryptionService: IEncryptionService
-  ): PersonalInfo {
-    return new PersonalInfo(
-      encryptionService.encrypt(phoneNumber),
-      encryptionService.encrypt(address),
-      encryptionService
-    );
-  }
+ constructor(
+  private encryptedPhoneNumber: string,
+  private encryptedAddress: string,
+  private encryptionService: IEncryptionService,
+ ) {}
+
+ getPhoneNumber(): string {
+  return this.encryptionService.decrypt(this.encryptedPhoneNumber);
+ }
+
+ getAddress(): string {
+  return this.encryptionService.decrypt(this.encryptedAddress);
+ }
+
+ static create(
+  phoneNumber: string,
+  address: string,
+  encryptionService: IEncryptionService,
+ ): PersonalInfo {
+  return new PersonalInfo(
+   encryptionService.encrypt(phoneNumber),
+   encryptionService.encrypt(address),
+   encryptionService,
+  );
+ }
 }
 
 // ✅ パスワードハッシュ化
 export class Password {
-  constructor(private hashedValue: string) {}
-  
-  static async create(plainPassword: string): Promise<Password> {
-    // パスワード強度チェック
-    if (!this.isStrongPassword(plainPassword)) {
-      throw new ValidationError(
-        'パスワードは8文字以上で、大文字・小文字・数字・記号を含む必要があります',
-        'password',
-        plainPassword,
-        'WEAK_PASSWORD'
-      );
-    }
-    
-    const hashedValue = await bcrypt.hash(plainPassword, 12);
-    return new Password(hashedValue);
+ constructor(private hashedValue: string) {}
+
+ static async create(plainPassword: string): Promise<Password> {
+  // パスワード強度チェック
+  if (!this.isStrongPassword(plainPassword)) {
+   throw new ValidationError(
+    'パスワードは8文字以上で、大文字・小文字・数字・記号を含む必要があります',
+    'password',
+    plainPassword,
+    'WEAK_PASSWORD',
+   );
   }
-  
-  async verify(plainPassword: string): Promise<boolean> {
-    return bcrypt.compare(plainPassword, this.hashedValue);
-  }
-  
-  private static isStrongPassword(password: string): boolean {
-    const minLength = 8;
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasLowerCase = /[a-z]/.test(password);
-    const hasNumbers = /\d/.test(password);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-    
-    return password.length >= minLength &&
-           hasUpperCase &&
-           hasLowerCase &&
-           hasNumbers &&
-           hasSpecialChar;
-  }
+
+  const hashedValue = await bcrypt.hash(plainPassword, 12);
+  return new Password(hashedValue);
+ }
+
+ async verify(plainPassword: string): Promise<boolean> {
+  return bcrypt.compare(plainPassword, this.hashedValue);
+ }
+
+ private static isStrongPassword(password: string): boolean {
+  const minLength = 8;
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumbers = /\d/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+  return (
+   password.length >= minLength &&
+   hasUpperCase &&
+   hasLowerCase &&
+   hasNumbers &&
+   hasSpecialChar
+  );
+ }
 }
 ```
 
@@ -416,35 +420,35 @@ export class Password {
 ```typescript
 // ✅ SQLインジェクション対策（Prisma使用）
 export class PrismaUserRepository implements IUserRepository {
-  async findByEmail(email: Email): Promise<User | null> {
-    // Prismaは自動的にSQLインジェクション対策済み
-    const userData = await this.prisma.user.findUnique({
-      where: {
-        email: email.toString() // パラメータ化クエリが自動生成される
-      }
-    });
-    
-    return userData ? this.toDomainObject(userData) : null;
-  }
-  
-  async searchUsers(query: string): Promise<User[]> {
-    // 検索クエリのサニタイゼーション
-    const sanitizedQuery = query
-      .replace(/[%_]/g, '\\$&') // LIKE演算子のエスケープ
-      .substring(0, 100); // 長さ制限
-    
-    const users = await this.prisma.user.findMany({
-      where: {
-        OR: [
-          { name: { contains: sanitizedQuery, mode: 'insensitive' } },
-          { email: { contains: sanitizedQuery, mode: 'insensitive' } }
-        ]
-      },
-      take: 50 // 結果数制限
-    });
-    
-    return users.map(user => this.toDomainObject(user));
-  }
+ async findByEmail(email: Email): Promise<User | null> {
+  // Prismaは自動的にSQLインジェクション対策済み
+  const userData = await this.prisma.user.findUnique({
+   where: {
+    email: email.toString(), // パラメータ化クエリが自動生成される
+   },
+  });
+
+  return userData ? this.toDomainObject(userData) : null;
+ }
+
+ async searchUsers(query: string): Promise<User[]> {
+  // 検索クエリのサニタイゼーション
+  const sanitizedQuery = query
+   .replace(/[%_]/g, '\\$&') // LIKE演算子のエスケープ
+   .substring(0, 100); // 長さ制限
+
+  const users = await this.prisma.user.findMany({
+   where: {
+    OR: [
+     { name: { contains: sanitizedQuery, mode: 'insensitive' } },
+     { email: { contains: sanitizedQuery, mode: 'insensitive' } },
+    ],
+   },
+   take: 50, // 結果数制限
+  });
+
+  return users.map((user) => this.toDomainObject(user));
+ }
 }
 ```
 
@@ -453,80 +457,68 @@ export class PrismaUserRepository implements IUserRepository {
 ```typescript
 // ✅ 外部API呼び出しのセキュリティ
 export class ExternalApiService {
-  private readonly apiKey: string;
-  private readonly baseUrl: string;
-  
-  constructor() {
-    this.apiKey = process.env.EXTERNAL_API_KEY!;
-    this.baseUrl = process.env.EXTERNAL_API_BASE_URL!;
-    
-    if (!this.apiKey || !this.baseUrl) {
-      throw new Error('External API credentials not configured');
-    }
+ private readonly apiKey: string;
+ private readonly baseUrl: string;
+
+ constructor() {
+  this.apiKey = process.env.EXTERNAL_API_KEY!;
+  this.baseUrl = process.env.EXTERNAL_API_BASE_URL!;
+
+  if (!this.apiKey || !this.baseUrl) {
+   throw new Error('External API credentials not configured');
   }
-  
-  async callApi(endpoint: string, data: any): Promise<any> {
-    // URL検証
-    if (!this.isValidEndpoint(endpoint)) {
-      throw new SecurityError(
-        '不正なエンドポイントです',
-        'INVALID_ENDPOINT'
-      );
-    }
-    
-    // リクエストサイズ制限
-    const requestSize = JSON.stringify(data).length;
-    if (requestSize > 1024 * 1024) { // 1MB制限
-      throw new SecurityError(
-        'リクエストサイズが大きすぎます',
-        'REQUEST_TOO_LARGE'
-      );
-    }
-    
-    try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-          'User-Agent': 'MyApp/1.0'
-        },
-        body: JSON.stringify(data),
-        timeout: 10000 // 10秒タイムアウト
-      });
-      
-      if (!response.ok) {
-        throw new ExternalApiError(
-          'External API',
-          response.status
-        );
-      }
-      
-      return response.json();
-      
-    } catch (error) {
-      this.logger.error('External API call failed', {
-        endpoint,
-        error: error.message,
-        // APIキーは絶対にログに出力しない
-      });
-      
-      throw error;
-    }
+ }
+
+ async callApi(endpoint: string, data: any): Promise<any> {
+  // URL検証
+  if (!this.isValidEndpoint(endpoint)) {
+   throw new SecurityError('不正なエンドポイントです', 'INVALID_ENDPOINT');
   }
-  
-  private isValidEndpoint(endpoint: string): boolean {
-    // 許可されたエンドポイントのホワイトリスト
-    const allowedEndpoints = [
-      '/users',
-      '/posts',
-      '/notifications'
-    ];
-    
-    return allowedEndpoints.some(allowed => 
-      endpoint.startsWith(allowed)
-    );
+
+  // リクエストサイズ制限
+  const requestSize = JSON.stringify(data).length;
+  if (requestSize > 1024 * 1024) {
+   // 1MB制限
+   throw new SecurityError(
+    'リクエストサイズが大きすぎます',
+    'REQUEST_TOO_LARGE',
+   );
   }
+
+  try {
+   const response = await fetch(`${this.baseUrl}${endpoint}`, {
+    method: 'POST',
+    headers: {
+     Authorization: `Bearer ${this.apiKey}`,
+     'Content-Type': 'application/json',
+     'User-Agent': 'MyApp/1.0',
+    },
+    body: JSON.stringify(data),
+    timeout: 10000, // 10秒タイムアウト
+   });
+
+   if (!response.ok) {
+    throw new ExternalApiError('External API', response.status);
+   }
+
+   return response.json();
+  } catch (error) {
+   this.logger.error('External API call failed', {
+    endpoint,
+    error: error.message,
+    // APIキーは絶対にログに出力しない
+   });
+
+   throw error;
+  }
+ }
+
+ private isValidEndpoint(endpoint: string): boolean {
+  // 許可されたエンドポイントのホワイトリスト
+  const allowedEndpoints = ['/users', '/posts', '/notifications'];
+
+  return allowedEndpoints.some((allowed) => endpoint.startsWith(allowed));
+ }
 }
 ```
 
@@ -535,58 +527,58 @@ export class ExternalApiService {
 ```typescript
 // ✅ 機密情報を含まないログ出力
 export class SecureLogger implements ILogger {
-  private sensitiveFields = [
-    'password',
-    'token',
-    'apiKey',
-    'secret',
-    'creditCard',
-    'ssn'
-  ];
-  
-  info(message: string, context?: LogContext): void {
-    const sanitizedContext = this.sanitizeContext(context);
-    this.baseLogger.info(message, sanitizedContext);
+ private sensitiveFields = [
+  'password',
+  'token',
+  'apiKey',
+  'secret',
+  'creditCard',
+  'ssn',
+ ];
+
+ info(message: string, context?: LogContext): void {
+  const sanitizedContext = this.sanitizeContext(context);
+  this.baseLogger.info(message, sanitizedContext);
+ }
+
+ error(message: string, context?: LogContext): void {
+  const sanitizedContext = this.sanitizeContext(context);
+  this.baseLogger.error(message, sanitizedContext);
+ }
+
+ private sanitizeContext(context?: LogContext): LogContext {
+  if (!context) return {};
+
+  const sanitized = { ...context };
+
+  // 機密フィールドをマスク
+  for (const field of this.sensitiveFields) {
+   if (sanitized[field]) {
+    sanitized[field] = '***REDACTED***';
+   }
   }
-  
-  error(message: string, context?: LogContext): void {
-    const sanitizedContext = this.sanitizeContext(context);
-    this.baseLogger.error(message, sanitizedContext);
+
+  // ネストしたオブジェクトも処理
+  for (const key in sanitized) {
+   if (typeof sanitized[key] === 'object' && sanitized[key] !== null) {
+    sanitized[key] = this.sanitizeObject(sanitized[key]);
+   }
   }
-  
-  private sanitizeContext(context?: LogContext): LogContext {
-    if (!context) return {};
-    
-    const sanitized = { ...context };
-    
-    // 機密フィールドをマスク
-    for (const field of this.sensitiveFields) {
-      if (sanitized[field]) {
-        sanitized[field] = '***REDACTED***';
-      }
-    }
-    
-    // ネストしたオブジェクトも処理
-    for (const key in sanitized) {
-      if (typeof sanitized[key] === 'object' && sanitized[key] !== null) {
-        sanitized[key] = this.sanitizeObject(sanitized[key]);
-      }
-    }
-    
-    return sanitized;
+
+  return sanitized;
+ }
+
+ private sanitizeObject(obj: any): any {
+  const sanitized = { ...obj };
+
+  for (const field of this.sensitiveFields) {
+   if (sanitized[field]) {
+    sanitized[field] = '***REDACTED***';
+   }
   }
-  
-  private sanitizeObject(obj: any): any {
-    const sanitized = { ...obj };
-    
-    for (const field of this.sensitiveFields) {
-      if (sanitized[field]) {
-        sanitized[field] = '***REDACTED***';
-      }
-    }
-    
-    return sanitized;
-  }
+
+  return sanitized;
+ }
 }
 ```
 
@@ -599,36 +591,43 @@ export class SecureLogger implements ILogger {
 ```typescript
 // ✅ 認証テスト
 describe('UpdateUserProfileUseCase', () => {
-  it('未認証ユーザーはエラーになる', async () => {
-    // Arrange
-    const useCase = new UpdateUserProfileUseCase(
-      mockUserRepository,
-      mockPermissionService
-    );
-    
-    // Act & Assert
-    await expect(useCase.execute(validRequest, null))
-      .rejects.toThrow(SecurityError);
-    
-    await expect(useCase.execute(validRequest, null))
-      .rejects.toThrow('認証が必要です');
-  });
-  
-  it('他人のプロフィールは更新できない', async () => {
-    // Arrange
-    const useCase = new UpdateUserProfileUseCase(
-      mockUserRepository,
-      mockPermissionService
-    );
-    
-    mockPermissionService.canUpdateUser.mockResolvedValue(false);
-    
-    // Act & Assert
-    await expect(useCase.execute({
-      targetUserId: 'other-user-id',
-      name: 'New Name'
-    }, 'current-user-id')).rejects.toThrow(SecurityError);
-  });
+ it('未認証ユーザーはエラーになる', async () => {
+  // Arrange
+  const useCase = new UpdateUserProfileUseCase(
+   mockUserRepository,
+   mockPermissionService,
+  );
+
+  // Act & Assert
+  await expect(useCase.execute(validRequest, null)).rejects.toThrow(
+   SecurityError,
+  );
+
+  await expect(useCase.execute(validRequest, null)).rejects.toThrow(
+   '認証が必要です',
+  );
+ });
+
+ it('他人のプロフィールは更新できない', async () => {
+  // Arrange
+  const useCase = new UpdateUserProfileUseCase(
+   mockUserRepository,
+   mockPermissionService,
+  );
+
+  mockPermissionService.canUpdateUser.mockResolvedValue(false);
+
+  // Act & Assert
+  await expect(
+   useCase.execute(
+    {
+     targetUserId: 'other-user-id',
+     name: 'New Name',
+    },
+    'current-user-id',
+   ),
+  ).rejects.toThrow(SecurityError);
+ });
 });
 ```
 
@@ -637,29 +636,29 @@ describe('UpdateUserProfileUseCase', () => {
 ```typescript
 // ✅ XSS対策テスト
 describe('sanitizeHtml', () => {
-  it('スクリプトタグが除去される', () => {
-    // Arrange
-    const maliciousInput = '<script>alert("XSS")</script><p>正常なテキスト</p>';
-    
-    // Act
-    const result = sanitizeHtml(maliciousInput);
-    
-    // Assert
-    expect(result).toBe('<p>正常なテキスト</p>');
-    expect(result).not.toContain('<script>');
-  });
-  
-  it('イベントハンドラーが除去される', () => {
-    // Arrange
-    const maliciousInput = '<p onclick="alert(\'XSS\')">テキスト</p>';
-    
-    // Act
-    const result = sanitizeHtml(maliciousInput);
-    
-    // Assert
-    expect(result).toBe('<p>テキスト</p>');
-    expect(result).not.toContain('onclick');
-  });
+ it('スクリプトタグが除去される', () => {
+  // Arrange
+  const maliciousInput = '<script>alert("XSS")</script><p>正常なテキスト</p>';
+
+  // Act
+  const result = sanitizeHtml(maliciousInput);
+
+  // Assert
+  expect(result).toBe('<p>正常なテキスト</p>');
+  expect(result).not.toContain('<script>');
+ });
+
+ it('イベントハンドラーが除去される', () => {
+  // Arrange
+  const maliciousInput = '<p onclick="alert(\'XSS\')">テキスト</p>';
+
+  // Act
+  const result = sanitizeHtml(maliciousInput);
+
+  // Assert
+  expect(result).toBe('<p>テキスト</p>');
+  expect(result).not.toContain('onclick');
+ });
 });
 ```
 

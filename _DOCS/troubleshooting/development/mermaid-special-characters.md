@@ -14,21 +14,25 @@ Mermaid図内で関数名やコード例を表示する際、特殊文字が正�
 
 最も頻発する問題の一つです。
 
-```markdown
+````markdown
 ❌ 番号付きリスト記法による問題
+
 ```mermaid
 graph LR
     A["1. Domain Layer"] --> B["2. Application Layer"]
     B --> C["3. Infrastructure Layer"]
 ```
+````
 
-```markdown
-❌ 箇条書きリスト記法による問題  
+````markdown
+❌ 箇条書きリスト記法による問題
+
 ```mermaid
 graph TD
     A["- 項目1"] --> B["- 項目2"]
     C["* 項目3"] --> D["* 項目4"]
 ```
+````
 
 **問題点**：
 
@@ -39,18 +43,20 @@ graph TD
 
 #### 2. **特殊文字エスケープ問題**
 
-```markdown
+````markdown
 ❌ 間違ったエスケープ方法
+
 ```mermaid
 graph TD
     A[UserService] --> B["@injectable() デコレータ"]
     A --> C["resolve('UserService')"]
 ```
+````
 
 **問題点**：
 
 - `&#64;` は `@` の正しいエスケープではない
-- `&#40;&#41;` は `()` の正しいエスケープではない  
+- `&#40;&#41;` は `()` の正しいエスケープではない
 - `&#39;` は `'` の正しいエスケープではない
 - 表示時に文字化けや解析エラーが発生
 
@@ -62,46 +68,55 @@ graph TD
 
 #### 解決方法A：ダブルクォートで囲む
 
-```markdown
+````markdown
 ✅ 番号付きリスト記法をダブルクォートで囲む
+
 ```mermaid
 graph LR
     A["1. Domain Layer"] --> B["2. Application Layer"]
     B --> C["3. Infrastructure Layer"]
 ```
+````
 
-```markdown
+````markdown
 ✅ 箇条書きリスト記法をダブルクォートで囲む
+
 ```mermaid
 graph TD
     A["- 項目1"] --> B["- 項目2"]
     C["* 項目3"] --> D["* 項目4"]
 ```
+````
 
 #### 解決方法B：別の表現に変更する（推奨）
 
-```markdown
+````markdown
 ✅ より分かりやすい表現に変更
+
 ```mermaid
 graph LR
     A[Step1: Domain Layer] --> B[Step2: Application Layer]
     B --> C[Step3: Infrastructure Layer]
 ```
+````
 
-```markdown
+````markdown
 ✅ アイコンや記号で代替
+
 ```mermaid
 graph TD
     A[🧠 Domain Layer] --> B[📋 Application Layer]
     B --> C[🔧 Infrastructure Layer]
 ```
+````
 
 ### 2. **特殊文字エスケープ：ダブルクォートで囲む**
 
 最も簡単で信頼性の高い方法です。
 
-```markdown
+````markdown
 ✅ 正しいエスケープ方法
+
 ```mermaid
 graph TD
     A[UserService] --> B["@injectable() デコレータ"]
@@ -110,18 +125,21 @@ graph TD
     F[Test] --> G["expect.any(UserRepository)"]
     H[Container] --> I["container.resolve(CreateUserUseCase)"]
 ```
+````
 
 ### 2. **HTMLエンティティコード（必要時のみ）**
 
 ダブルクォートでも解決しない場合の代替手段：
 
-```markdown
+````markdown
 特殊なケースでのエスケープ
+
 ```mermaid
 graph TD
-    A[Node] --> B["Function#35;with#35;hash"]  
+    A[Node] --> B["Function#35;with#35;hash"]
     C[Node] --> D["Text#59;with#59;semicolon"]
 ```
+````
 
 **よく使用するHTMLエンティティ**：
 
@@ -187,15 +205,15 @@ graph TD
 
 ## 📋 特殊文字別対応表
 
-| 文字 | ❌ 間違った書き方 | ✅ 正しい書き方 | 用途 |
-|------|------------------|-----------------|------|
-| `@` | `&#64;` | `"@injectable()"` | デコレータ |
-| `()` | `&#40;&#41;` | `"function()"` | 関数呼び出し |
-| `'` | `&#39;` | `"resolve('Service')"` | 文字列リテラル |
-| `"` | `&#34;` | `'Text "quoted"'` | クォート内クォート |
-| `.` | `&#46;` | `"object.method"` | プロパティアクセス |
-| `#` | `&#35;` | `"hash#35;tag"` | ハッシュタグ（必要時のみ） |
-| `;` | `&#59;` | `"code#59;statement"` | セミコロン（必要時のみ） |
+| 文字 | ❌ 間違った書き方 | ✅ 正しい書き方        | 用途                       |
+| ---- | ----------------- | ---------------------- | -------------------------- |
+| `@`  | `&#64;`           | `"@injectable()"`      | デコレータ                 |
+| `()` | `&#40;&#41;`      | `"function()"`         | 関数呼び出し               |
+| `'`  | `&#39;`           | `"resolve('Service')"` | 文字列リテラル             |
+| `"`  | `&#34;`           | `'Text "quoted"'`      | クォート内クォート         |
+| `.`  | `&#46;`           | `"object.method"`      | プロパティアクセス         |
+| `#`  | `&#35;`           | `"hash#35;tag"`        | ハッシュタグ（必要時のみ） |
+| `;`  | `&#59;`           | `"code#59;statement"`  | セミコロン（必要時のみ）   |
 
 ---
 

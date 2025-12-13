@@ -17,26 +17,26 @@ graph TD
     APP --> DOMAIN[👑 Domain Layer<br/>ドメイン層]
     APP --> DOMAIN_INTERFACES[🔌 Domain Interfaces<br/>ドメインインターフェース]
     INFRA[🔧 Infrastructure Layer<br/>インフラストラクチャ層] --> DOMAIN_INTERFACES
-    
+
     subgraph "DIP: 依存性逆転の原則"
         direction TB
         DOMAIN_LAYER[Domain Layer] --> INTERFACE[Interface]
         INFRA_LAYER[Infrastructure Layer] --> INTERFACE
         INTERFACE -.->|実装| INFRA_LAYER
     end
-    
+
     subgraph "依存関係の方向"
         direction TB
         HIGH[上位層] --> LOW[下位層]
         CONCRETE[具象] -.->|DIPにより逆転| ABSTRACT[抽象]
     end
-    
+
     style PRES fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style APP fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style DOMAIN fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style DOMAIN_INTERFACES fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style INFRA fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
-    
+
     classDef userStyle fill:#831843,stroke:#be185d,stroke-width:2px,color:#ffffff
     class USER userStyle
 ```
@@ -50,19 +50,19 @@ graph LR
         A1 --> D1[Domain]
         A1 --> I1[Infrastructure]
     end
-    
+
     subgraph "禁止される依存関係"
         D2[Domain] -.-> I2[Infrastructure]
         D2 -.-> A2[Application]
         I3[Infrastructure] -.-> D3[Domain]
         I3 -.-> A3[Application]
     end
-    
+
     style P1 fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style A1 fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style D1 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style I1 fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
-    
+
     style D2 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff,stroke:#f44336
     style I2 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff,stroke:#f44336
     style A2 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff,stroke:#f44336
@@ -90,7 +90,7 @@ graph TB
     subgraph "❌ 直接依存（DIP違反）"
         DL1[Domain Layer<br/>UserService] --> IL1[Infrastructure Layer<br/>MySQLUserRepository]
     end
-    
+
     style DL1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style IL1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
 ```
@@ -103,14 +103,14 @@ graph TB
         DL2[Domain Layer<br/>UserService] --> IR[Interface<br/>IUserRepository]
         IL2[Infrastructure Layer<br/>MySQLUserRepository] --> IR
     end
-    
+
     subgraph "依存関係の流れ"
         direction LR
         DOMAIN[Domain] --> INTERFACE[Interface]
         INFRA[Infrastructure] --> INTERFACE
         INTERFACE -.->|実装| INFRA
     end
-    
+
     style DL2 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style IR fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style IL2 fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
@@ -119,10 +119,12 @@ graph TB
 #### なぜDIPが必要なのか？ 🤔
 
 1. **技術的詳細からの独立性**
+
    - ドメインロジックがデータベースやフレームワークに依存しない
    - MySQLからPostgreSQLへの変更が容易
 
 2. **テスタビリティの向上**
+
    - インターフェースによりモック作成が簡単
    - ドメインロジックの単体テストが可能
 
@@ -140,13 +142,13 @@ graph TB
         DS1[Domain Service<br/>UserService] -->|直接import| PR1[PrismaClient]
         DS1 -->|new PrismaClient| PR1
     end
-    
+
     subgraph "問題点"
         P1[🚫 テスト時にDB必要]
         P2[🚫 DB変更でドメイン修正必要]
         P3[🚫 技術的詳細がドメインに混入]
     end
-    
+
     style DS1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style PR1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style P1 fill:#fef2f2,stroke:#dc2626,stroke-width:1px,color:#dc2626
@@ -163,19 +165,19 @@ graph TB
         PR2[PrismaUserRepository<br/>具象実装] -->|implements| IUR
         DS2 -.->|DI経由で注入| PR2
     end
-    
+
     subgraph "メリット"
         M1[✅ テスト時はモック使用]
         M2[✅ DB変更はInfra層のみ]
         M3[✅ ドメインが純粋なビジネスロジック]
     end
-    
+
     subgraph "DI Container"
         DIC[DIコンテナ]
         DIC -->|bind| IUR
         DIC -->|to| PR2
     end
-    
+
     style DS2 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style IUR fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style PR2 fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
@@ -260,18 +262,18 @@ graph TB
         DS1 -->|直接依存| DB1[Real Database]
         DB1 -->|重い・遅い・不安定| TS1
     end
-    
+
     subgraph "✅ DIP準拠時のテスト"
         TS2[Test Suite] -->|モック注入| DS2[UserService]
         DS2 -->|インターフェース経由| MR[Mock Repository]
         MR -->|高速・安定・制御可能| TS2
     end
-    
+
     subgraph "テスト実行速度"
         SLOW[❌ 遅い<br/>数秒〜数分]
         FAST[✅ 高速<br/>数ミリ秒]
     end
-    
+
     style DS1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style DB1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style DS2 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -292,19 +294,19 @@ graph TB
 graph TB
     subgraph "🔄 データベース変更時の影響範囲"
         US[UserService<br/>ドメインサービス] -->|変更不要| IUR[IUserRepository<br/>インターフェース]
-        
+
         subgraph "Infrastructure実装の選択"
             PR[PrismaRepository<br/>PostgreSQL] -.->|切り替え可能| IUR
             MR[MongoRepository<br/>MongoDB] -.->|切り替え可能| IUR
             MSR[MySQLRepository<br/>MySQL] -.->|切り替え可能| IUR
         end
-        
+
         subgraph "設定変更のみ"
             DIC[DIコンテナ設定]
             DIC -->|bind切り替え| IUR
         end
     end
-    
+
     subgraph "変更の影響"
         CHANGE1[✅ ドメインロジック：変更なし]
         CHANGE2[✅ テストコード：変更なし]
@@ -312,7 +314,7 @@ graph TB
         CHANGE4[🔧 Infrastructure層：新実装追加]
         CHANGE5[⚙️ DI設定：1行変更]
     end
-    
+
     style US fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style IUR fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style PR fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
@@ -378,12 +380,12 @@ import { PrismaClient } from '@prisma/client'; // Domain内では禁止
 
 // ✅ 許可：Interface経由での依存関係の逆転（DIP）
 export interface IUserRepository {
-  findById(id: UserId): Promise<User | null>;
+ findById(id: UserId): Promise<User | null>;
 }
 
 // ✅ DI設定でインターフェースと実装をバインド
 container.register<IUserRepository>('IUserRepository', {
-  useClass: PrismaUserRepository
+ useClass: PrismaUserRepository,
 });
 ```
 
@@ -392,13 +394,13 @@ container.register<IUserRepository>('IUserRepository', {
 ```typescript
 // ❌ 直接インスタンス化（DIP違反）
 export class OrderService {
-  private emailService = new SMTPEmailService(); // 具象クラスに直接依存
+ private emailService = new SMTPEmailService(); // 具象クラスに直接依存
 }
 
 // ✅ インターフェース経由（DIP準拠）
 @injectable()
 export class OrderService {
-  constructor(@inject('IEmailService') private emailService: IEmailService) {}
+ constructor(@inject('IEmailService') private emailService: IEmailService) {}
 }
 ```
 
@@ -406,12 +408,15 @@ export class OrderService {
 
 ```typescript
 // ❌ 禁止：フレームワーク・ライブラリに依存
-import { NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { NextRequest } from 'next/server';
 
 // ✅ 許可：Pure TypeScript のみ
 export class User {
-  private constructor(private id: UserId, private name: string) {}
+ private constructor(
+  private id: UserId,
+  private name: string,
+ ) {}
 }
 ```
 
@@ -420,11 +425,11 @@ export class User {
 ```typescript
 // ✅ 各層で適切なデータ形式に変換
 export class CreateUserUseCase {
-  async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
-    const user = User.create(request.name, new Email(request.email)); // Domain Object
-    await this.userRepository.save(user); // Repository経由で保存
-    return { id: user.getId().toString() }; // DTO形式でレスポンス
-  }
+ async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
+  const user = User.create(request.name, new Email(request.email)); // Domain Object
+  await this.userRepository.save(user); // Repository経由で保存
+  return { id: user.getId().toString() }; // DTO形式でレスポンス
+ }
 }
 ```
 

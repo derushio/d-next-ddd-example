@@ -14,12 +14,12 @@ graph LR
         A[Node.js 20+] --> C[✅ 環境準備完了]
         B[pnpm 8+] --> C
     end
-    
+
     subgraph "🎯 確認コマンド"
         D[node --version]
         E[pnpm --version]
     end
-    
+
     style A fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style B fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style C fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
@@ -46,7 +46,7 @@ graph TB
         C --> D[4️⃣ 開発サーバー<br/>起動]
         D --> E[✅ セットアップ<br/>完了]
     end
-    
+
     style A fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style B fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style C fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
@@ -74,11 +74,11 @@ pnpm dev
 
 ### ✅ 成功確認
 
-| 確認項目 | 期待される結果 | 対処方法 |
-|---------|---------------|----------|
+| 確認項目                 | 期待される結果                       | 対処方法                                             |
+| ------------------------ | ------------------------------------ | ---------------------------------------------------- |
 | **アプリケーション表示** | <http://localhost:3000> でページ表示 | [トラブルシューティング](#🔍-トラブルシューティング) |
-| **コンソールエラー** | エラーメッセージなし | [よくある問題](../troubleshooting/common-issues.md) |
-| **データベース接続** | Prisma Studio で確認可能 | [DB問題解決](#🗄️-データベース問題) |
+| **コンソールエラー**     | エラーメッセージなし                 | [よくある問題](../troubleshooting/common-issues.md)  |
+| **データベース接続**     | Prisma Studio で確認可能             | [DB問題解決](#🗄️-データベース問題)                   |
 
 ---
 
@@ -109,11 +109,11 @@ graph LR
         MIGRATE[Migration]
         SEED[Seed Data]
     end
-    
+
     SCHEMA --> GENERATE
     GENERATE --> MIGRATE
     MIGRATE --> SEED
-    
+
     style SCHEMA fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
 ```
 
@@ -140,17 +140,17 @@ graph TB
         EXTENSIONS[拡張機能]
         SETTINGS[設定]
     end
-    
+
     subgraph "📋 推奨拡張機能"
         TS[TypeScript]
         PRETTIER[Prettier]
         ESLINT[ESLint]
         TAILWIND[Tailwind CSS]
     end
-    
+
     VSCODE --> EXTENSIONS
     EXTENSIONS --> SETTINGS
-    
+
     EXTENSIONS --> TS
     EXTENSIONS --> PRETTIER
     EXTENSIONS --> ESLINT
@@ -240,13 +240,13 @@ graph LR
         MEMORY[メモリ設定]
         CACHE[キャッシュ設定]
     end
-    
+
     subgraph "🎯 期待効果"
         FAST[高速ビルド]
         SMOOTH[スムーズ開発]
         EFFICIENT[効率的リソース使用]
     end
-    
+
     TURBO --> FAST
     MEMORY --> SMOOTH
     CACHE --> EFFICIENT
@@ -306,13 +306,13 @@ graph TB
         MOCK[自動モック設定]
         DATA[テストデータ]
     end
-    
+
     subgraph "🎯 テスト品質"
         AUTO[自動化]
         RELIABLE[信頼性]
         FAST[高速実行]
     end
-    
+
     VITEST --> AUTO
     MOCK --> RELIABLE
     DATA --> FAST
@@ -332,14 +332,14 @@ graph LR
         ENV[環境変数設定]
         DB[データベース接続]
     end
-    
+
     subgraph "✅ 解決方法"
         VERSION[バージョン確認]
         REINSTALL[再インストール]
         CONFIG[設定確認]
         RESET[リセット実行]
     end
-    
+
     NODE --> VERSION
     PNPM --> REINSTALL
     ENV --> CONFIG
@@ -395,13 +395,13 @@ graph TB
         FIRST[最初の機能実装]
         BASIC[基本概念理解]
     end
-    
+
     subgraph "🚀 中級者向け"
         ARCH[アーキテクチャ理解]
         PATTERN[設計パターン習得]
         ADVANCED[高度な実装]
     end
-    
+
     SETUP --> FIRST
     FIRST --> BASIC
     BASIC --> ARCH

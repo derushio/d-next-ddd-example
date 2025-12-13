@@ -31,19 +31,19 @@ Client ComponentでのDI（依存性注入）使用は以下の問題を引き�
 const { logger, config, utils } = useServices(); // 複雑で不要
 
 // ✅ 新設計: Server Actions中心
-'use server';
+('use server');
 async function handleUserAction(formData: FormData) {
-  const userService = resolve('UserService'); // DIはServer側のみ
-  return await userService.processAction(formData);
+ const userService = resolve('UserService'); // DIはServer側のみ
+ return await userService.processAction(formData);
 }
 ```
 
 ### 責務分離構成
 
-| 層 | 責任範囲 | 使用技術 |
-|------|-------------|-----------------|
-| Client Component | UI表示、ユーザーイベント処理 | React Hook、State管理 |
-| Server Actions | ビジネスロジック、外部サービス連携 | DI、UseCase、Repository |
+| 層               | 責任範囲                           | 使用技術                |
+| ---------------- | ---------------------------------- | ----------------------- |
+| Client Component | UI表示、ユーザーイベント処理       | React Hook、State管理   |
+| Server Actions   | ビジネスロジック、外部サービス連携 | DI、UseCase、Repository |
 
 ## 🎯 Server Actions中心パターンの実装方法
 
@@ -53,21 +53,23 @@ async function handleUserAction(formData: FormData) {
 // ✅ Server Action: ビジネスロジック処理
 'use server';
 
-import { resolve } from '@/layers/infrastructure/di/resolver';
 import { Result } from '@/layers/application/types/Result';
+import { resolve } from '@/di/resolver';
 
-export async function handleUserAction(data: { buttonId: string }): Promise<Result<string>> {
-  const logger = resolve('Logger');
-  const userService = resolve('UserService');
-  
-  try {
-    logger.info('ユーザーアクション処理開始', { buttonId: data.buttonId });
-    const result = await userService.processUserAction(data);
-    return { success: true, data: result };
-  } catch (error) {
-    logger.error('ユーザーアクション処理エラー', { error });
-    return { success: false, error: '処理に失敗しました' };
-  }
+export async function handleUserAction(data: {
+ buttonId: string;
+}): Promise<Result<string>> {
+ const logger = resolve('Logger');
+ const userService = resolve('UserService');
+
+ try {
+  logger.info('ユーザーアクション処理開始', { buttonId: data.buttonId });
+  const result = await userService.processUserAction(data);
+  return { success: true, data: result };
+ } catch (error) {
+  logger.error('ユーザーアクション処理エラー', { error });
+  return { success: false, error: '処理に失敗しました' };
+ }
 }
 ```
 
@@ -76,40 +78,41 @@ export async function handleUserAction(data: { buttonId: string }): Promise<Resu
 'use client';
 
 import { useState } from 'react';
+
 import { handleUserAction } from './actions';
 
 export function MyClientComponent() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState('');
+ const [isLoading, setIsLoading] = useState(false);
+ const [message, setMessage] = useState('');
 
-  const handleClick = async () => {
-    setIsLoading(true);
-    const result = await handleUserAction({ buttonId: 'submit' });
-    
-    if (result.success) {
-      setMessage('処理が完了しました');
-    } else {
-      setMessage('エラーが発生しました');
-    }
-    setIsLoading(false);
-  };
+ const handleClick = async () => {
+  setIsLoading(true);
+  const result = await handleUserAction({ buttonId: 'submit' });
 
-  return (
-    <div>
-      <button onClick={handleClick} disabled={isLoading}>
-        {isLoading ? '処理中...' : 'クリック'}
-      </button>
-      {message && <p>{message}</p>}
-    </div>
-  );
+  if (result.success) {
+   setMessage('処理が完了しました');
+  } else {
+   setMessage('エラーが発生しました');
+  }
+  setIsLoading(false);
+ };
+
+ return (
+  <div>
+   <button onClick={handleClick} disabled={isLoading}>
+    {isLoading ? '処理中...' : 'クリック'}
+   </button>
+   {message && <p>{message}</p>}
+  </div>
+ );
 }
 ```
 
 ### 責務分離構成
 
-| 要素 | 責任 | 利用可能な機能 |
-|---------|---|------|
-| **Server Actions** | ビジネスロジック、外部サービス | DI、UseCase、Repository、Logger |
+| 要素                 | 責任                             | 利用可能な機能                  |
+| -------------------- | -------------------------------- | ------------------------------- |
+| **Server Actions**   | ビジネスロジック、外部サービス   | DI、UseCase、Repository、Logger |
 | **Client Component** | UI表示、ユーザーインタラクション | React Hook、State、イベント処理 |
 
 ### 複雑な操作の実装例
@@ -118,42 +121,47 @@ export function MyClientComponent() {
 // ✅ Server Action: データ処理とログ
 'use server';
 
-import { resolve } from '@/layers/infrastructure/di/resolver';
+import { resolve } from '@/di/resolver';
 
-export async function processAdvancedSearch(query: string): Promise<Result<SearchResult[]>> {
-  const logger = resolve('Logger');
-  const searchService = resolve('SearchService');
-  
-  try {
-    logger.info('高度検索処理開始', { query, timestamp: new Date().toISOString() });
-    
-    const results = await searchService.performAdvancedSearch(query);
-    
-    logger.info('高度検索処理完了', { 
-      query, 
-      resultCount: results.length,
-      duration: Date.now() 
-    });
-    
-    return { success: true, data: results };
-  } catch (error) {
-    logger.error('高度検索処理エラー', { query, error });
-    return { success: false, error: '検索に失敗しました' };
-  }
+export async function processAdvancedSearch(
+ query: string,
+): Promise<Result<SearchResult[]>> {
+ const logger = resolve('Logger');
+ const searchService = resolve('SearchService');
+
+ try {
+  logger.info('高度検索処理開始', {
+   query,
+   timestamp: new Date().toISOString(),
+  });
+
+  const results = await searchService.performAdvancedSearch(query);
+
+  logger.info('高度検索処理完了', {
+   query,
+   resultCount: results.length,
+   duration: Date.now(),
+  });
+
+  return { success: true, data: results };
+ } catch (error) {
+  logger.error('高度検索処理エラー', { query, error });
+  return { success: false, error: '検索に失敗しました' };
+ }
 }
 
 export async function fetchUserData(userId: string): Promise<Result<UserData>> {
-  const logger = resolve('Logger');
-  const userRepository = resolve('UserRepository');
-  
-  try {
-    const userData = await userRepository.findById(userId);
-    logger.info('ユーザーデータ取得完了', { userId });
-    return { success: true, data: userData };
-  } catch (error) {
-    logger.error('ユーザーデータ取得エラー', { userId, error });
-    return { success: false, error: 'データの取得に失敗しました' };
-  }
+ const logger = resolve('Logger');
+ const userRepository = resolve('UserRepository');
+
+ try {
+  const userData = await userRepository.findById(userId);
+  logger.info('ユーザーデータ取得完了', { userId });
+  return { success: true, data: userData };
+ } catch (error) {
+  logger.error('ユーザーデータ取得エラー', { userId, error });
+  return { success: false, error: 'データの取得に失敗しました' };
+ }
 }
 ```
 
@@ -161,67 +169,66 @@ export async function fetchUserData(userId: string): Promise<Result<UserData>> {
 // ✅ Client Component: UIと状態管理
 'use client';
 
-import { useState, useEffect } from 'react';
-import { processAdvancedSearch, fetchUserData } from './actions';
+import { useEffect, useState } from 'react';
+
+import { fetchUserData, processAdvancedSearch } from './actions';
 
 export function AdvancedSearchComponent() {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+ const [query, setQuery] = useState('');
+ const [results, setResults] = useState<SearchResult[]>([]);
+ const [isLoading, setIsLoading] = useState(false);
+ const [error, setError] = useState<string | null>(null);
 
-  const handleSearch = async () => {
-    if (!query.trim()) return;
-    
-    setIsLoading(true);
-    setError(null);
-    
-    const result = await processAdvancedSearch(query);
-    
-    if (result.success) {
-      setResults(result.data);
-    } else {
-      setError(result.error);
-    }
-    
-    setIsLoading(false);
-  };
+ const handleSearch = async () => {
+  if (!query.trim()) return;
 
-  const handleDataFetch = async (userId: string) => {
-    const result = await fetchUserData(userId);
-    
-    if (result.success) {
-      console.log('データ取得成功:', result.data);
-    } else {
-      console.error('データ取得失敗:', result.error);
-    }
-  };
+  setIsLoading(true);
+  setError(null);
 
-  return (
-    <div>
-      <input 
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="検索クエリを入力"
-      />
-      <button onClick={handleSearch} disabled={isLoading}>
-        {isLoading ? '検索中...' : '検索実行'}
-      </button>
-      
-      {error && <p className="error">{error}</p>}
-      
-      <div>
-        {results.map(result => (
-          <div key={result.id}>
-            {result.title}
-            <button onClick={() => handleDataFetch(result.userId)}>
-              詳細取得
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  const result = await processAdvancedSearch(query);
+
+  if (result.success) {
+   setResults(result.data);
+  } else {
+   setError(result.error);
+  }
+
+  setIsLoading(false);
+ };
+
+ const handleDataFetch = async (userId: string) => {
+  const result = await fetchUserData(userId);
+
+  if (result.success) {
+   console.log('データ取得成功:', result.data);
+  } else {
+   console.error('データ取得失敗:', result.error);
+  }
+ };
+
+ return (
+  <div>
+   <input
+    value={query}
+    onChange={(e) => setQuery(e.target.value)}
+    placeholder='検索クエリを入力'
+   />
+   <button onClick={handleSearch} disabled={isLoading}>
+    {isLoading ? '検索中...' : '検索実行'}
+   </button>
+
+   {error && <p className='error'>{error}</p>}
+
+   <div>
+    {results.map((result) => (
+     <div key={result.id}>
+      {result.title}
+      <button onClick={() => handleDataFetch(result.userId)}>詳細取得</button>
+     </div>
+    ))}
+   </div>
+  </div>
+ );
 }
 ```
 
@@ -231,36 +238,38 @@ export function AdvancedSearchComponent() {
 
 ```typescript
 // src/layers/application/services/MyBusinessService.ts
-import { injectable, inject } from 'tsyringe';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
+import { INJECTION_TOKENS } from '@/di/tokens';
+import type { ILogger } from '@/layers/infrastructure/services/Logger';
+
+import { inject, injectable } from 'tsyringe';
 
 export interface IMyBusinessService {
-  performBusinessOperation(data: BusinessData): Promise<Result<string>>;
+ performBusinessOperation(data: BusinessData): Promise<Result<string>>;
 }
 
 @injectable()
 export class MyBusinessService implements IMyBusinessService {
-  constructor(
-    @inject(INJECTION_TOKENS.Logger) private logger: ILogger,
-    @inject(INJECTION_TOKENS.UserRepository) private userRepository: IUserRepository
-  ) {}
+ constructor(
+  @inject(INJECTION_TOKENS.Logger) private logger: ILogger,
+  @inject(INJECTION_TOKENS.UserRepository)
+  private userRepository: IUserRepository,
+ ) {}
 
-  async performBusinessOperation(data: BusinessData): Promise<Result<string>> {
-    this.logger.info('ビジネス処理開始', { data });
-    
-    try {
-      // ビジネスロジック実装
-      const result = await this.userRepository.performComplexOperation(data);
-      
-      this.logger.info('ビジネス処理完了', { result });
-      return { success: true, data: result };
-    } catch (error) {
-      this.logger.error('ビジネス処理エラー', { error });
-      return { success: false, error: '処理に失敗しました' };
-    }
+ async performBusinessOperation(data: BusinessData): Promise<Result<string>> {
+  this.logger.info('ビジネス処理開始', { data });
+
+  try {
+   // ビジネスロジック実装
+   const result = await this.userRepository.performComplexOperation(data);
+
+   this.logger.info('ビジネス処理完了', { result });
+   return { success: true, data: result };
+  } catch (error) {
+   this.logger.error('ビジネス処理エラー', { error });
+   return { success: false, error: '処理に失敗しました' };
   }
+ }
 }
 ```
 
@@ -272,7 +281,9 @@ import { MyBusinessService } from '@/layers/application/services/MyBusinessServi
 
 // 新しいサービスを登録
 container.registerSingleton(MyBusinessService);
-container.register(INJECTION_TOKENS.MyBusinessService, { useToken: MyBusinessService });
+container.register(INJECTION_TOKENS.MyBusinessService, {
+ useToken: MyBusinessService,
+});
 ```
 
 ### Tokensファイルへの追加
@@ -280,13 +291,13 @@ container.register(INJECTION_TOKENS.MyBusinessService, { useToken: MyBusinessSer
 ```typescript
 // src/layers/infrastructure/di/tokens.ts
 export const INJECTION_TOKENS = {
-  // ... 既存のトークン
-  MyBusinessService: Symbol.for('MyBusinessService'),
+ // ... 既存のトークン
+ MyBusinessService: Symbol.for('MyBusinessService'),
 } as const;
 
 export interface ServiceTypeMap {
-  // ... 既存のマッピング
-  MyBusinessService: IMyBusinessService;
+ // ... 既存のマッピング
+ MyBusinessService: IMyBusinessService;
 }
 ```
 
@@ -300,12 +311,14 @@ Server ActionsでのDI使用は自動的に最適化されます：
 // ✅ Server Action: DIコンテナはシングルトン管理で効率的
 'use server';
 
-export async function optimizedAction(data: ActionData): Promise<Result<ActionResult>> {
-  // resolve()は内部でキャッシュされたサービスを返す
-  const userService = resolve('UserService'); // 高速
-  const logger = resolve('Logger'); // 高速
-  
-  return await userService.processOptimizedOperation(data);
+export async function optimizedAction(
+ data: ActionData,
+): Promise<Result<ActionResult>> {
+ // resolve()は内部でキャッシュされたサービスを返す
+ const userService = resolve('UserService'); // 高速
+ const logger = resolve('Logger'); // 高速
+
+ return await userService.processOptimizedOperation(data);
 }
 ```
 
@@ -315,42 +328,41 @@ export async function optimizedAction(data: ActionData): Promise<Result<ActionRe
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+
 import { optimizedAction } from './actions';
 
 export function OptimizedComponent() {
-  const [data, setData] = useState<ActionData>();
-  const [result, setResult] = useState<ActionResult | null>(null);
+ const [data, setData] = useState<ActionData>();
+ const [result, setResult] = useState<ActionResult | null>(null);
 
-  // ✅ Server Action呼び出しをuseCallbackでメモ化
-  const handleComplexOperation = useCallback(async () => {
-    if (!data) return;
-    
-    const result = await optimizedAction(data);
-    
-    if (result.success) {
-      setResult(result.data);
-    }
-  }, [data]);
+ // ✅ Server Action呼び出しをuseCallbackでメモ化
+ const handleComplexOperation = useCallback(async () => {
+  if (!data) return;
 
-  // ✅ 計算結果をuseMemoでキャッシュ
-  const processedData = useMemo(() => {
-    return result ? transformData(result) : null;
-  }, [result]);
+  const result = await optimizedAction(data);
 
-  // ✅ イベントハンドラーをuseCallbackでメモ化
-  const handleDataChange = useCallback((newData: ActionData) => {
-    setData(newData);
-  }, []);
+  if (result.success) {
+   setResult(result.data);
+  }
+ }, [data]);
 
-  return (
-    <div>
-      <DataInput onChange={handleDataChange} />
-      <button onClick={handleComplexOperation}>
-        処理実行
-      </button>
-      {processedData && <DataDisplay data={processedData} />}
-    </div>
-  );
+ // ✅ 計算結果をuseMemoでキャッシュ
+ const processedData = useMemo(() => {
+  return result ? transformData(result) : null;
+ }, [result]);
+
+ // ✅ イベントハンドラーをuseCallbackでメモ化
+ const handleDataChange = useCallback((newData: ActionData) => {
+  setData(newData);
+ }, []);
+
+ return (
+  <div>
+   <DataInput onChange={handleDataChange} />
+   <button onClick={handleComplexOperation}>処理実行</button>
+   {processedData && <DataDisplay data={processedData} />}
+  </div>
+ );
 }
 ```
 
@@ -361,13 +373,16 @@ export function OptimizedComponent() {
 ```typescript
 // ❌ Client ComponentでDI使用（複雑性増大の原因）
 'use client';
-const { logger, userService } = useServices(); // 不要な複雑さ
+
+// 不要な複雑さ
 
 // ❌ Client ComponentでServer専用サービス直接インポート
-import { prisma } from '@/lib/prisma'; // ビルドエラーの原因
 
 // ❌ Client ComponentでRepository層直接使用
 import { UserRepository } from '@/layers/infrastructure/repositories';
+import { prisma } from '@/lib/prisma'; // ビルドエラーの原因
+
+const { logger, userService } = useServices();
 ```
 
 ### ✅ 推奨パターン
@@ -376,19 +391,19 @@ import { UserRepository } from '@/layers/infrastructure/repositories';
 // ✅ Server Actions: DIとビジネスロジック
 'use server';
 export async function processUserAction(data: UserData) {
-  const userService = resolve('UserService'); // Server側でのみDI使用
-  return await userService.process(data);
+ const userService = resolve('UserService'); // Server側でのみDI使用
+ return await userService.process(data);
 }
 
 // ✅ Client Component: UIと状態管理のみ
-'use client';
+('use client');
 export function UserComponent() {
-  const [state, setState] = useState();
-  
-  const handleAction = async () => {
-    const result = await processUserAction(data); // Server Action呼び出し
-    setState(result);
-  };
+ const [state, setState] = useState();
+
+ const handleAction = async () => {
+  const result = await processUserAction(data); // Server Action呼び出し
+  setState(result);
+ };
 }
 ```
 
@@ -411,13 +426,14 @@ export function UserComponent() {
 ```typescript
 // ❌ Client ComponentでNode.js依存機能使用
 'use client';
+
 import { readFile } from 'node:fs'; // エラーの原因
 
 // ✅ Server Actionに移動
-'use server';
+('use server');
 export async function readFileAction(path: string) {
-  const fs = await import('node:fs/promises');
-  return await fs.readFile(path, 'utf-8');
+ const fs = await import('node:fs/promises');
+ return await fs.readFile(path, 'utf-8');
 }
 ```
 
@@ -432,10 +448,10 @@ export async function readFileAction(path: string) {
 const { logger } = useServices();
 
 // ✅ Server Actionでログ処理
-'use server';
+('use server');
 export async function logAction(message: string) {
-  const logger = resolve('Logger');
-  logger.info(message);
+ const logger = resolve('Logger');
+ logger.info(message);
 }
 ```
 
@@ -449,23 +465,23 @@ export async function logAction(message: string) {
 // ❌ Client ComponentでDI
 'use client';
 function Component() {
-  const userService = resolve('UserService'); // 不適切
+ const userService = resolve('UserService'); // 不適切
 }
 
 // ✅ Server Actionに分離
-'use server';
+('use server');
 export async function getUserData(id: string) {
-  const userService = resolve('UserService');
-  return await userService.findById(id);
+ const userService = resolve('UserService');
+ return await userService.findById(id);
 }
 
-'use client';
+('use client');
 function Component() {
-  const [user, setUser] = useState();
-  
-  useEffect(() => {
-    getUserData(userId).then(setUser);
-  }, [userId]);
+ const [user, setUser] = useState();
+
+ useEffect(() => {
+  getUserData(userId).then(setUser);
+ }, [userId]);
 }
 ```
 

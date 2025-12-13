@@ -7,8 +7,8 @@ UseCaseでのバリデーションロジックが想定通りに動作しない�
 ```typescript
 // ❌ 問題のあるロジック例
 if (request.name && request.name.trim()) {
-  // 空文字列 "" が渡されても this block が実行されない
-  user.updateProfile({ name: request.name.trim() });
+ // 空文字列 "" が渡されても this block が実行されない
+ user.updateProfile({ name: request.name.trim() });
 }
 // 結果：空文字列で更新されずにスキップされる
 ```
@@ -20,10 +20,10 @@ if (request.name && request.name.trim()) {
 ```typescript
 // Falsy values in JavaScript
 console.log(!!undefined); // false
-console.log(!!null);      // false  
-console.log(!!"");        // false ← 空文字列も falsy!
-console.log(!!0);         // false
-console.log(!!false);     // false
+console.log(!!null); // false
+console.log(!!''); // false ← 空文字列も falsy!
+console.log(!!0); // false
+console.log(!!false); // false
 ```
 
 ### 2. 不明確な意図
@@ -39,53 +39,53 @@ console.log(!!false);     // false
 ```typescript
 // ✅ 明示的に undefined をチェック
 export class UpdateUserUseCase {
-  async execute(request: UpdateUserRequest): Promise<UpdateUserResponse> {
-    const user = await this.userRepository.findById(new UserId(request.userId));
-    if (!user) {
-      return { success: false, error: 'ユーザーが見つかりません' };
-    }
-
-    const updateData: any = {};
-
-    // name が明示的に指定された場合のみ更新（空文字列も含む）
-    if (request.name !== undefined) {
-      if (request.name.trim().length === 0) {
-        return { 
-          success: false, 
-          error: '名前は空にできません' 
-        };
-      }
-      updateData.name = request.name.trim();
-    }
-
-    // email が明示的に指定された場合のみ更新
-    if (request.email !== undefined) {
-      try {
-        const newEmail = new Email(request.email);
-        if (!(await this.userDomainService.isEmailDuplicate(newEmail))) {
-          updateData.email = newEmail;
-        } else {
-          return { 
-            success: false, 
-            error: 'このメールアドレスは既に使用されています' 
-          };
-        }
-      } catch (error) {
-        return { 
-          success: false, 
-          error: '無効なメールアドレスです' 
-        };
-      }
-    }
-
-    // 更新データがある場合のみ更新実行
-    if (Object.keys(updateData).length > 0) {
-      user.updateProfile(updateData);
-      await this.userRepository.update(user.getId(), user);
-    }
-
-    return { success: true, data: user };
+ async execute(request: UpdateUserRequest): Promise<UpdateUserResponse> {
+  const user = await this.userRepository.findById(new UserId(request.userId));
+  if (!user) {
+   return { success: false, error: 'ユーザーが見つかりません' };
   }
+
+  const updateData: any = {};
+
+  // name が明示的に指定された場合のみ更新（空文字列も含む）
+  if (request.name !== undefined) {
+   if (request.name.trim().length === 0) {
+    return {
+     success: false,
+     error: '名前は空にできません',
+    };
+   }
+   updateData.name = request.name.trim();
+  }
+
+  // email が明示的に指定された場合のみ更新
+  if (request.email !== undefined) {
+   try {
+    const newEmail = new Email(request.email);
+    if (!(await this.userDomainService.isEmailDuplicate(newEmail))) {
+     updateData.email = newEmail;
+    } else {
+     return {
+      success: false,
+      error: 'このメールアドレスは既に使用されています',
+     };
+    }
+   } catch (error) {
+    return {
+     success: false,
+     error: '無効なメールアドレスです',
+    };
+   }
+  }
+
+  // 更新データがある場合のみ更新実行
+  if (Object.keys(updateData).length > 0) {
+   user.updateProfile(updateData);
+   await this.userRepository.update(user.getId(), user);
+  }
+
+  return { success: true, data: user };
+ }
 }
 ```
 
@@ -94,55 +94,61 @@ export class UpdateUserUseCase {
 ```typescript
 // ✅ バリデーションロジックを分離
 class UserUpdateValidator {
-  static validateName(name: string | undefined): { isValid: boolean; error?: string } {
-    // undefined の場合は更新しない（有効とする）
-    if (name === undefined) {
-      return { isValid: true };
-    }
-
-    // 空文字列チェック
-    if (name.trim().length === 0) {
-      return { isValid: false, error: '名前は空にできません' };
-    }
-
-    // 長さチェック
-    if (name.trim().length > 100) {
-      return { isValid: false, error: '名前は100文字以内で入力してください' };
-    }
-
-    return { isValid: true };
+ static validateName(name: string | undefined): {
+  isValid: boolean;
+  error?: string;
+ } {
+  // undefined の場合は更新しない（有効とする）
+  if (name === undefined) {
+   return { isValid: true };
   }
 
-  static validateEmail(email: string | undefined): { isValid: boolean; error?: string } {
-    if (email === undefined) {
-      return { isValid: true };
-    }
-
-    try {
-      new Email(email);
-      return { isValid: true };
-    } catch {
-      return { isValid: false, error: '無効なメールアドレスです' };
-    }
+  // 空文字列チェック
+  if (name.trim().length === 0) {
+   return { isValid: false, error: '名前は空にできません' };
   }
+
+  // 長さチェック
+  if (name.trim().length > 100) {
+   return { isValid: false, error: '名前は100文字以内で入力してください' };
+  }
+
+  return { isValid: true };
+ }
+
+ static validateEmail(email: string | undefined): {
+  isValid: boolean;
+  error?: string;
+ } {
+  if (email === undefined) {
+   return { isValid: true };
+  }
+
+  try {
+   new Email(email);
+   return { isValid: true };
+  } catch {
+   return { isValid: false, error: '無効なメールアドレスです' };
+  }
+ }
 }
 
 // UseCase での使用
 export class UpdateUserUseCase {
-  async execute(request: UpdateUserRequest): Promise<UpdateUserResponse> {
-    // バリデーション
-    const nameValidation = UserUpdateValidator.validateName(request.name);
-    if (!nameValidation.isValid) {
-      return { success: false, error: nameValidation.error! };
-    }
-
-    const emailValidation = UserUpdateValidator.validateEmail(request.email);
-    if (!emailValidation.isValid) {
-      return { success: false, error: emailValidation.error! };
-    }
-
-    // 実際の更新処理...
+ async execute(request: UpdateUserRequest): Promise<UpdateUserResponse> {
+  // バリデーション
+  const nameValidation = UserUpdateValidator.validateName(request.name);
+  if (!nameValidation.isValid) {
+   return { success: false, error: nameValidation.error! };
   }
+
+  const emailValidation = UserUpdateValidator.validateEmail(request.email);
+  if (!emailValidation.isValid) {
+   return { success: false, error: emailValidation.error! };
+  }
+
+  // 実際の更新処理...
+ }
 }
 ```
 
@@ -150,45 +156,45 @@ export class UpdateUserUseCase {
 
 ```typescript
 describe('UpdateUserUseCase', () => {
-  describe('name フィールドの更新', () => {
-    test('undefined の場合は更新しない', async () => {
-      const request = { userId: 'user1', name: undefined, email: undefined };
-      
-      const result = await updateUserUseCase.execute(request);
-      
-      expect(result.success).toBe(true);
-      expect(mockUserRepository.update).not.toHaveBeenCalled();
-    });
+ describe('name フィールドの更新', () => {
+  test('undefined の場合は更新しない', async () => {
+   const request = { userId: 'user1', name: undefined, email: undefined };
 
-    test('空文字列の場合はエラー', async () => {
-      const request = { userId: 'user1', name: '', email: undefined };
-      
-      const result = await updateUserUseCase.execute(request);
-      
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('名前は空にできません');
-    });
+   const result = await updateUserUseCase.execute(request);
 
-    test('空白文字のみの場合はエラー', async () => {
-      const request = { userId: 'user1', name: '   ', email: undefined };
-      
-      const result = await updateUserUseCase.execute(request);
-      
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('名前は空にできません');
-    });
-
-    test('有効な名前の場合は更新', async () => {
-      const request = { userId: 'user1', name: 'New Name', email: undefined };
-      
-      const result = await updateUserUseCase.execute(request);
-      
-      expect(result.success).toBe(true);
-      expect(mockUser.updateProfile).toHaveBeenCalledWith({
-        name: 'New Name'
-      });
-    });
+   expect(result.success).toBe(true);
+   expect(mockUserRepository.update).not.toHaveBeenCalled();
   });
+
+  test('空文字列の場合はエラー', async () => {
+   const request = { userId: 'user1', name: '', email: undefined };
+
+   const result = await updateUserUseCase.execute(request);
+
+   expect(result.success).toBe(false);
+   expect(result.error).toBe('名前は空にできません');
+  });
+
+  test('空白文字のみの場合はエラー', async () => {
+   const request = { userId: 'user1', name: '   ', email: undefined };
+
+   const result = await updateUserUseCase.execute(request);
+
+   expect(result.success).toBe(false);
+   expect(result.error).toBe('名前は空にできません');
+  });
+
+  test('有効な名前の場合は更新', async () => {
+   const request = { userId: 'user1', name: 'New Name', email: undefined };
+
+   const result = await updateUserUseCase.execute(request);
+
+   expect(result.success).toBe(true);
+   expect(mockUser.updateProfile).toHaveBeenCalledWith({
+    name: 'New Name',
+   });
+  });
+ });
 });
 ```
 
@@ -204,13 +210,18 @@ describe('UpdateUserUseCase', () => {
 
 ```typescript
 // ❌ よくある間違い
-if (value) { }                    // 空文字列が falsy
-if (value && value.trim()) { }    // 同上
-if (!!value) { }                  // 同上
+if (value) {
+} // 空文字列が falsy
+if (value && value.trim()) {
+} // 同上
+if (!!value) {
+} // 同上
 
-// ✅ 正しい書き方  
-if (value !== undefined) { }      // 明示的
-if (typeof value === 'string') { } // 型チェック
+// ✅ 正しい書き方
+if (value !== undefined) {
+} // 明示的
+if (typeof value === 'string') {
+} // 型チェック
 ```
 
 ## 関連する問題

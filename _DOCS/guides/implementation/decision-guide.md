@@ -25,15 +25,15 @@ graph LR
     A[このドキュメント] --> B[具体的実装ガイド]
     B --> C[実装実践]
     C --> D[品質確認]
-    
+
     subgraph "実装ガイド"
         B1[UseCase実装]
         B2[Domain実装]
         B3[Repository実装]
     end
-    
+
     B --> B1
-    B --> B2  
+    B --> B2
     B --> B3
 ```
 
@@ -51,19 +51,19 @@ graph TB
         A2 -->|既存拡張| A4[既存ドメイン拡張]
         A2 -->|既存修正| A5[既存実装修正]
     end
-    
+
     subgraph "2️⃣ 実装方針"
         A3 --> B1[新規Entity・VO設計]
         A4 --> B2[既存Entity拡張]
         A5 --> B3[既存実装リファクタリング]
     end
-    
+
     subgraph "3️⃣ 実装層決定"
         B1 --> C1[Domain → Application → Infrastructure → Presentation]
         B2 --> C2[修正箇所特定 → 影響範囲確認]
         B3 --> C3[変更理由整理 → テスト拡充]
     end
-    
+
     style A1 fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style B1 fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style C1 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -71,13 +71,13 @@ graph TB
 
 ### 🏗️ レイヤー実装順序の決定
 
-| 実装パターン | 開始レイヤー | 実装順序 | 適用ケース |
-|-------------|-------------|----------|------------|
-| **新規ドメイン** | Domain | Domain → Application → Infrastructure → Presentation | 完全に新しいビジネス概念 |
-| **既存拡張** | Application | Application → Domain → Infrastructure → Presentation | 既存ドメインの新UseCase |
-| **UI改善** | Presentation | Presentation → Application | 表示・操作性の改善 |
-| **データ拡張** | Infrastructure | Infrastructure → Domain → Application | 新しいデータソース統合 |
-| **パフォーマンス** | 問題箇所 | 測定 → 特定 → 最適化 → 検証 | 既存機能の性能改善 |
+| 実装パターン       | 開始レイヤー   | 実装順序                                             | 適用ケース               |
+| ------------------ | -------------- | ---------------------------------------------------- | ------------------------ |
+| **新規ドメイン**   | Domain         | Domain → Application → Infrastructure → Presentation | 完全に新しいビジネス概念 |
+| **既存拡張**       | Application    | Application → Domain → Infrastructure → Presentation | 既存ドメインの新UseCase  |
+| **UI改善**         | Presentation   | Presentation → Application                           | 表示・操作性の改善       |
+| **データ拡張**     | Infrastructure | Infrastructure → Domain → Application                | 新しいデータソース統合   |
+| **パフォーマンス** | 問題箇所       | 測定 → 特定 → 最適化 → 検証                          | 既存機能の性能改善       |
 
 ---
 
@@ -91,16 +91,16 @@ graph TB
         A[データの性質は？] --> B{一意性が必要？}
         B -->|Yes| C[Entity候補]
         B -->|No| D[Value Object候補]
-        
+
         C --> E{状態変化する？}
         E -->|Yes| F[Entity確定]
         E -->|No| G[Value Object検討]
-        
+
         D --> H{複数の属性？}
         H -->|Yes| I[Value Object確定]
         H -->|No| J[プリミティブ検討]
     end
-    
+
     subgraph "実装指針"
         F --> K[ID管理・状態変更メソッド実装]
         I --> L[不変オブジェクト・equals実装]
@@ -129,29 +129,29 @@ graph TB
 ```typescript
 // Entity パターン
 class User {
-  private constructor(
-    private readonly id: UserId,
-    private name: UserName,
-    private email: Email
-  ) {}
-  
-  // 状態変更メソッド
-  changeName(newName: UserName): void {
-    this.name = newName;
-  }
+ private constructor(
+  private readonly id: UserId,
+  private name: UserName,
+  private email: Email,
+ ) {}
+
+ // 状態変更メソッド
+ changeName(newName: UserName): void {
+  this.name = newName;
+ }
 }
 
-// Value Object パターン  
+// Value Object パターン
 class Email {
-  private constructor(private readonly value: string) {}
-  
-  static create(value: string): Result<Email> {
-    // バリデーション + 不変オブジェクト作成
-  }
-  
-  equals(other: Email): boolean {
-    return this.value === other.value;
-  }
+ private constructor(private readonly value: string) {}
+
+ static create(value: string): Result<Email> {
+  // バリデーション + 不変オブジェクト作成
+ }
+
+ equals(other: Email): boolean {
+  return this.value === other.value;
+ }
 }
 ```
 
@@ -163,15 +163,15 @@ graph TB
         A[ユーザー操作分析] --> B{原子性のある操作？}
         B -->|Yes| C[単一UseCase]
         B -->|No| D[複数UseCase検討]
-        
+
         C --> E{複雑な処理？}
         E -->|Yes| F[Domain Service活用]
         E -->|No| G[シンプルUseCase]
-        
+
         D --> H[操作分割]
         H --> I[UseCase間協調設計]
     end
-    
+
     subgraph "実装方針"
         F --> J[Domain Service + UseCase]
         G --> K[UseCase直接実装]
@@ -186,17 +186,25 @@ graph TB
 ```typescript
 // ✅ 適切なUseCase粒度
 class CreateUserUseCase {
-  async execute(request: CreateUserRequest): Promise<Result<CreateUserResponse>> {
-    // 1つの明確な責任：ユーザー作成
-  }
+ async execute(
+  request: CreateUserRequest,
+ ): Promise<Result<CreateUserResponse>> {
+  // 1つの明確な責任：ユーザー作成
+ }
 }
 
 // ❌ 責任が広すぎる例
 class UserManagementUseCase {
-  // 複数の責任を持ちすぎ
-  async createUser() { /* ... */ }
-  async deleteUser() { /* ... */ }
-  async sendEmail() { /* ... */ }
+ // 複数の責任を持ちすぎ
+ async createUser() {
+  /* ... */
+ }
+ async deleteUser() {
+  /* ... */
+ }
+ async sendEmail() {
+  /* ... */
+ }
 }
 ```
 
@@ -208,7 +216,7 @@ graph LR
         A[データ操作の複雑さ] --> B{単純CRUD？}
         B -->|Yes| C[基本Repository]
         B -->|No| D[拡張Repository]
-        
+
         C --> E[標準的なRepository実装]
         D --> F{複雑クエリ？}
         F -->|Yes| G[Specification Pattern]
@@ -223,17 +231,17 @@ graph LR
 ```typescript
 // 基本Repository（単純CRUD）
 interface IUserRepository {
-  findById(id: UserId): Promise<User | null>;
-  save(user: User): Promise<void>;
-  delete(id: UserId): Promise<void>;
+ findById(id: UserId): Promise<User | null>;
+ save(user: User): Promise<void>;
+ delete(id: UserId): Promise<void>;
 }
 
 // 拡張Repository（複雑クエリ）
 interface IUserRepository extends IBasicRepository<User> {
-  findByEmail(email: Email): Promise<User | null>;
-  findActiveUsersCreatedAfter(date: Date): Promise<User[]>;
-  // Specification Pattern活用
-  findByCriteria(spec: UserSpecification): Promise<User[]>;
+ findByEmail(email: Email): Promise<User | null>;
+ findActiveUsersCreatedAfter(date: Date): Promise<User[]>;
+ // Specification Pattern活用
+ findByCriteria(spec: UserSpecification): Promise<User[]>;
 }
 ```
 
@@ -251,7 +259,7 @@ graph TB
         B -->|UI層| D["resolve関数"]
         B -->|テスト| E[Mock注入]
     end
-    
+
     subgraph "実装方針"
         C --> F[@inject デコレータ使用]
         D --> G[resolve('ServiceName')]
@@ -281,7 +289,7 @@ graph LR
         A[処理の性質] --> B{失敗可能性？}
         B -->|Yes| C[Result型必須]
         B -->|No| D[直接戻り値検討]
-        
+
         C --> E{エラー分類重要？}
         E -->|Yes| F[詳細エラーコード]
         E -->|No| G[シンプルエラー]
@@ -297,19 +305,19 @@ async execute(request: SignInRequest): Promise<Result<SignInResponse>> {
   if (!request.email) {
     return failure('メールアドレスが必要です', 'EMAIL_REQUIRED');
   }
-  
+
   // ビジネスルールエラー
   if (!user) {
-    return failure('ユーザーが見つかりません', 'USER_NOT_FOUND'); 
+    return failure('ユーザーが見つかりません', 'USER_NOT_FOUND');
   }
-  
+
   // インフラエラー
   try {
     // データベース操作
   } catch (error) {
     return failure('システムエラー', 'SYSTEM_ERROR');
   }
-  
+
   return success(response);
 }
 ```
@@ -329,7 +337,7 @@ graph TB
         B -->|Infrastructure| E[Integration中心]
         B -->|Presentation| F[E2E + Unit]
     end
-    
+
     subgraph "実装優先度"
         C --> G[Pure関数テスト]
         D --> H[UseCase + Mock]
@@ -340,12 +348,12 @@ graph TB
 
 #### テスト実装判断基準
 
-| レイヤー | 主要テスト | カバレッジ目標 | 実装重点 |
-|---------|-----------|-------------|----------|
-| **Domain** | Unit Test | 90%+ | ビジネスルール・不変条件 |
-| **Application** | Unit + Integration | 94%+ | UseCase・Result型パターン |
-| **Infrastructure** | Integration | 85%+ | 外部システム連携・Repository |
-| **Presentation** | E2E + Unit | 80%+ | ユーザー操作・Server Actions |
+| レイヤー           | 主要テスト         | カバレッジ目標 | 実装重点                     |
+| ------------------ | ------------------ | -------------- | ---------------------------- |
+| **Domain**         | Unit Test          | 90%+           | ビジネスルール・不変条件     |
+| **Application**    | Unit + Integration | 94%+           | UseCase・Result型パターン    |
+| **Infrastructure** | Integration        | 85%+           | 外部システム連携・Repository |
+| **Presentation**   | E2E + Unit         | 80%+           | ユーザー操作・Server Actions |
 
 ### 🎨 UI実装パターン選択
 
@@ -358,7 +366,7 @@ graph LR
         D -->|No| E[Server Actions]
         D -->|Yes| F[Client Component]
     end
-    
+
     subgraph "実装アプローチ"
         C --> G[RSC + Static]
         E --> H[RSC + Server Actions]
@@ -385,7 +393,7 @@ graph LR
 - [ ] 既存機能への影響範囲特定
 - [ ] 実装レイヤーと責務の決定
 
-#### **技術選択確認**  
+#### **技術選択確認**
 
 - [ ] Entity vs Value Object 判断完了
 - [ ] UseCase粒度・責務確認
@@ -447,7 +455,7 @@ graph TB
         B --> E[Repository実装]
         B --> F[UI実装]
     end
-    
+
     subgraph "詳細実装ガイド"
         C --> C1[../development/usecase.md]
         D --> D1[../development/domain.md]
@@ -458,12 +466,12 @@ graph TB
 
 ### 📚 **参考ドキュメント・関連情報**
 
-| 実装フェーズ | 主要ガイド | 設計参考 | 問題解決 |
-|-------------|-----------|---------|----------|
-| **Domain実装** | [Domain実装ガイド](../development/domain.md) | [ドメイン層詳細](../../architecture/layers/domain.md) | [Domain問題](../../troubleshooting/development/domain.md) |
-| **UseCase実装** | [UseCase実装ガイド](../development/usecase.md) | [Result型パターン](../../architecture/patterns/result-pattern.md) | [DI問題](../../troubleshooting/development/dependency-injection.md) |
-| **Repository実装** | [Repository実装ガイド](../development/repository.md) | [インフラ層詳細](../../architecture/layers/infrastructure.md) | [DB問題](../../troubleshooting/development/database.md) |
-| **UI実装** | [コンポーネント開発](../frontend/components.md) | [プレゼンテーション層](../../architecture/layers/presentation.md) | [フロントエンド問題](../../troubleshooting/frontend/) |
+| 実装フェーズ       | 主要ガイド                                           | 設計参考                                                          | 問題解決                                                            |
+| ------------------ | ---------------------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------- |
+| **Domain実装**     | [Domain実装ガイド](../development/domain.md)         | [ドメイン層詳細](../../architecture/layers/domain.md)             | [Domain問題](../../troubleshooting/development/domain.md)           |
+| **UseCase実装**    | [UseCase実装ガイド](../development/usecase.md)       | [Result型パターン](../../architecture/patterns/result-pattern.md) | [DI問題](../../troubleshooting/development/dependency-injection.md) |
+| **Repository実装** | [Repository実装ガイド](../development/repository.md) | [インフラ層詳細](../../architecture/layers/infrastructure.md)     | [DB問題](../../troubleshooting/development/database.md)             |
+| **UI実装**         | [コンポーネント開発](../frontend/components.md)      | [プレゼンテーション層](../../architecture/layers/presentation.md) | [フロントエンド問題](../../troubleshooting/frontend/)               |
 
 ### 🎓 **継続的スキル向上**
 

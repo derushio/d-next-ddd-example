@@ -16,19 +16,19 @@ graph TB
         PERFORMANCE[パフォーマンス<br/>Performance]
         SECURITY[セキュリティ<br/>Security]
     end
-    
+
     subgraph "📊 測定指標"
         COVERAGE[カバレッジ<br/>94%+ Application]
         EXECUTION[実行速度<br/>高速フィードバック]
         AUTOMATION[自動化率<br/>100% CI/CD]
         MONITORING[監視<br/>継続的品質監視]
     end
-    
+
     RELIABILITY --> COVERAGE
     MAINTAINABILITY --> EXECUTION
     PERFORMANCE --> AUTOMATION
     SECURITY --> MONITORING
-    
+
     style RELIABILITY fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style COVERAGE fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
 ```
@@ -42,23 +42,23 @@ graph LR
         CONFIDENCE[変更への自信]
         REFACTOR[安全なリファクタリング]
     end
-    
+
     subgraph "品質保証"
         REGRESSION[回帰防止]
         DOCUMENTATION[生きた仕様書]
         SPECIFICATION[振る舞い仕様]
     end
-    
+
     subgraph "継続的改善"
         METRICS[品質メトリクス]
         TRENDS[品質トレンド]
         OPTIMIZATION[最適化指針]
     end
-    
+
     FAST --> REGRESSION
     CONFIDENCE --> DOCUMENTATION
     REFACTOR --> SPECIFICATION
-    
+
     REGRESSION --> METRICS
     DOCUMENTATION --> TRENDS
     SPECIFICATION --> OPTIMIZATION
@@ -77,27 +77,27 @@ graph TB
         E2E_CRITICAL[重要シナリオ]
         E2E_SECURITY[セキュリティ監視]
     end
-    
+
     subgraph "🔗 Integration Tests (中程度・中速)"
         INT_USECASE[UseCase統合]
         INT_REPO[Repository統合]
         INT_SERVICE[Service統合]
     end
-    
+
     subgraph "⚡ Unit Tests (多数・高速)"
         UNIT_DOMAIN[Domain Logic]
         UNIT_VALIDATION[Validation]
         UNIT_CALCULATION[Calculation]
     end
-    
+
     E2E_AUTH --> INT_USECASE
     E2E_CRITICAL --> INT_REPO
     E2E_SECURITY --> INT_SERVICE
-    
+
     INT_USECASE --> UNIT_DOMAIN
     INT_REPO --> UNIT_VALIDATION
     INT_SERVICE --> UNIT_CALCULATION
-    
+
     classDef e2e fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     classDef integration fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     classDef unit fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -105,12 +105,12 @@ graph TB
 
 ### レイヤー別テスト戦略
 
-| レイヤー | テスト種別 | カバレッジ目標 | 重点観点 | テスト手法 |
-|---------|-----------|-------------|----------|-----------|
-| **🎨 Presentation** | E2E + Unit | 80%+ | ユーザビリティ | Playwright + Testing Library |
-| **📋 Application** | Unit + Integration | **94%+** | ビジネスフロー | Result型パターン対応 |
-| **👑 Domain** | Unit | **90%+** | ビジネスルール | 純粋関数テスト |
-| **🔧 Infrastructure** | Integration | 85%+ | 外部連携 | モック活用 |
+| レイヤー              | テスト種別         | カバレッジ目標 | 重点観点       | テスト手法                   |
+| --------------------- | ------------------ | -------------- | -------------- | ---------------------------- |
+| **🎨 Presentation**   | E2E + Unit         | 80%+           | ユーザビリティ | Playwright + Testing Library |
+| **📋 Application**    | Unit + Integration | **94%+**       | ビジネスフロー | Result型パターン対応         |
+| **👑 Domain**         | Unit               | **90%+**       | ビジネスルール | 純粋関数テスト               |
+| **🔧 Infrastructure** | Integration        | 85%+           | 外部連携       | モック活用                   |
 
 ---
 
@@ -125,27 +125,27 @@ graph TB
         MAINTAIN[メソッド追加時に更新]
         ERROR_PRONE[型安全性の欠如]
     end
-    
+
     subgraph "✅ 自動モック生成"
         AUTO[Interface→自動生成]
         TYPE_SAFE[完全な型安全性]
         ZERO_MAINTAIN[メンテナンス不要]
     end
-    
+
     subgraph "品質向上効果"
         PRODUCTIVITY[生産性向上]
         RELIABILITY[信頼性向上]
         MAINTAINABILITY[保守性向上]
     end
-    
+
     MANUAL --> AUTO
     MAINTAIN --> TYPE_SAFE
     ERROR_PRONE --> ZERO_MAINTAIN
-    
+
     AUTO --> PRODUCTIVITY
     TYPE_SAFE --> RELIABILITY
     ZERO_MAINTAIN --> MAINTAINABILITY
-    
+
     style MANUAL fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style AUTO fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style PRODUCTIVITY fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
@@ -160,23 +160,23 @@ graph LR
         AUTO_SERVICE[Service Mock]
         AUTO_EXTERNAL[External API Mock]
     end
-    
+
     subgraph "📝 手動モック (レガシー)"
         MANUAL_SIMPLE[Simple Mock]
         MANUAL_COMPLEX[Complex Mock]
         MANUAL_STUB[Stub Implementation]
     end
-    
+
     subgraph "🎯 使用指針"
         NEW_TEST[新規テスト → 自動]
         EXISTING[既存テスト → 段階的移行]
         COMPLEX_LOGIC[複雑ロジック → 手動補完]
     end
-    
+
     AUTO_REPO --> NEW_TEST
     MANUAL_SIMPLE --> EXISTING
     AUTO_SERVICE --> COMPLEX_LOGIC
-    
+
     style AUTO_REPO fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style NEW_TEST fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
 ```
@@ -194,27 +194,27 @@ graph TB
         FAILURE[失敗ケース<br/>isFailure(result)]
         ERROR_CODE[エラーコード<br/>result.error.code]
     end
-    
+
     subgraph "テストカテゴリ"
         VALIDATION[バリデーションエラー]
         BUSINESS[ビジネスルールエラー]
         INFRASTRUCTURE[インフラエラー]
     end
-    
+
     subgraph "品質保証効果"
         TYPE_SAFETY[型安全性]
         ERROR_COVERAGE[エラーケース網羅]
         CONSISTENCY[一貫したテスト]
     end
-    
+
     SUCCESS --> TYPE_SAFETY
     FAILURE --> ERROR_COVERAGE
     ERROR_CODE --> CONSISTENCY
-    
+
     VALIDATION --> FAILURE
     BUSINESS --> FAILURE
     INFRASTRUCTURE --> FAILURE
-    
+
     style SUCCESS fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style TYPE_SAFETY fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
 ```
@@ -230,19 +230,19 @@ graph TB
         INFRA_ERR[❌ インフラエラー]
         EDGE[🔍 エッジケース]
     end
-    
+
     subgraph "各UseCaseの標準構成"
         PATTERN[7-10個のテストケース]
         COVERAGE[全エラーパターン網羅]
         BOUNDARY[境界値テスト]
     end
-    
+
     HAPPY --> PATTERN
     VALIDATION_ERR --> COVERAGE
     BUSINESS_ERR --> BOUNDARY
     INFRA_ERR --> PATTERN
     EDGE --> COVERAGE
-    
+
     style HAPPY fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style VALIDATION_ERR fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style BUSINESS_ERR fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
@@ -262,27 +262,27 @@ graph LR
         VISUAL[視覚的確認]
         DEBUG[ステップ実行]
     end
-    
+
     subgraph "📊 HTMLレポート"
         SUMMARY[実行サマリー]
         SCREENSHOT[スクリーンショット]
         VIDEO[実行ビデオ]
     end
-    
+
     subgraph "🐛 デバッグ支援"
         TRACE[詳細トレース]
         BREAKPOINT[ブレークポイント]
         INSPECTION[DOM検査]
     end
-    
+
     REALTIME --> SUMMARY
     VISUAL --> SCREENSHOT
     DEBUG --> VIDEO
-    
+
     SUMMARY --> TRACE
     SCREENSHOT --> BREAKPOINT
     VIDEO --> INSPECTION
-    
+
     style REALTIME fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style TRACE fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
 ```
@@ -296,28 +296,28 @@ graph TB
         NETWORK[ネットワークエラー監視]
         PAGE[ページエラー監視]
     end
-    
+
     subgraph "🔍 監視対象"
         JWT[JWT_SESSION_ERROR]
         NEXTAUTH[NEXTAUTH_SECRET]
         CRYPTO[暗号化エラー]
         SERVER[5xxサーバーエラー]
     end
-    
+
     subgraph "🎯 品質保証"
         PREVENTION[問題事前発見]
         AUTOMATION[自動監視]
         CONTINUOUS[継続的品質]
     end
-    
+
     CONSOLE --> JWT
     NETWORK --> SERVER
     PAGE --> CRYPTO
-    
+
     JWT --> PREVENTION
     SERVER --> AUTOMATION
     CRYPTO --> CONTINUOUS
-    
+
     style CONSOLE fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style PREVENTION fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
 ```
@@ -336,19 +336,19 @@ graph TB
         INFRA[Infrastructure: 85%+]
         PRES[Presentation: 80%+]
     end
-    
+
     subgraph "🎯 品質観点"
         ERROR_COVERAGE[エラーケース網羅]
         BUSINESS_LOGIC[ビジネスロジック検証]
         INTEGRATION[統合動作確認]
         USER_EXPERIENCE[ユーザー体験]
     end
-    
+
     APP --> ERROR_COVERAGE
     DOMAIN --> BUSINESS_LOGIC
     INFRA --> INTEGRATION
     PRES --> USER_EXPERIENCE
-    
+
     style APP fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style ERROR_COVERAGE fill:#f3e8ff,stroke:#8b5cf6,stroke-width:1px,color:#7c3aed
 ```
@@ -362,23 +362,23 @@ graph LR
         ERROR_TREND[エラー発生傾向]
         PERFORMANCE_TREND[実行速度推移]
     end
-    
+
     subgraph "🔍 問題特定"
         HOTSPOT[品質ホットスポット]
         ROOT_CAUSE[根本原因分析]
         IMPROVEMENT[改善機会特定]
     end
-    
+
     subgraph "⚡ 改善実施"
         REFACTOR[リファクタリング]
         TEST_ENHANCE[テスト強化]
         AUTOMATION[自動化拡大]
     end
-    
+
     COVERAGE_TREND --> HOTSPOT
     ERROR_TREND --> ROOT_CAUSE
     PERFORMANCE_TREND --> IMPROVEMENT
-    
+
     HOTSPOT --> REFACTOR
     ROOT_CAUSE --> TEST_ENHANCE
     IMPROVEMENT --> AUTOMATION
@@ -397,27 +397,27 @@ graph TB
         ISOLATION[テスト分離]
         RESOURCE[リソース管理]
     end
-    
+
     subgraph "⚡ 高速化手法"
         CACHE[結果キャッシュ]
         INCREMENTAL[差分実行]
         SELECTIVE[選択実行]
     end
-    
+
     subgraph "📊 実行効率"
         TIME[実行時間短縮]
         FEEDBACK[高速フィードバック]
         PRODUCTIVITY[開発生産性]
     end
-    
+
     WORKER --> CACHE
     ISOLATION --> INCREMENTAL
     RESOURCE --> SELECTIVE
-    
+
     CACHE --> TIME
     INCREMENTAL --> FEEDBACK
     SELECTIVE --> PRODUCTIVITY
-    
+
     style WORKER fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style TIME fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
 ```
@@ -431,11 +431,11 @@ sequenceDiagram
     participant CI as CI Pipeline
     participant Test as Test Runner
     participant Deploy as Deployment
-    
+
     Dev->>Git: Push Changes
     Git->>CI: Trigger Pipeline
     CI->>Test: Run Tests
-    
+
     par Unit Tests
         Test->>Test: Run Unit Tests
     and Integration Tests
@@ -443,7 +443,7 @@ sequenceDiagram
     and E2E Tests (Critical)
         Test->>Test: Run E2E Tests
     end
-    
+
     Test->>CI: Report Results
     CI->>Deploy: Deploy if All Pass
     Deploy->>Dev: Notification
@@ -462,27 +462,27 @@ graph TB
         MOCK_SERVICES[Mock Services]
         TEST_DATA[Test Data]
     end
-    
+
     subgraph "🔄 環境セットアップ"
         SETUP[setupTestEnvironment()]
         RESET[Container Reset]
         CLEANUP[Cleanup]
     end
-    
+
     subgraph "🎯 独立性保証"
         ISOLATION[テスト分離]
         REPRODUCIBLE[再現可能性]
         PREDICTABLE[予測可能性]
     end
-    
+
     TEST_CONTAINER --> SETUP
     MOCK_SERVICES --> RESET
     TEST_DATA --> CLEANUP
-    
+
     SETUP --> ISOLATION
     RESET --> REPRODUCIBLE
     CLEANUP --> PREDICTABLE
-    
+
     style TEST_CONTAINER fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style ISOLATION fill:#f3e8ff,stroke:#8b5cf6,stroke-width:1px,color:#7c3aed
 ```
@@ -496,23 +496,23 @@ graph LR
         FACTORY[Data Factory]
         BUILDER[Test Builder]
     end
-    
+
     subgraph "🔄 データライフサイクル"
         SETUP[Setup Phase]
         EXECUTION[Execution Phase]
         TEARDOWN[Teardown Phase]
     end
-    
+
     subgraph "🎯 データ品質"
         REALISTIC[リアリスティック]
         MINIMAL[最小限]
         MAINTAINABLE[保守可能]
     end
-    
+
     FIXTURE --> SETUP
     FACTORY --> EXECUTION
     BUILDER --> TEARDOWN
-    
+
     SETUP --> REALISTIC
     EXECUTION --> MINIMAL
     TEARDOWN --> MAINTAINABLE
@@ -531,24 +531,24 @@ graph TB
         MOCK_EXT[vitest-mock-extended]
         JSDOM[jsdom]
     end
-    
+
     subgraph "🎬 E2E Testing"
         PLAYWRIGHT[Playwright]
         UI_MODE[UI Mode]
         TRACE[Trace Viewer]
     end
-    
+
     subgraph "📊 Reporting"
         COVERAGE[Coverage Reports]
         HTML[HTML Reports]
         JSON[JSON Output]
     end
-    
+
     VITEST --> COVERAGE
     MOCK_EXT --> HTML
     PLAYWRIGHT --> TRACE
     UI_MODE --> JSON
-    
+
     style VITEST fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style PLAYWRIGHT fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style COVERAGE fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
@@ -556,12 +556,12 @@ graph TB
 
 ### ツール選択基準
 
-| 用途 | ツール | 選択理由 | 特徴 |
-|------|--------|---------|------|
-| **Unit Testing** | Vitest | 高速、TypeScript統合 | ESM対応、並列実行 |
-| **Mocking** | vitest-mock-extended | 型安全な自動モック | メンテナンス不要 |
-| **E2E Testing** | Playwright | 安定性、豊富な機能 | UI Mode、トレース |
-| **Component Testing** | Testing Library | 行動駆動、アクセシビリティ | ユーザー視点 |
+| 用途                  | ツール               | 選択理由                   | 特徴              |
+| --------------------- | -------------------- | -------------------------- | ----------------- |
+| **Unit Testing**      | Vitest               | 高速、TypeScript統合       | ESM対応、並列実行 |
+| **Mocking**           | vitest-mock-extended | 型安全な自動モック         | メンテナンス不要  |
+| **E2E Testing**       | Playwright           | 安定性、豊富な機能         | UI Mode、トレース |
+| **Component Testing** | Testing Library      | 行動駆動、アクセシビリティ | ユーザー視点      |
 
 ---
 
@@ -576,23 +576,23 @@ graph TB
         MUTATION[Mutation Score]
         EXECUTION[Execution Time]
     end
-    
+
     subgraph "🎯 定性的評価"
         READABILITY[可読性]
         MAINTAINABILITY[保守性]
         RELIABILITY[信頼性]
     end
-    
+
     subgraph "🔄 継続的改善"
         REVIEW[定期レビュー]
         REFACTORING[リファクタリング]
         OPTIMIZATION[最適化]
     end
-    
+
     COV --> READABILITY
     MUTATION --> MAINTAINABILITY
     EXECUTION --> RELIABILITY
-    
+
     READABILITY --> REVIEW
     MAINTAINABILITY --> REFACTORING
     RELIABILITY --> OPTIMIZATION
@@ -607,27 +607,27 @@ graph LR
         PR[Pull Request時]
         DEPLOY[Deploy前]
     end
-    
+
     subgraph "✅ 合格基準"
         UNIT_PASS[Unit Tests Pass]
         COV_MEET[Coverage Meet Target]
         E2E_PASS[E2E Tests Pass]
     end
-    
+
     subgraph "🚫 ブロック条件"
         FAIL[Tests Fail]
         LOW_COV[Low Coverage]
         SECURITY[Security Issue]
     end
-    
+
     COMMIT --> UNIT_PASS
     PR --> COV_MEET
     DEPLOY --> E2E_PASS
-    
+
     UNIT_PASS --> FAIL
     COV_MEET --> LOW_COV
     E2E_PASS --> SECURITY
-    
+
     style UNIT_PASS fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style FAIL fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
 ```

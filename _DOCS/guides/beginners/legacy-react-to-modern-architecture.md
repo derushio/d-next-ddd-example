@@ -13,37 +13,37 @@
 ```typescript
 // 従来の方法：コンポーネント内で全て処理
 export function UserProfile() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+ const [user, setUser] = useState(null);
+ const [loading, setLoading] = useState(false);
+ const [error, setError] = useState(null);
 
-  const fetchUser = async (id: string) => {
-    setLoading(true);
-    try {
-      const response = await fetch(`/api/users/${id}`);
-      const userData = await response.json();
-      setUser(userData);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchUser = async (id: string) => {
+  setLoading(true);
+  try {
+   const response = await fetch(`/api/users/${id}`);
+   const userData = await response.json();
+   setUser(userData);
+  } catch (err) {
+   setError(err.message);
+  } finally {
+   setLoading(false);
+  }
+ };
 
-  const updateUser = async (userData) => {
-    setLoading(true);
-    try {
-      await fetch(`/api/users/${user.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(userData)
-      });
-      // 更新処理...
-    } catch (err) {
-      setError(err.message);
-    }
-  };
+ const updateUser = async (userData) => {
+  setLoading(true);
+  try {
+   await fetch(`/api/users/${user.id}`, {
+    method: 'PUT',
+    body: JSON.stringify(userData),
+   });
+   // 更新処理...
+  } catch (err) {
+   setError(err.message);
+  }
+ };
 
-  // JSX...
+ // JSX...
 }
 ```
 
@@ -140,12 +140,12 @@ components/
 
 **各層の役割：**
 
-| 層 | 責務 | あなたが書くもの |
-|---|---|---|
-| **Presentation** | 画面表示・操作 | Server Component、Client Component、Server Action |
-| **Application** | ビジネスフローの制御 | UseCase（「ユーザー登録する」「商品を検索する」） |
-| **Domain** | ビジネスルール | Entity（「ユーザーとは何か」「有効なメールアドレスとは」） |
-| **Infrastructure** | データ保存・取得 | Repository実装（「データベースに保存する方法」） |
+| 層                 | 責務                 | あなたが書くもの                                           |
+| ------------------ | -------------------- | ---------------------------------------------------------- |
+| **Presentation**   | 画面表示・操作       | Server Component、Client Component、Server Action          |
+| **Application**    | ビジネスフローの制御 | UseCase（「ユーザー登録する」「商品を検索する」）          |
+| **Domain**         | ビジネスルール       | Entity（「ユーザーとは何か」「有効なメールアドレスとは」） |
+| **Infrastructure** | データ保存・取得     | Repository実装（「データベースに保存する方法」）           |
 
 ---
 
@@ -163,7 +163,7 @@ export default async function ProductListPage() {
 
   const getProductsUseCase = resolve('GetProductsUseCase');
   const result = await getProductsUseCase.execute();
-  
+
   return <ProductList products={result.data} />;
 }
 
@@ -176,10 +176,10 @@ export function SearchForm() {
   // - ブラウザAPIが必要
 
   const [query, setQuery] = useState('');
-  
+
   return (
-    <input 
-      value={query} 
+    <input
+      value={query}
       onChange={(e) => setQuery(e.target.value)}
     />
   );
@@ -192,7 +192,7 @@ export function SearchForm() {
 // Server Component（親：データ取得）
 export default async function UserDashboardPage() {
   const user = await getUserData();
-  
+
   return (
     <div>
       <UserProfile user={user} />          {/* Server Component */}
@@ -219,18 +219,18 @@ export function UserActions({ userId }: { userId: string }) {
 export function App() {
   const userService = new UserService();
   const logger = new Logger();
-  
+
   return (
-    <UserDashboard 
-      userService={userService} 
-      logger={logger} 
+    <UserDashboard
+      userService={userService}
+      logger={logger}
     />
   );
 }
 
 export function UserDashboard({ userService, logger }) {
   return (
-    <UserProfile 
+    <UserProfile
       userService={userService}  // またpropsで渡す...
       logger={logger}           // またpropsで渡す...
     />
@@ -247,11 +247,11 @@ export function UserProfile({ userService, logger }) {
 ```typescript
 // 😊 スッキリ！
 export function UserProfile() {
-  // 必要な時に必要なサービスを取得
-  const userService = resolve('UserService');
-  const logger = resolve('Logger');
-  
-  // すぐに使える！
+ // 必要な時に必要なサービスを取得
+ const userService = resolve('UserService');
+ const logger = resolve('Logger');
+
+ // すぐに使える！
 }
 ```
 
@@ -281,29 +281,29 @@ const userService = resolve('UserService');
 ```typescript
 // 😰 エラーハンドリングが各所に散在
 export async function createUser(userData) {
-  try {
-    const user = await userService.create(userData);
-    return user;
-  } catch (error) {
-    if (error instanceof ValidationError) {
-      // バリデーションエラー処理
-      throw new Error('入力値が不正です');
-    } else if (error instanceof DatabaseError) {
-      // データベースエラー処理
-      throw new Error('データベースエラーです');
-    } else {
-      // その他のエラー処理
-      throw new Error('予期しないエラーです');
-    }
+ try {
+  const user = await userService.create(userData);
+  return user;
+ } catch (error) {
+  if (error instanceof ValidationError) {
+   // バリデーションエラー処理
+   throw new Error('入力値が不正です');
+  } else if (error instanceof DatabaseError) {
+   // データベースエラー処理
+   throw new Error('データベースエラーです');
+  } else {
+   // その他のエラー処理
+   throw new Error('予期しないエラーです');
   }
+ }
 }
 
 // 呼び出し側でまたtry-catch...
 try {
-  const user = await createUser(userData);
-  // 成功処理
+ const user = await createUser(userData);
+ // 成功処理
 } catch (error) {
-  // エラー処理
+ // エラー処理
 }
 ```
 
@@ -312,30 +312,30 @@ try {
 ```typescript
 // 😊 エラーハンドリングが統一されている
 export async function createUser(userData): Promise<Result<User>> {
-  try {
-    const user = await userService.create(userData);
-    return success(user);  // 成功時
-  } catch (error) {
-    if (error instanceof ValidationError) {
-      return failure('入力値が不正です', 'VALIDATION_ERROR');
-    } else if (error instanceof DatabaseError) {
-      return failure('データベースエラーです', 'DATABASE_ERROR');
-    } else {
-      return failure('予期しないエラーです', 'UNEXPECTED_ERROR');
-    }
+ try {
+  const user = await userService.create(userData);
+  return success(user); // 成功時
+ } catch (error) {
+  if (error instanceof ValidationError) {
+   return failure('入力値が不正です', 'VALIDATION_ERROR');
+  } else if (error instanceof DatabaseError) {
+   return failure('データベースエラーです', 'DATABASE_ERROR');
+  } else {
+   return failure('予期しないエラーです', 'UNEXPECTED_ERROR');
   }
+ }
 }
 
 // 呼び出し側：型安全なパターンマッチング
 const result = await createUser(userData);
 
 if (isSuccess(result)) {
-  // 成功時：result.data で値にアクセス
-  console.log('ユーザー作成成功:', result.data.name);
+ // 成功時：result.data で値にアクセス
+ console.log('ユーザー作成成功:', result.data.name);
 } else {
-  // 失敗時：result.error でエラー情報にアクセス
-  console.error('エラー:', result.error.message);
-  console.error('エラーコード:', result.error.code);
+ // 失敗時：result.error でエラー情報にアクセス
+ console.error('エラー:', result.error.message);
+ console.error('エラーコード:', result.error.code);
 }
 ```
 
@@ -409,47 +409,49 @@ src/
 
 ### レイヤー別テスト責務
 
-| レイヤー | テスト内容 | 従来との違い |
-|---------|-----------|-------------|
-| **Domain** | ビジネスルール<br>エンティティの不変条件 | UIと分離してテスト可能 |
-| **Application** | UseCase（ビジネスフロー）<br>エラーハンドリング | モックを使って外部依存を排除 |
-| **Infrastructure** | データアクセス<br>外部API連携 | 実際のDBやAPIとの統合テスト |
-| **Presentation** | UI表示<br>ユーザーインタラクション | E2Eテストで実際の操作をテスト |
+| レイヤー           | テスト内容                                      | 従来との違い                  |
+| ------------------ | ----------------------------------------------- | ----------------------------- |
+| **Domain**         | ビジネスルール<br>エンティティの不変条件        | UIと分離してテスト可能        |
+| **Application**    | UseCase（ビジネスフロー）<br>エラーハンドリング | モックを使って外部依存を排除  |
+| **Infrastructure** | データアクセス<br>外部API連携                   | 実際のDBやAPIとの統合テスト   |
+| **Presentation**   | UI表示<br>ユーザーインタラクション              | E2Eテストで実際の操作をテスト |
 
 ### 実践的なテスト例
 
 ```typescript
 // Domain Layer テスト：ビジネスルールのテスト
 describe('Product Entity', () => {
-  it('価格は0円以上である必要がある', () => {
-    expect(() => new Product('商品名', -100)).toThrow('価格は0円以上である必要があります');
-  });
+ it('価格は0円以上である必要がある', () => {
+  expect(() => new Product('商品名', -100)).toThrow(
+   '価格は0円以上である必要があります',
+  );
+ });
 });
 
 // Application Layer テスト：UseCaseのテスト
 describe('SearchProductsUseCase', () => {
-  let mockProductRepository: MockProxy<IProductRepository>;
-  let useCase: SearchProductsUseCase;
+ let mockProductRepository: MockProxy<IProductRepository>;
+ let useCase: SearchProductsUseCase;
 
-  beforeEach(() => {
-    // 😊 自動モック生成（1行で完了！）
-    mockProductRepository = mock<IProductRepository>();
-    useCase = new SearchProductsUseCase(mockProductRepository);
-  });
+ beforeEach(() => {
+  // 😊 自動モック生成（1行で完了！）
+  mockProductRepository = mock<IProductRepository>();
+  useCase = new SearchProductsUseCase(mockProductRepository);
+ });
 
-  it('商品検索が成功する', async () => {
-    // モックの設定
-    mockProductRepository.search.mockResolvedValue([product1, product2]);
-    
-    // テスト実行
-    const result = await useCase.execute({ query: 'テスト商品' });
-    
-    // 検証
-    expect(isSuccess(result)).toBe(true);
-    if (isSuccess(result)) {
-      expect(result.data).toHaveLength(2);
-    }
-  });
+ it('商品検索が成功する', async () => {
+  // モックの設定
+  mockProductRepository.search.mockResolvedValue([product1, product2]);
+
+  // テスト実行
+  const result = await useCase.execute({ query: 'テスト商品' });
+
+  // 検証
+  expect(isSuccess(result)).toBe(true);
+  if (isSuccess(result)) {
+   expect(result.data).toHaveLength(2);
+  }
+ });
 });
 ```
 

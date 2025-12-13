@@ -58,19 +58,19 @@ shadcn/ui統合により、HSL形式のCSS変数とTailwindCSS v4対応を追加
 ```css
 /* 統合テーマシステム v2.0 実装例 */
 :root {
-  /* 既存HEX変数（レガシー互換） */
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  
-  /* shadcn/ui HSL変数（新標準） */
-  --primary: 217 91% 60%; /* #2563eb のHSL変換 */
-  --primary-foreground: 0 0% 98%;
+ /* 既存HEX変数（レガシー互換） */
+ --primary: #2563eb;
+ --primary-hover: #1d4ed8;
+
+ /* shadcn/ui HSL変数（新標準） */
+ --primary: 217 91% 60%; /* #2563eb のHSL変換 */
+ --primary-foreground: 0 0% 98%;
 }
 
 @theme inline {
-  /* TailwindCSS v4 統合 */
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
+ /* TailwindCSS v4 統合 */
+ --color-primary: hsl(var(--primary));
+ --color-primary-foreground: hsl(var(--primary-foreground));
 }
 ```
 
@@ -82,20 +82,20 @@ shadcn/ui統合により、HSL形式のCSS変数とTailwindCSS v4対応を追加
 
 ```css
 :root {
-  /* 基本色 */
-  --background: #ffffff;
-  --foreground: #171717;
-  
-  /* プライマリカラー（ブルー系） */
-  --primary: #2563eb; /* blue-600 */
-  --primary-hover: #1d4ed8; /* blue-700 */
-  --primary-light: #dbeafe; /* blue-50 */
-  --primary-muted: #93c5fd; /* blue-300 */
-  
-  /* セカンダリカラー（パープル系） */
-  --secondary: #9333ea; /* purple-600 */
-  --secondary-hover: #7c3aed; /* purple-700 */
-  --secondary-light: #f3e8ff; /* purple-50 */
+ /* 基本色 */
+ --background: #ffffff;
+ --foreground: #171717;
+
+ /* プライマリカラー（ブルー系） */
+ --primary: #2563eb; /* blue-600 */
+ --primary-hover: #1d4ed8; /* blue-700 */
+ --primary-light: #dbeafe; /* blue-50 */
+ --primary-muted: #93c5fd; /* blue-300 */
+
+ /* セカンダリカラー（パープル系） */
+ --secondary: #9333ea; /* purple-600 */
+ --secondary-hover: #7c3aed; /* purple-700 */
+ --secondary-light: #f3e8ff; /* purple-50 */
 }
 ```
 
@@ -105,37 +105,37 @@ shadcn/ui統合により、HSL形式のCSS変数とTailwindCSS v4対応を追加
 
 ```css
 :root {
-  /* shadcn/ui 標準変数（HSL形式） */
-  --background: 0 0% 100%;           /* #ffffff */
-  --foreground: 0 0% 3.9%;           /* #171717 */
-  --primary: 217 91% 60%;            /* #2563eb */
-  --primary-foreground: 0 0% 98%;    /* #ffffff */
-  --secondary: 262 90% 60%;          /* #9333ea */
-  --secondary-foreground: 0 0% 98%;  /* #ffffff */
-  
-  /* ステート色（HSL形式） */
-  --success: 142 76% 36%;            /* #16a34a */
-  --success-foreground: 0 0% 98%;    /* #ffffff */
-  --destructive: 0 84% 60%;          /* #dc2626 */
-  --destructive-foreground: 0 0% 98%; /* #ffffff */
-  --warning: 32 95% 44%;             /* #d97706 */
-  --warning-foreground: 0 0% 98%;    /* #ffffff */
-  --info: 199 89% 48%;               /* #0284c7 */
-  --info-foreground: 0 0% 98%;       /* #ffffff */
-  
-  /* UI要素（HSL形式） */
-  --card: 0 0% 100%;                 /* #ffffff */
-  --card-foreground: 0 0% 3.9%;      /* #171717 */
-  --popover: 0 0% 100%;              /* #ffffff */
-  --popover-foreground: 0 0% 3.9%;   /* #171717*/
-  --muted: 0 0% 96.1%;               /* #f5f5f5 */
-  --muted-foreground: 0 0% 45.1%;    /* #6b7280 */
-  --accent: 0 0% 96.1%;              /* #f5f5f5 */
-  --accent-foreground: 0 0% 9%;      /* #171717 */
-  --border: 0 0% 89.8%;              /* #e5e7eb */
-  --input: 0 0% 89.8%;               /* #e5e7eb */
-  --ring: 217 91% 60%;               /* #2563eb */
-  --radius: 0.5rem;
+ /* shadcn/ui 標準変数（HSL形式） */
+ --background: 0 0% 100%; /* #ffffff */
+ --foreground: 0 0% 3.9%; /* #171717 */
+ --primary: 217 91% 60%; /* #2563eb */
+ --primary-foreground: 0 0% 98%; /* #ffffff */
+ --secondary: 262 90% 60%; /* #9333ea */
+ --secondary-foreground: 0 0% 98%; /* #ffffff */
+
+ /* ステート色（HSL形式） */
+ --success: 142 76% 36%; /* #16a34a */
+ --success-foreground: 0 0% 98%; /* #ffffff */
+ --destructive: 0 84% 60%; /* #dc2626 */
+ --destructive-foreground: 0 0% 98%; /* #ffffff */
+ --warning: 32 95% 44%; /* #d97706 */
+ --warning-foreground: 0 0% 98%; /* #ffffff */
+ --info: 199 89% 48%; /* #0284c7 */
+ --info-foreground: 0 0% 98%; /* #ffffff */
+
+ /* UI要素（HSL形式） */
+ --card: 0 0% 100%; /* #ffffff */
+ --card-foreground: 0 0% 3.9%; /* #171717 */
+ --popover: 0 0% 100%; /* #ffffff */
+ --popover-foreground: 0 0% 3.9%; /* #171717*/
+ --muted: 0 0% 96.1%; /* #f5f5f5 */
+ --muted-foreground: 0 0% 45.1%; /* #6b7280 */
+ --accent: 0 0% 96.1%; /* #f5f5f5 */
+ --accent-foreground: 0 0% 9%; /* #171717 */
+ --border: 0 0% 89.8%; /* #e5e7eb */
+ --input: 0 0% 89.8%; /* #e5e7eb */
+ --ring: 217 91% 60%; /* #2563eb */
+ --radius: 0.5rem;
 }
 ```
 
@@ -143,28 +143,28 @@ shadcn/ui統合により、HSL形式のCSS変数とTailwindCSS v4対応を追加
 
 ```css
 @media (prefers-color-scheme: dark) {
-  :root {
-    /* ダークモード shadcn/ui 標準変数 */
-    --background: 0 0% 3.9%;           /* #0a0a0a */
-    --foreground: 0 0% 98%;            /* #fafafa */
-    --primary: 217 91% 60%;            /* #2563eb (同じ) */
-    --primary-foreground: 0 0% 98%;    /* #fafafa */
-    --secondary: 262 90% 60%;          /* #9333ea (同じ) */
-    --secondary-foreground: 0 0% 98%;  /* #fafafa */
-    
-    /* UI要素（ダークモード） */
-    --card: 0 0% 3.9%;                 /* #0a0a0a */
-    --card-foreground: 0 0% 98%;       /* #fafafa */
-    --popover: 0 0% 3.9%;              /* #0a0a0a */
-    --popover-foreground: 0 0% 98%;    /* #fafafa */
-    --muted: 0 0% 14.9%;               /* #262626 */
-    --muted-foreground: 0 0% 63.9%;    /* #a3a3a3 */
-    --accent: 0 0% 14.9%;              /* #262626 */
-    --accent-foreground: 0 0% 98%;     /* #fafafa */
-    --border: 0 0% 14.9%;              /* #262626 */
-    --input: 0 0% 14.9%;               /* #262626 */
-    --ring: 217 91% 60%;               /* #2563eb */
-  }
+ :root {
+  /* ダークモード shadcn/ui 標準変数 */
+  --background: 0 0% 3.9%; /* #0a0a0a */
+  --foreground: 0 0% 98%; /* #fafafa */
+  --primary: 217 91% 60%; /* #2563eb (同じ) */
+  --primary-foreground: 0 0% 98%; /* #fafafa */
+  --secondary: 262 90% 60%; /* #9333ea (同じ) */
+  --secondary-foreground: 0 0% 98%; /* #fafafa */
+
+  /* UI要素（ダークモード） */
+  --card: 0 0% 3.9%; /* #0a0a0a */
+  --card-foreground: 0 0% 98%; /* #fafafa */
+  --popover: 0 0% 3.9%; /* #0a0a0a */
+  --popover-foreground: 0 0% 98%; /* #fafafa */
+  --muted: 0 0% 14.9%; /* #262626 */
+  --muted-foreground: 0 0% 63.9%; /* #a3a3a3 */
+  --accent: 0 0% 14.9%; /* #262626 */
+  --accent-foreground: 0 0% 98%; /* #fafafa */
+  --border: 0 0% 14.9%; /* #262626 */
+  --input: 0 0% 14.9%; /* #262626 */
+  --ring: 217 91% 60%; /* #2563eb */
+ }
 }
 ```
 
@@ -174,49 +174,50 @@ shadcn/ui統合により、HSL形式のCSS変数とTailwindCSS v4対応を追加
 
 ```css
 @theme inline {
-  /* CSS変数をTailwindユーティリティに自動変換 */
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  
-  /* ステート色 */
-  --color-success: hsl(var(--success));
-  --color-success-foreground: hsl(var(--success-foreground));
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-warning: hsl(var(--warning));
-  --color-warning-foreground: hsl(var(--warning-foreground));
-  --color-info: hsl(var(--info));
-  --color-info-foreground: hsl(var(--info-foreground));
-  
-  /* UI要素 */
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-  
-  /* 既存システム互換（HEX変数系） */
-  --color-surface: var(--surface, #ffffff);
-  --color-surface-50: var(--surface-50, #fafafa);
-  --color-text-primary: var(--text-primary, #171717);
-  --color-text-secondary: var(--text-secondary, #374151);
-  --color-text-muted: var(--text-muted, #6b7280);
-  
-  /* レスポンシブ・レイアウト */
-  --radius: var(--radius, 0.5rem);
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+ /* CSS変数をTailwindユーティリティに自動変換 */
+ --color-background: hsl(var(--background));
+ --color-foreground: hsl(var(--foreground));
+ --color-primary: hsl(var(--primary));
+ --color-primary-foreground: hsl(var(--primary-foreground));
+ --color-secondary: hsl(var(--secondary));
+ --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+ /* ステート色 */
+ --color-success: hsl(var(--success));
+ --color-success-foreground: hsl(var(--success-foreground));
+ --color-destructive: hsl(var(--destructive));
+ --color-destructive-foreground: hsl(var(--destructive-foreground));
+ --color-warning: hsl(var(--warning));
+ --color-warning-foreground: hsl(var(--warning-foreground));
+ --color-info: hsl(var(--info));
+ --color-info-foreground: hsl(var(--info-foreground));
+
+ /* UI要素 */
+ --color-card: hsl(var(--card));
+ --color-card-foreground: hsl(var(--card-foreground));
+ --color-popover: hsl(var(--popover));
+ --color-popover-foreground: hsl(var(--popover-foreground));
+ --color-muted: hsl(var(--muted));
+ --color-muted-foreground: hsl(var(--muted-foreground));
+ --color-accent: hsl(var(--accent));
+ --color-accent-foreground: hsl(var(--accent-foreground));
+ --color-border: hsl(var(--border));
+ --color-input: hsl(var(--input));
+ --color-ring: hsl(var(--ring));
+
+ /* 既存システム互換（HEX変数系） */
+ --color-surface: var(--surface, #ffffff);
+ --color-surface-50: var(--surface-50, #fafafa);
+ --color-text-primary: var(--text-primary, #171717);
+ --color-text-secondary: var(--text-secondary, #374151);
+ --color-text-muted: var(--text-muted, #6b7280);
+
+ /* レスポンシブ・レイアウト */
+ --radius: var(--radius, 0.5rem);
+ --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+ --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+ --shadow-lg:
+  0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 ```
 
@@ -224,29 +225,29 @@ shadcn/ui統合により、HSL形式のCSS変数とTailwindCSS v4対応を追加
 
 ```css
 :root {
-  /* 成功 */
-  --success: #16a34a; /* green-600 */
-  --success-hover: #15803d; /* green-700 */
-  --success-light: #f0fdf4; /* green-50 */
-  --success-muted: #bbf7d0; /* green-200 */
-  
-  /* エラー */
-  --error: #dc2626; /* red-600 */
-  --error-hover: #b91c1c; /* red-700 */
-  --error-light: #fef2f2; /* red-50 */
-  --error-muted: #fecaca; /* red-200 */
-  
-  /* 警告 */
-  --warning: #d97706; /* amber-600 */
-  --warning-hover: #b45309; /* amber-700 */
-  --warning-light: #fffbeb; /* amber-50 */
-  --warning-muted: #fcd34d; /* amber-300 */
-  
-  /* 情報 */
-  --info: #0284c7; /* sky-600 */
-  --info-hover: #0369a1; /* sky-700 */
-  --info-light: #f0f9ff; /* sky-50 */
-  --info-muted: #7dd3fc; /* sky-300 */
+ /* 成功 */
+ --success: #16a34a; /* green-600 */
+ --success-hover: #15803d; /* green-700 */
+ --success-light: #f0fdf4; /* green-50 */
+ --success-muted: #bbf7d0; /* green-200 */
+
+ /* エラー */
+ --error: #dc2626; /* red-600 */
+ --error-hover: #b91c1c; /* red-700 */
+ --error-light: #fef2f2; /* red-50 */
+ --error-muted: #fecaca; /* red-200 */
+
+ /* 警告 */
+ --warning: #d97706; /* amber-600 */
+ --warning-hover: #b45309; /* amber-700 */
+ --warning-light: #fffbeb; /* amber-50 */
+ --warning-muted: #fcd34d; /* amber-300 */
+
+ /* 情報 */
+ --info: #0284c7; /* sky-600 */
+ --info-hover: #0369a1; /* sky-700 */
+ --info-light: #f0f9ff; /* sky-50 */
+ --info-muted: #7dd3fc; /* sky-300 */
 }
 ```
 
@@ -254,26 +255,26 @@ shadcn/ui統合により、HSL形式のCSS変数とTailwindCSS v4対応を追加
 
 ```css
 :root {
-  /* サーフェス（背景）カラー */
-  --surface: #ffffff;
-  --surface-50: #fafafa; /* gray-50 */
-  --surface-100: #f5f5f5; /* gray-100 */
-  --surface-200: #e5e5e5; /* gray-200 */
-  --surface-300: #d4d4d4; /* gray-300 */
-  --surface-600: #525252; /* gray-600 */
-  --surface-700: #404040; /* gray-700 */
-  
-  /* テキストカラー */
-  --text-primary: #171717; /* gray-900 */
-  --text-secondary: #374151; /* gray-700 */
-  --text-muted: #6b7280; /* gray-500 */
-  --text-disabled: #9ca3af; /* gray-400 */
-  --text-inverse: #ffffff;
-  
-  /* ボーダーカラー */
-  --border: #e5e7eb; /* gray-200 */
-  --border-light: #f3f4f6; /* gray-100 */
-  --border-dark: #d1d5db; /* gray-300 */
+ /* サーフェス（背景）カラー */
+ --surface: #ffffff;
+ --surface-50: #fafafa; /* gray-50 */
+ --surface-100: #f5f5f5; /* gray-100 */
+ --surface-200: #e5e5e5; /* gray-200 */
+ --surface-300: #d4d4d4; /* gray-300 */
+ --surface-600: #525252; /* gray-600 */
+ --surface-700: #404040; /* gray-700 */
+
+ /* テキストカラー */
+ --text-primary: #171717; /* gray-900 */
+ --text-secondary: #374151; /* gray-700 */
+ --text-muted: #6b7280; /* gray-500 */
+ --text-disabled: #9ca3af; /* gray-400 */
+ --text-inverse: #ffffff;
+
+ /* ボーダーカラー */
+ --border: #e5e7eb; /* gray-200 */
+ --border-light: #f3f4f6; /* gray-100 */
+ --border-dark: #d1d5db; /* gray-300 */
 }
 ```
 
@@ -286,19 +287,19 @@ graph TD
     A[Primary #2563eb] --> B[Primary Light #dbeafe]
     A --> C[Primary Hover #1d4ed8]
     A --> D[Primary Muted #93c5fd]
-    
+
     E[Secondary #9333ea] --> F[Secondary Light #f3e8ff]
     E --> G[Secondary Hover #7c3aed]
 ```
 
 ### ステート色の用途
 
-| カラー | 用途 | 例 |
-|-------|------|-----|
-| **Success** 🟢 | 成功状態、完了通知 | フォーム送信完了、保存成功 |
-| **Error** 🔴 | エラー状態、警告 | バリデーションエラー、API失敗 |
-| **Warning** 🟡 | 注意喚起、確認 | 削除確認、重要な変更 |
-| **Info** 🔵 | 情報提供、案内 | ヒント、システム情報 |
+| カラー         | 用途               | 例                            |
+| -------------- | ------------------ | ----------------------------- |
+| **Success** 🟢 | 成功状態、完了通知 | フォーム送信完了、保存成功    |
+| **Error** 🔴   | エラー状態、警告   | バリデーションエラー、API失敗 |
+| **Warning** 🟡 | 注意喚起、確認     | 削除確認、重要な変更          |
+| **Info** 🔵    | 情報提供、案内     | ヒント、システム情報          |
 
 ## 使用パターン
 
@@ -323,9 +324,9 @@ graph TD
 ```tsx
 // ✅ Good: テキスト階層の明確化
 <div>
-  <h1 className="text-[var(--text-primary)]">メインタイトル</h1>
-  <p className="text-[var(--text-secondary)]">サブテキスト</p>
-  <span className="text-[var(--text-muted)]">補足情報</span>
+ <h1 className='text-[var(--text-primary)]'>メインタイトル</h1>
+ <p className='text-[var(--text-secondary)]'>サブテキスト</p>
+ <span className='text-[var(--text-muted)]'>補足情報</span>
 </div>
 ```
 
@@ -351,12 +352,16 @@ graph TD
 ```css
 /* ブランドグラデーション（推奨） */
 .brand-gradient {
-  background: linear-gradient(to right, var(--primary), var(--secondary));
+ background: linear-gradient(to right, var(--primary), var(--secondary));
 }
 
 /* ホバー効果用 */
 .brand-gradient-hover {
-  background: linear-gradient(to right, var(--primary-hover), var(--secondary-hover));
+ background: linear-gradient(
+  to right,
+  var(--primary-hover),
+  var(--secondary-hover)
+ );
 }
 ```
 
@@ -373,10 +378,10 @@ graph TD
 </Button>
 
 // ✅ 既存システム機能統合（gradient + loading）
-<Button 
-  variant="primary" 
-  size="lg" 
-  gradient={true} 
+<Button
+  variant="primary"
+  size="lg"
+  gradient={true}
   loading={isLoading}
   fullWidth={true}
 >
@@ -434,25 +439,23 @@ graph TD
 ```tsx
 // ✅ shadcn/ui Form統合
 <Form {...form}>
-  <form onSubmit={form.handleSubmit(onSubmit)}>
-    <FormField
-      control={form.control}
-      name="username"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>ユーザー名</FormLabel>
-          <FormControl>
-            <Input placeholder="ユーザー名を入力" {...field} />
-          </FormControl>
-          <FormDescription>
-            表示名として使用されます
-          </FormDescription>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-    <Button type="submit">送信</Button>
-  </form>
+ <form onSubmit={form.handleSubmit(onSubmit)}>
+  <FormField
+   control={form.control}
+   name='username'
+   render={({ field }) => (
+    <FormItem>
+     <FormLabel>ユーザー名</FormLabel>
+     <FormControl>
+      <Input placeholder='ユーザー名を入力' {...field} />
+     </FormControl>
+     <FormDescription>表示名として使用されます</FormDescription>
+     <FormMessage />
+    </FormItem>
+   )}
+  />
+  <Button type='submit'>送信</Button>
+ </form>
 </Form>
 ```
 
@@ -487,28 +490,25 @@ graph TD
 
 ```tsx
 // ✅ 推奨：Enhanced Componentsをデフォルト使用
-import { Button, Card, Alert } from '@/components/ui-bridge';
-
 // ✅ 明示的選択：shadcn/ui版を使用
-import { 
-  Button as ShadcnButton, 
-  Card as ShadcnCard 
-} from '@/components/ui-bridge';
 
 // ✅ レガシー維持：既存版を使用
-import { 
-  Button as LegacyButton, 
-  Card as LegacyCard 
-} from '@/components/ui-bridge';
 
 // ✅ 標準shadcn/ui Components
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
+import {
+ Alert,
+ Button,
+ Card,
+ Form,
+ FormControl,
+ FormField,
+ FormItem,
+ FormLabel,
+ FormMessage,
+ Button as LegacyButton,
+ Card as LegacyCard,
+ Button as ShadcnButton,
+ Card as ShadcnCard,
 } from '@/components/ui-bridge';
 ```
 
@@ -519,7 +519,7 @@ import {
 <header className="bg-gradient-to-r from-[var(--primary)] via-[var(--secondary)] to-[var(--primary-hover)]">
 
 // ✅ ボタンのグラデーション効果（Enhanced Button）
-<Button 
+<Button
   gradient={true}
   className="bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] hover:from-[var(--primary-hover)] hover:to-[var(--secondary-hover)]"
 >
@@ -532,9 +532,9 @@ import {
 
 ```tsx
 // 微妙なアクセント効果
-<div className="relative">
-  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--primary)]/30 via-[var(--secondary)]/30 to-[var(--primary)]/30" />
-  {/* コンテンツ */}
+<div className='relative'>
+ <div className='absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--primary)]/30 via-[var(--secondary)]/30 to-[var(--primary)]/30' />
+ {/* コンテンツ */}
 </div>
 ```
 
@@ -544,28 +544,28 @@ import {
 
 ```css
 @media (prefers-color-scheme: dark) {
-  :root {
-    /* 基本色（反転） */
-    --background: #0f0f0f;
-    --foreground: #f5f5f5;
-    
-    /* サーフェス色（調整） */
-    --surface: #0f0f0f;
-    --surface-50: #262626; /* darker */
-    --surface-100: #1c1c1c; /* darker */
-    
-    /* テキスト色（反転・調整） */
-    --text-primary: #f5f5f5;
-    --text-secondary: #d1d5db;
-    --text-muted: #9ca3af;
-    --text-disabled: #6b7280;
-    --text-inverse: #0f0f0f;
-    
-    /* ボーダー色（調整） */
-    --border: #374151;
-    --border-light: #1f2937;
-    --border-dark: #4b5563;
-  }
+ :root {
+  /* 基本色（反転） */
+  --background: #0f0f0f;
+  --foreground: #f5f5f5;
+
+  /* サーフェス色（調整） */
+  --surface: #0f0f0f;
+  --surface-50: #262626; /* darker */
+  --surface-100: #1c1c1c; /* darker */
+
+  /* テキスト色（反転・調整） */
+  --text-primary: #f5f5f5;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
+  --text-disabled: #6b7280;
+  --text-inverse: #0f0f0f;
+
+  /* ボーダー色（調整） */
+  --border: #374151;
+  --border-light: #1f2937;
+  --border-dark: #4b5563;
+ }
 }
 ```
 
@@ -600,46 +600,53 @@ import {
 ```tsx
 // shadcn/ui + 既存システム統合実装
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-  {
-    variants: {
-      variant: {
-        // shadcn/ui標準variants
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-        
-        // 既存システム統合variants
-        primary: gradient 
-          ? 'bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] hover:from-[var(--primary-hover)] hover:to-[var(--secondary-hover)] text-[var(--text-inverse)]'
-          : 'bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-[var(--text-inverse)]',
-        success: 'bg-[var(--success)] hover:bg-[var(--success-hover)] text-[var(--text-inverse)]',
-        warning: 'bg-[var(--warning)] hover:bg-[var(--warning-hover)] text-[var(--text-inverse)]',
-        info: 'bg-[var(--info)] hover:bg-[var(--info-hover)] text-[var(--text-inverse)]',
-      },
-      size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
-        icon: "h-10 w-10",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
+ 'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+ {
+  variants: {
+   variant: {
+    // shadcn/ui標準variants
+    default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+    destructive:
+     'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+    outline:
+     'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+    secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+    ghost: 'hover:bg-accent hover:text-accent-foreground',
+    link: 'text-primary underline-offset-4 hover:underline',
+
+    // 既存システム統合variants
+    primary: gradient
+     ? 'bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] hover:from-[var(--primary-hover)] hover:to-[var(--secondary-hover)] text-[var(--text-inverse)]'
+     : 'bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-[var(--text-inverse)]',
+    success:
+     'bg-[var(--success)] hover:bg-[var(--success-hover)] text-[var(--text-inverse)]',
+    warning:
+     'bg-[var(--warning)] hover:bg-[var(--warning-hover)] text-[var(--text-inverse)]',
+    info:
+     'bg-[var(--info)] hover:bg-[var(--info-hover)] text-[var(--text-inverse)]',
+   },
+   size: {
+    default: 'h-10 px-4 py-2',
+    sm: 'h-9 rounded-md px-3',
+    lg: 'h-11 rounded-md px-8',
+    icon: 'h-10 w-10',
+   },
   },
+  defaultVariants: {
+   variant: 'default',
+   size: 'default',
+  },
+ },
 );
 
 // Enhanced機能の追加Props
-export interface ButtonProps extends React.ComponentProps<"button">, VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
-  loading?: boolean;      // 既存システム機能
-  fullWidth?: boolean;    // 既存システム機能  
-  gradient?: boolean;     // 既存システム機能
+export interface ButtonProps
+ extends React.ComponentProps<'button'>,
+  VariantProps<typeof buttonVariants> {
+ asChild?: boolean;
+ loading?: boolean; // 既存システム機能
+ fullWidth?: boolean; // 既存システム機能
+ gradient?: boolean; // 既存システム機能
 }
 ```
 
@@ -648,31 +655,32 @@ export interface ButtonProps extends React.ComponentProps<"button">, VariantProp
 ```tsx
 // shadcn/ui Card + 既存Compound Pattern統合
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant = "default", padding, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          // shadcn/ui base styles
-          "rounded-lg border bg-card text-card-foreground shadow-sm",
-          // 既存システム variants
-          {
-            'border border-[var(--border)]': variant === 'default',
-            'shadow-lg hover:shadow-xl': variant === 'elevated',
-            'bg-[var(--surface)]/80 backdrop-blur-sm border border-[var(--surface)]/20': variant === 'glass',
-          },
-          // 既存システム padding
-          {
-            'p-3': padding === 'sm',
-            'p-6': padding === 'md',
-            'p-8': padding === 'lg',
-          },
-          className,
-        )}
-        {...props}
-      />
-    );
-  },
+ ({ className, variant = 'default', padding, ...props }, ref) => {
+  return (
+   <div
+    ref={ref}
+    className={cn(
+     // shadcn/ui base styles
+     'rounded-lg border bg-card text-card-foreground shadow-sm',
+     // 既存システム variants
+     {
+      'border border-[var(--border)]': variant === 'default',
+      'shadow-lg hover:shadow-xl': variant === 'elevated',
+      'bg-[var(--surface)]/80 backdrop-blur-sm border border-[var(--surface)]/20':
+       variant === 'glass',
+     },
+     // 既存システム padding
+     {
+      'p-3': padding === 'sm',
+      'p-6': padding === 'md',
+      'p-8': padding === 'lg',
+     },
+     className,
+    )}
+    {...props}
+   />
+  );
+ },
 );
 
 // Compound Pattern対応（既存システム）
@@ -681,7 +689,14 @@ Card.Content = CardContent;
 Card.Footer = CardFooter;
 
 // shadcn/ui標準exports
-export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter };
+export {
+ Card,
+ CardHeader,
+ CardTitle,
+ CardDescription,
+ CardContent,
+ CardFooter,
+};
 ```
 
 #### Alert Enhanced コンポーネント（統合版）
@@ -689,39 +704,46 @@ export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 ```tsx
 // shadcn/ui Alert + 既存システム統合
 const alertVariants = cva(
-  "relative w-full rounded-lg border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground",
-  {
-    variants: {
-      variant: {
-        // shadcn/ui標準variants
-        default: "bg-background text-foreground",
-        destructive: "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
-        
-        // 既存システム統合variants（HEX変数使用）
-        success: 'bg-[var(--success-light)] border-[var(--success-muted)] text-[var(--success)]',
-        error: 'bg-[var(--error-light)] border-[var(--error-muted)] text-[var(--error)]',
-        warning: 'bg-[var(--warning-light)] border-[var(--warning-muted)] text-[var(--warning)]',
-        info: 'bg-[var(--info-light)] border-[var(--info-muted)] text-[var(--info)]',
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
+ 'relative w-full rounded-lg border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground',
+ {
+  variants: {
+   variant: {
+    // shadcn/ui標準variants
+    default: 'bg-background text-foreground',
+    destructive:
+     'border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive',
+
+    // 既存システム統合variants（HEX変数使用）
+    success:
+     'bg-[var(--success-light)] border-[var(--success-muted)] text-[var(--success)]',
+    error:
+     'bg-[var(--error-light)] border-[var(--error-muted)] text-[var(--error)]',
+    warning:
+     'bg-[var(--warning-light)] border-[var(--warning-muted)] text-[var(--warning)]',
+    info:
+     'bg-[var(--info-light)] border-[var(--info-muted)] text-[var(--info)]',
+   },
   },
+  defaultVariants: {
+   variant: 'default',
+  },
+ },
 );
 
 // Alert Enhanced Props
-export interface AlertProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof alertVariants> {}
+export interface AlertProps
+ extends React.HTMLAttributes<HTMLDivElement>,
+  VariantProps<typeof alertVariants> {}
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
-  ({ className, variant, ...props }, ref) => (
-    <div
-      ref={ref}
-      role="alert"
-      className={cn(alertVariants({ variant }), className)}
-      {...props}
-    />
-  ),
+ ({ className, variant, ...props }, ref) => (
+  <div
+   ref={ref}
+   role='alert'
+   className={cn(alertVariants({ variant }), className)}
+   {...props}
+  />
+ ),
 );
 ```
 
@@ -730,24 +752,22 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
 #### モダンなカード設計
 
 ```tsx
-<Card 
-  variant="elevated" 
-  className="bg-[var(--surface)] border-2 border-[var(--primary)]/20 hover:border-[var(--primary)]/60 hover:shadow-lg hover:shadow-[var(--primary)]/10 transition-all duration-300"
+<Card
+ variant='elevated'
+ className='bg-[var(--surface)] border-2 border-[var(--primary)]/20 hover:border-[var(--primary)]/60 hover:shadow-lg hover:shadow-[var(--primary)]/10 transition-all duration-300'
 >
-  {/* アクセントライン */}
-  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--primary)]/40 via-[var(--secondary)]/40 to-[var(--primary)]/40" />
-  
-  <Card.Header>
-    <h2 className="bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] bg-clip-text text-transparent">
-      ブランドタイトル
-    </h2>
-  </Card.Header>
-  
-  <Card.Content>
-    <p className="text-[var(--text-secondary)]">
-      コンテンツテキスト
-    </p>
-  </Card.Content>
+ {/* アクセントライン */}
+ <div className='absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--primary)]/40 via-[var(--secondary)]/40 to-[var(--primary)]/40' />
+
+ <Card.Header>
+  <h2 className='bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] bg-clip-text text-transparent'>
+   ブランドタイトル
+  </h2>
+ </Card.Header>
+
+ <Card.Content>
+  <p className='text-[var(--text-secondary)]'>コンテンツテキスト</p>
+ </Card.Content>
 </Card>
 ```
 
@@ -768,7 +788,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
 // ✅ メインアクション
 <Button variant="primary">保存</Button>
 
-// ✅ サブアクション  
+// ✅ サブアクション
 <Button variant="secondary">キャンセル</Button>
 
 // ✅ 危険なアクション
@@ -801,13 +821,13 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
 ```css
 /* ✅ Good: 変数の再利用 */
 .primary-theme {
-  background: var(--primary);
-  color: var(--text-inverse);
-  border: 1px solid var(--primary);
+ background: var(--primary);
+ color: var(--text-inverse);
+ border: 1px solid var(--primary);
 }
 
 .primary-theme:hover {
-  background: var(--primary-hover);
+ background: var(--primary-hover);
 }
 ```
 
@@ -816,9 +836,9 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
 ```css
 /* ✅ @theme inline によるビルド最適化 */
 @theme inline {
-  /* 自動的にTailwindユーティリティに変換 */
-  --color-primary: hsl(var(--primary));
-  --color-success: hsl(var(--success));
+ /* 自動的にTailwindユーティリティに変換 */
+ --color-primary: hsl(var(--primary));
+ --color-success: hsl(var(--success));
 }
 
 /* 結果：以下のクラスが自動生成 */
@@ -834,9 +854,9 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
 import { Button } from '@/components/ui-bridge';
 
 // 自動的に最適なコンポーネント（shadcn/ui Enhanced）を使用
-<Button variant="primary" gradient={true}>
-  // 既存機能 + shadcn/ui標準機能が統合
-</Button>
+<Button variant='primary' gradient={true}>
+ // 既存機能 + shadcn/ui標準機能が統合
+</Button>;
 ```
 
 ### 4. **shadcn/ui統合ベストプラクティス**
@@ -845,15 +865,18 @@ import { Button } from '@/components/ui-bridge';
 
 ```tsx
 // ✅ Good: 新規実装時はshadcn/ui Enhanced推奨
-import { Button, Card, Alert } from '@/components/ui-bridge';
-
 // ✅ Good: 標準shadcn/ui機能が必要な場合
-import { Form, FormField, Dialog } from '@/components/ui-bridge';
 
 // ✅ Good: 段階的移行時の明示的選択
-import { 
-  Button as ShadcnButton, 
-  Card as LegacyCard 
+import {
+ Alert,
+ Button,
+ Card,
+ Dialog,
+ Form,
+ FormField,
+ Card as LegacyCard,
+ Button as ShadcnButton,
 } from '@/components/ui-bridge';
 ```
 
@@ -951,9 +974,9 @@ import { Button, Card } from '@/components/ui-bridge';
 // デフォルトで最適なコンポーネント（Enhanced版）を使用
 
 // 明示的選択が必要な場合
-import { 
-  Button as ShadcnButton,
-  Card as LegacyCard 
+import {
+ Button as ShadcnButton,
+ Card as LegacyCard,
 } from '@/components/ui-bridge';
 ```
 
@@ -964,12 +987,12 @@ import {
 ```css
 /* ❌ Problem: 設定不備 */
 @theme {
-  --color-primary: hsl(var(--primary));
+ --color-primary: hsl(var(--primary));
 }
 
 /* ✅ Solution: inline指定必須 */
 @theme inline {
-  --color-primary: hsl(var(--primary));
+ --color-primary: hsl(var(--primary));
 }
 ```
 
@@ -980,11 +1003,11 @@ import {
 ```css
 /* デバッグ用: 色変数の表示確認 */
 .debug-colors::before {
-  content: 'Primary: ' var(--primary) ' | Secondary: ' var(--secondary);
-  display: block;
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-bottom: 8px;
+ content: 'Primary: ' var(--primary) ' | Secondary: ' var(--secondary);
+ display: block;
+ font-size: 12px;
+ color: var(--text-muted);
+ margin-bottom: 8px;
 }
 ```
 

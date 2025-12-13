@@ -15,24 +15,24 @@ graph TB
     subgraph "🌊 依存関係の流れ (外側→内側)"
         OUTER[外側レイヤー<br/>変更頻度高] --> INNER[内側レイヤー<br/>変更頻度低]
     end
-    
+
     subgraph "🎯 Clean Architecture構成"
         UI[🎨 User Interface<br/>Next.js Components]
         CTRL[🎛️ Controllers<br/>Server Actions]
         UC[📋 Use Cases<br/>Business Flows]
         ENT[👑 Entities<br/>Business Rules]
     end
-    
+
     UI --> CTRL
     CTRL --> UC
     UC --> ENT
-    
+
     subgraph "💡 核心原則"
         INDEP[独立性<br/>Independence]
         TEST[テスタビリティ<br/>Testability]
         FLEX[柔軟性<br/>Flexibility]
     end
-    
+
     style OUTER fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style INNER fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style ENT fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -53,28 +53,28 @@ graph TB
         P_FORM[Form Handling]
         P_STATE[UI State Management]
     end
-    
-    subgraph "📋 Application Layer"  
+
+    subgraph "📋 Application Layer"
         A_UC[Use Cases]
         A_DTO[DTOs]
         A_TRANS[Transaction Management]
         A_AUTH[Authorization]
     end
-    
+
     subgraph "👑 Domain Layer"
         D_ENT[Entities]
-        D_VO[Value Objects] 
+        D_VO[Value Objects]
         D_SERV[Domain Services]
         D_REPO[Repository Interfaces]
     end
-    
+
     subgraph "🔧 Infrastructure Layer"
         I_REPO[Repository Implementations]
         I_EXT[External Services]
         I_CONFIG[Configuration]
         I_LOG[Logging]
     end
-    
+
     P_UI --> A_UC
     P_SA --> A_UC
     A_UC --> D_ENT
@@ -82,7 +82,7 @@ graph TB
     A_UC --> D_REPO
     D_REPO <--> I_REPO
     I_EXT --> A_UC
-    
+
     classDef presentation fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     classDef application fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     classDef domain fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -91,12 +91,12 @@ graph TB
 
 ### レイヤー責務マトリックス
 
-| レイヤー | 主要責務 | 含むもの | 除外するもの |
-|---------|---------|----------|-------------|
-| **🎨 Presentation** | UI・ユーザー入力処理 | コンポーネント、Server Actions、フォーム | ビジネスロジック、DB操作 |
-| **📋 Application** | ビジネスフロー制御 | UseCase、DTO、トランザクション | UI詳細、技術実装詳細 |
-| **👑 Domain** | ビジネスルール実装 | Entity、Value Object、ドメインサービス | フレームワーク、外部システム |
-| **🔧 Infrastructure** | 技術実装詳細 | Repository実装、外部API、設定 | ビジネスロジック、UI処理 |
+| レイヤー              | 主要責務             | 含むもの                                 | 除外するもの                 |
+| --------------------- | -------------------- | ---------------------------------------- | ---------------------------- |
+| **🎨 Presentation**   | UI・ユーザー入力処理 | コンポーネント、Server Actions、フォーム | ビジネスロジック、DB操作     |
+| **📋 Application**    | ビジネスフロー制御   | UseCase、DTO、トランザクション           | UI詳細、技術実装詳細         |
+| **👑 Domain**         | ビジネスルール実装   | Entity、Value Object、ドメインサービス   | フレームワーク、外部システム |
+| **🔧 Infrastructure** | 技術実装詳細         | Repository実装、外部API、設定            | ビジネスロジック、UI処理     |
 
 ---
 
@@ -110,19 +110,19 @@ graph TB
         HL1[High Level Module] --> LL1[Low Level Module]
         note1[具象に依存<br/>変更に弱い]
     end
-    
+
     subgraph "✅ 依存性逆転後 (解決)"
         HL2[High Level Module] --> IFACE[Interface]
         LL2[Low Level Module] --> IFACE
         note2[抽象に依存<br/>変更に強い]
     end
-    
+
     subgraph "🎯 実装例"
         UC[UseCase] --> IREPO[IUserRepository]
         PRISMA[PrismaUserRepository] --> IREPO
         note3[DBからORMへの変更も<br/>UseCaseに影響なし]
     end
-    
+
     style HL1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style LL1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style HL2 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -140,21 +140,21 @@ graph TB
         A1 --> I1[Infrastructure]
         I1 --> D1
     end
-    
-    subgraph "❌ 禁止される依存関係" 
+
+    subgraph "❌ 禁止される依存関係"
         D2[Domain] -.->|禁止| I2[Infrastructure]
         D2 -.->|禁止| A2[Application]
         D2 -.->|禁止| P2[Presentation]
         I3[Infrastructure] -.->|禁止| A3[Application]
         I3 -.->|禁止| P3[Presentation]
     end
-    
+
     subgraph "📋 ルール説明"
         RULE1[内側レイヤーは外側を知らない]
         RULE2[外側レイヤーは内側に依存可能]
         RULE3[同じレイヤー内の依存は最小限]
     end
-    
+
     style P1 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style A1 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style D1 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -181,7 +181,7 @@ sequenceDiagram
     participant ENT as 👑 Entity
     participant REPO as 🔧 Repository
     participant DB as 🗄️ Database
-    
+
     User->>UI: ユーザー操作
     UI->>SA: フォーム送信
     SA->>UC: ビジネス処理要求
@@ -206,20 +206,20 @@ sequenceDiagram
     participant UC as 📋 Use Case
     participant DS as 👑 Domain Service
     participant REPO as 🔧 Repository
-    
+
     SA->>UC: execute()
     UC->>DS: validateBusinessRules()
     DS-->>UC: DomainError
     UC->>UC: catch DomainError
     UC-->>SA: failure(message, code)
-    
+
     alt Repository Error
         UC->>REPO: save()
         REPO-->>UC: InfrastructureError
         UC->>UC: catch InfrastructureError
         UC-->>SA: failure(message, 'INFRASTRUCTURE_ERROR')
     end
-    
+
     SA->>SA: isFailure(result)
     SA-->>SA: return error response
 ```
@@ -238,19 +238,19 @@ graph TB
         SA[Server Actions<br/>フォーム処理]
         MIDDLEWARE[Middleware<br/>認証・認可]
     end
-    
+
     subgraph "責務"
         UI_RENDER[UI描画・表示]
         USER_INPUT[ユーザー入力受付]
         STATE_MGMT[UI状態管理]
         ROUTING[ページ遷移]
     end
-    
+
     RSC --> UI_RENDER
     RCC --> USER_INPUT
     SA --> STATE_MGMT
     MIDDLEWARE --> ROUTING
-    
+
     style RSC fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style UI_RENDER fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
 ```
@@ -265,19 +265,19 @@ graph TB
         TRANS[Transaction<br/>トランザクション]
         AUTH[Authorization<br/>認可処理]
     end
-    
+
     subgraph "特徴"
         ORCHESTRATE[オーケストレーション]
         COORD[複数サービス協調]
         FLOW[フロー制御]
         CONVERT[データ変換]
     end
-    
+
     UC --> ORCHESTRATE
     DTO --> COORD
     TRANS --> FLOW
     AUTH --> CONVERT
-    
+
     style UC fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style ORCHESTRATE fill:#f3e8ff,stroke:#8b5cf6,stroke-width:1px,color:#7c3aed
 ```
@@ -292,19 +292,19 @@ graph TB
         DS[Domain Services<br/>ドメインサービス]
         REPO_I[Repository Interfaces<br/>リポジトリインターフェース]
     end
-    
+
     subgraph "特徴"
         PURE[純粋なビジネスロジック]
         INVARIANT[不変条件保証]
         ISOLATED[技術非依存]
         TESTABLE[テスト容易]
     end
-    
+
     ENT --> PURE
     VO --> INVARIANT
     DS --> ISOLATED
     REPO_I --> TESTABLE
-    
+
     style ENT fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style PURE fill:#ecfdf5,stroke:#10b981,stroke-width:1px,color:#065f46
 ```
@@ -319,19 +319,19 @@ graph TB
         CONFIG[Configuration<br/>設定管理]
         LOG[Logging<br/>ログ出力]
     end
-    
+
     subgraph "特徴"
         CONCRETE[具象実装]
         TECH_DETAIL[技術詳細]
         EXTERNAL[外部システム連携]
         INFRASTRUCTURE[インフラ処理]
     end
-    
+
     REPO_IMPL --> CONCRETE
     EXT_API --> TECH_DETAIL
     CONFIG --> EXTERNAL
     LOG --> INFRASTRUCTURE
-    
+
     style REPO_IMPL fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
     style CONCRETE fill:#fef3c7,stroke:#f59e0b,stroke-width:1px,color:#92400e
 ```
@@ -350,19 +350,19 @@ graph TB
         AP3[Layer Violation<br/>レイヤー違反]
         AP4[Anemic Domain<br/>貧血ドメイン]
     end
-    
+
     subgraph "✅ 解決策"
         SOL1[Single Responsibility<br/>単一責任原則]
         SOL2[Dependency Injection<br/>依存性注入]
         SOL3[Interface Segregation<br/>インターフェース分離]
         SOL4[Rich Domain Model<br/>豊富なドメインモデル]
     end
-    
+
     AP1 --> SOL1
     AP2 --> SOL2
     AP3 --> SOL3
     AP4 --> SOL4
-    
+
     style AP1 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style AP2 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
     style AP3 fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
@@ -375,12 +375,12 @@ graph TB
 
 ### 具体的な違反例と対策
 
-| 違反パターン | 問題 | 対策 | 効果 |
-|-------------|------|------|------|
-| **Domain→Infrastructure依存** | テスト困難、技術結合 | Interface + DI | テスタビリティ向上 |
-| **UseCase内でのSQL記述** | 責務混在、保守困難 | Repository分離 | 関心の分離 |
-| **Entity内でのFramework使用** | ドメイン汚染 | Pure TypeScript | ドメイン純粋性 |
-| **UI内でのビジネスロジック** | 重複、テスト困難 | Domain/Application分離 | 再利用性向上 |
+| 違反パターン                  | 問題                 | 対策                   | 効果               |
+| ----------------------------- | -------------------- | ---------------------- | ------------------ |
+| **Domain→Infrastructure依存** | テスト困難、技術結合 | Interface + DI         | テスタビリティ向上 |
+| **UseCase内でのSQL記述**      | 責務混在、保守困難   | Repository分離         | 関心の分離         |
+| **Entity内でのFramework使用** | ドメイン汚染         | Pure TypeScript        | ドメイン純粋性     |
+| **UI内でのビジネスロジック**  | 重複、テスト困難     | Domain/Application分離 | 再利用性向上       |
 
 ---
 
@@ -396,19 +396,19 @@ graph TB
         STABILITY[安定度<br/>Stability]
         COMPLEXITY[複雑度<br/>Complexity]
     end
-    
+
     subgraph "目標値"
         LOW_COUPLING[低結合<br/>Loose Coupling]
         HIGH_COHESION[高凝集<br/>High Cohesion]
         STABLE_ABSTRACTION[安定抽象<br/>Stable Abstraction]
         LOW_COMPLEXITY[低複雑度<br/>Low Complexity]
     end
-    
+
     COUPLING --> LOW_COUPLING
     COHESION --> HIGH_COHESION
     STABILITY --> STABLE_ABSTRACTION
     COMPLEXITY --> LOW_COMPLEXITY
-    
+
     style LOW_COUPLING fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
     style HIGH_COHESION fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
     style STABLE_ABSTRACTION fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
@@ -417,12 +417,12 @@ graph TB
 
 ### 測定可能な品質基準
 
-| 指標 | 測定方法 | 目標値 | 改善手法 |
-|------|---------|-------|----------|
-| **循環依存** | 依存関係グラフ解析 | 0件 | DI Container分離 |
-| **レイヤー違反** | Import文静的解析 | 0件 | ESLint rules |
-| **Interface使用率** | 具象依存率計測 | 95%以上 | Repository pattern |
-| **テストカバレッジ** | レイヤー別計測 | Domain 90%+, Application 94%+ | 自動テスト |
+| 指標                 | 測定方法           | 目標値                        | 改善手法           |
+| -------------------- | ------------------ | ----------------------------- | ------------------ |
+| **循環依存**         | 依存関係グラフ解析 | 0件                           | DI Container分離   |
+| **レイヤー違反**     | Import文静的解析   | 0件                           | ESLint rules       |
+| **Interface使用率**  | 具象依存率計測     | 95%以上                       | Repository pattern |
+| **テストカバレッジ** | レイヤー別計測     | Domain 90%+, Application 94%+ | 自動テスト         |
 
 ---
 
@@ -434,26 +434,26 @@ graph TB
 graph LR
     subgraph "モジュール分割"
         USER_MODULE[User Module]
-        ORDER_MODULE[Order Module] 
+        ORDER_MODULE[Order Module]
         PAYMENT_MODULE[Payment Module]
     end
-    
+
     subgraph "独立開発"
         TEAM_A[Team A<br/>User Context]
         TEAM_B[Team B<br/>Order Context]
         TEAM_C[Team C<br/>Payment Context]
     end
-    
+
     subgraph "統合"
         API_GATEWAY[API Gateway]
         EVENT_BUS[Event Bus]
         SHARED_KERNEL[Shared Kernel]
     end
-    
+
     USER_MODULE --> TEAM_A
     ORDER_MODULE --> TEAM_B
     PAYMENT_MODULE --> TEAM_C
-    
+
     TEAM_A --> API_GATEWAY
     TEAM_B --> EVENT_BUS
     TEAM_C --> SHARED_KERNEL
@@ -466,22 +466,22 @@ graph TB
     subgraph "Current Monolith"
         MONO[Monolithic Application<br/>Single Deployment]
     end
-    
+
     subgraph "Transition Phase"
         MODULAR[Modular Monolith<br/>Module Boundaries]
     end
-    
+
     subgraph "Target Microservices"
         MS1[User Service]
         MS2[Order Service]
         MS3[Payment Service]
     end
-    
+
     MONO --> MODULAR
     MODULAR --> MS1
     MODULAR --> MS2
     MODULAR --> MS3
-    
+
     style MONO fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
     style MODULAR fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style MS1 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -497,7 +497,7 @@ graph TB
 
 - **[Presentation Layer](presentation.md)** - UI・Server Actions実装詳細
 - **[Application Layer](application.md)** - UseCase・ビジネスフロー詳細
-- **[Domain Layer](domain.md)** - Entity・ドメインロジック詳細  
+- **[Domain Layer](domain.md)** - Entity・ドメインロジック詳細
 - **[Infrastructure Layer](infrastructure.md)** - Repository・外部サービス詳細
 
 ### 設計パターン

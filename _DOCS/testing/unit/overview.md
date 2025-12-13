@@ -42,17 +42,17 @@ graph TB
         C[回帰防止] --> E
         D[ドキュメント化] --> E
     end
-    
+
     subgraph "⚡ 開発効率向上"
         F[高速フィードバック]
         G[リファクタリング支援]
         H[設計改善]
     end
-    
+
     E --> F
     E --> G
     E --> H
-    
+
     style A fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style B fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style C fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -69,12 +69,12 @@ graph TB
 
 ### 📊 レイヤー別カバレッジ目標
 
-| レイヤー | カバレッジ目標 | 重点テスト項目 | 主要技術 |
-|---------|-------------|-------------|----------|
-| **👑 Domain** | **90%以上** | ビジネスルール・不変条件 | Pure関数テスト |
-| **📋 Application** | **94%以上** | UseCase・Result型 | Mock・DI |
-| **🔧 Infrastructure** | **85%以上** | データ変換・外部連携 | 統合テスト中心 |
-| **🎨 Presentation** | **80%以上** | Server Actions・UI状態 | E2E補完 |
+| レイヤー              | カバレッジ目標 | 重点テスト項目           | 主要技術       |
+| --------------------- | -------------- | ------------------------ | -------------- |
+| **👑 Domain**         | **90%以上**    | ビジネスルール・不変条件 | Pure関数テスト |
+| **📋 Application**    | **94%以上**    | UseCase・Result型        | Mock・DI       |
+| **🔧 Infrastructure** | **85%以上**    | データ変換・外部連携     | 統合テスト中心 |
+| **🎨 Presentation**   | **80%以上**    | Server Actions・UI状態   | E2E補完        |
 
 ### 👑 Domain Layer テスト
 
@@ -85,17 +85,17 @@ graph LR
         B[Entity] --> D
         C[Domain Service] --> D
     end
-    
+
     subgraph "Test Focus"
         E[ビジネスルール]
         F[不変条件]
         G[状態変更]
     end
-    
+
     D --> E
     D --> F
     D --> G
-    
+
     style A fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style B fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style C fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -105,34 +105,34 @@ graph LR
 
 ```typescript
 describe('Email Value Object', () => {
-  describe('作成', () => {
-    it('有効なメールアドレスで作成できる', () => {
-      const result = Email.create('test@example.com');
-      
-      expect(isSuccess(result)).toBe(true);
-      if (isSuccess(result)) {
-        expect(result.data.toString()).toBe('test@example.com');
-      }
-    });
-    
-    it('無効な形式の場合は失敗する', () => {
-      const result = Email.create('invalid-email');
-      
-      expect(isFailure(result)).toBe(true);
-      if (isFailure(result)) {
-        expect(result.error.code).toBe('EMAIL_INVALID_FORMAT');
-      }
-    });
+ describe('作成', () => {
+  it('有効なメールアドレスで作成できる', () => {
+   const result = Email.create('test@example.com');
+
+   expect(isSuccess(result)).toBe(true);
+   if (isSuccess(result)) {
+    expect(result.data.toString()).toBe('test@example.com');
+   }
   });
-  
-  describe('等価性', () => {
-    it('同じ値のEmailは等価', () => {
-      const email1 = Email.create('test@example.com').data!;
-      const email2 = Email.create('test@example.com').data!;
-      
-      expect(email1.equals(email2)).toBe(true);
-    });
+
+  it('無効な形式の場合は失敗する', () => {
+   const result = Email.create('invalid-email');
+
+   expect(isFailure(result)).toBe(true);
+   if (isFailure(result)) {
+    expect(result.error.code).toBe('EMAIL_INVALID_FORMAT');
+   }
   });
+ });
+
+ describe('等価性', () => {
+  it('同じ値のEmailは等価', () => {
+   const email1 = Email.create('test@example.com').data!;
+   const email2 = Email.create('test@example.com').data!;
+
+   expect(email1.equals(email2)).toBe(true);
+  });
+ });
 });
 ```
 
@@ -146,17 +146,17 @@ graph TB
         C[ビジネスルールエラー] --> E
         D[インフラエラー] --> E
     end
-    
+
     subgraph "Mock Strategy"
         F[自動モック生成]
         G[DIコンテナ活用]
         H[Result型検証]
     end
-    
+
     E --> F
     E --> G
     E --> H
-    
+
     style A fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style B fill:#f59e0b,stroke:#fbbf24,stroke-width:2px,color:#ffffff
     style C fill:#f59e0b,stroke:#fbbf24,stroke-width:2px,color:#ffffff
@@ -168,49 +168,49 @@ graph TB
 
 ```typescript
 describe('CreateUserUseCase', () => {
-  setupTestEnvironment(); // DIコンテナリセット
-  
-  let useCase: CreateUserUseCase;
-  let mockRepository: MockProxy<IUserRepository>;
-  
-  beforeEach(() => {
-    // 自動モック生成
-    mockRepository = createAutoMockUserRepository();
-    container.registerInstance(INJECTION_TOKENS.UserRepository, mockRepository);
-    
-    useCase = container.resolve(CreateUserUseCase);
+ setupTestEnvironment(); // DIコンテナリセット
+
+ let useCase: CreateUserUseCase;
+ let mockRepository: MockProxy<IUserRepository>;
+
+ beforeEach(() => {
+  // 自動モック生成
+  mockRepository = createAutoMockUserRepository();
+  container.registerInstance(INJECTION_TOKENS.UserRepository, mockRepository);
+
+  useCase = container.resolve(CreateUserUseCase);
+ });
+
+ describe('成功ケース', () => {
+  it('有効な入力でユーザーを作成できる', async () => {
+   mockRepository.findByEmail.mockResolvedValue(null);
+
+   const result = await useCase.execute({
+    name: 'Test User',
+    email: 'test@example.com',
+    password: 'password123',
+   });
+
+   expect(isSuccess(result)).toBe(true);
+   if (isSuccess(result)) {
+    expect(result.data.name).toBe('Test User');
+   }
   });
-  
-  describe('成功ケース', () => {
-    it('有効な入力でユーザーを作成できる', async () => {
-      mockRepository.findByEmail.mockResolvedValue(null);
-      
-      const result = await useCase.execute({
-        name: 'Test User',
-        email: 'test@example.com',
-        password: 'password123'
-      });
-      
-      expect(isSuccess(result)).toBe(true);
-      if (isSuccess(result)) {
-        expect(result.data.name).toBe('Test User');
-      }
-    });
+ });
+
+ describe('エラーケース', () => {
+  it('メール重複時は失敗する', async () => {
+   const existingUser = createMockUser();
+   mockRepository.findByEmail.mockResolvedValue(existingUser);
+
+   const result = await useCase.execute(validInput);
+
+   expect(isFailure(result)).toBe(true);
+   if (isFailure(result)) {
+    expect(result.error.code).toBe('EMAIL_ALREADY_EXISTS');
+   }
   });
-  
-  describe('エラーケース', () => {
-    it('メール重複時は失敗する', async () => {
-      const existingUser = createMockUser();
-      mockRepository.findByEmail.mockResolvedValue(existingUser);
-      
-      const result = await useCase.execute(validInput);
-      
-      expect(isFailure(result)).toBe(true);
-      if (isFailure(result)) {
-        expect(result.error.code).toBe('EMAIL_ALREADY_EXISTS');
-      }
-    });
-  });
+ });
 });
 ```
 
@@ -225,15 +225,15 @@ graph LR
     subgraph "TDDサイクル"
         A[🔴 Red] --> B[🟢 Green] --> C[🔵 Refactor] --> A
     end
-    
+
     subgraph "具体的作業"
         D[失敗テスト作成] --> E[最小実装] --> F[コード改善]
     end
-    
+
     A --> D
     B --> E
     C --> F
-    
+
     style A fill:#dc2626,stroke:#ef4444,stroke-width:2px,color:#ffffff
     style B fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style C fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
@@ -272,14 +272,14 @@ graph TB
         C[Branch Coverage] --> E
         D[Statement Coverage] --> E
     end
-    
+
     subgraph "品質基準"
         F[90%以上: Excellent]
         G[80-89%: Good]
         H[70-79%: Fair]
         I[70%未満: Poor]
     end
-    
+
     style F fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style G fill:#0369a1,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style H fill:#f59e0b,stroke:#fbbf24,stroke-width:2px,color:#ffffff
@@ -310,7 +310,7 @@ graph TB
 # GitHub Actions例
 - name: Run Unit Tests
   run: pnpm test:unit --coverage
-  
+
 - name: Upload Coverage
   uses: codecov/codecov-action@v3
 ```

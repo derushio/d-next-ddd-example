@@ -15,11 +15,11 @@
 
 ### 📊 効果比較
 
-| 項目 | 従来の手動モック | vitest-mock-extended |
-|------|-----------------|---------------------|
-| 生産性 | ⭐⭐ 手動メンテナンス | ⭐⭐⭐⭐⭐ 1行で完了 |
-| 型安全性 | ⭐⭐⭐ `as any` で妥協 | ⭐⭐⭐⭐⭐ 完全対応 |
-| メンテナンス | ⭐ 手動で毎回更新 | ⭐⭐⭐⭐⭐ 自動更新 |
+| 項目         | 従来の手動モック       | vitest-mock-extended |
+| ------------ | ---------------------- | -------------------- |
+| 生産性       | ⭐⭐ 手動メンテナンス  | ⭐⭐⭐⭐⭐ 1行で完了 |
+| 型安全性     | ⭐⭐⭐ `as any` で妥協 | ⭐⭐⭐⭐⭐ 完全対応  |
+| メンテナンス | ⭐ 手動で毎回更新      | ⭐⭐⭐⭐⭐ 自動更新  |
 
 ---
 
@@ -44,37 +44,41 @@ mockUserRepository.findById.mockResolvedValue(user);
 // tests/utils/mocks/autoMocks.ts
 import { mock, MockProxy } from 'vitest-mock-extended';
 
-export const createAutoMockUserRepository = (): MockProxy<IUserRepository> => 
-  mock<IUserRepository>();
+export const createAutoMockUserRepository = (): MockProxy<IUserRepository> =>
+ mock<IUserRepository>();
 
-export const createAutoMockUserDomainService = (): MockProxy<UserDomainService> => 
-  mock<UserDomainService>();
+export const createAutoMockUserDomainService =
+ (): MockProxy<UserDomainService> => mock<UserDomainService>();
 ```
 
 ### 3. テストでの使用
 
 ```typescript
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+
 import { createAutoMockUserRepository } from '../../utils/mocks/autoMocks';
 
 describe('CreateUserUseCase', () => {
-  let mockUserRepository: MockProxy<IUserRepository>;
+ let mockUserRepository: MockProxy<IUserRepository>;
 
-  beforeEach(() => {
-    mockUserRepository = createAutoMockUserRepository();
-    container.registerInstance(INJECTION_TOKENS.UserRepository, mockUserRepository);
-  });
+ beforeEach(() => {
+  mockUserRepository = createAutoMockUserRepository();
+  container.registerInstance(
+   INJECTION_TOKENS.UserRepository,
+   mockUserRepository,
+  );
+ });
 
-  it('正常系: ユーザー作成が成功する', async () => {
-    // 型安全なモック設定
-    mockUserRepository.save.mockResolvedValue(undefined);
-    
-    const useCase = container.resolve(CreateUserUseCase);
-    const result = await useCase.execute(validInput);
-    
-    // 型安全なアサーション
-    expect(mockUserRepository.save).toHaveBeenCalledWith(expect.any(User));
-  });
+ it('正常系: ユーザー作成が成功する', async () => {
+  // 型安全なモック設定
+  mockUserRepository.save.mockResolvedValue(undefined);
+
+  const useCase = container.resolve(CreateUserUseCase);
+  const result = await useCase.execute(validInput);
+
+  // 型安全なアサーション
+  expect(mockUserRepository.save).toHaveBeenCalledWith(expect.any(User));
+ });
 });
 ```
 
@@ -96,13 +100,14 @@ mockService.someMethod.mockResolvedValue(result);
 **解決方法**:
 
 ```typescript
-// ✅ interface の定義を確認
-export interface IUserService {
-  someMethod(param: string): Promise<Result>; // メソッドが定義されているか確認
-}
-
 // ✅ 正しい import
 import type { IUserService } from '@/layers/domain/services/IUserService';
+
+// ✅ interface の定義を確認
+export interface IUserService {
+ someMethod(param: string): Promise<Result>; // メソッドが定義されているか確認
+}
+
 const mockService = mock<IUserService>();
 ```
 
@@ -126,8 +131,8 @@ container.registerInstance(INJECTION_TOKENS.Service, mockService as IService);
 // ✅ MockProxy 型を明示的に使用
 let mockService: MockProxy<IService>;
 beforeEach(() => {
-  mockService = mock<IService>();
-  container.registerInstance(INJECTION_TOKENS.Service, mockService);
+ mockService = mock<IService>();
+ container.registerInstance(INJECTION_TOKENS.Service, mockService);
 });
 ```
 
@@ -159,16 +164,18 @@ mockService.config.database.host.mockReturnValue('localhost');
 ```typescript
 // ✅ 条件付きモック設定
 mockRepository.findById
-  .calledWith('user-1').mockResolvedValue(user1)
-  .calledWith('user-2').mockResolvedValue(user2);
+ .calledWith('user-1')
+ .mockResolvedValue(user1)
+ .calledWith('user-2')
+ .mockResolvedValue(user2);
 
 // または
 
 // ✅ mockImplementation を使用
 mockRepository.findById.mockImplementation(async (id: string) => {
-  if (id === 'user-1') return user1;
-  if (id === 'user-2') return user2;
-  return null;
+ if (id === 'user-1') return user1;
+ if (id === 'user-2') return user2;
+ return null;
 });
 ```
 
@@ -181,17 +188,17 @@ mockRepository.findById.mockImplementation(async (id: string) => {
 ```typescript
 // ✅ 段階的移行パターン
 describe('UserService', () => {
-  // 既存テスト（そのまま残す）
-  describe('legacy tests', () => {
-    const mockRepo = createMockUserRepository(); // 従来の手動モック
-    // ... 既存のテスト
-  });
+ // 既存テスト（そのまま残す）
+ describe('legacy tests', () => {
+  const mockRepo = createMockUserRepository(); // 従来の手動モック
+  // ... 既存のテスト
+ });
 
-  // 新しいテスト（vitest-mock-extended を使用）
-  describe('new tests', () => {
-    const mockRepo = mock<IUserRepository>(); // 自動モック
-    // ... 新しいテスト
-  });
+ // 新しいテスト（vitest-mock-extended を使用）
+ describe('new tests', () => {
+  const mockRepo = mock<IUserRepository>(); // 自動モック
+  // ... 新しいテスト
+ });
 });
 ```
 
@@ -204,8 +211,8 @@ describe('UserService', () => {
 ```typescript
 // 一部のプロパティのみモック
 const partialMock = mock<IUserService>({
-  getUserName: () => 'Test User', // 固定値
-  // 他のメソッドは自動モック
+ getUserName: () => 'Test User', // 固定値
+ // 他のメソッドは自動モック
 });
 ```
 
@@ -215,9 +222,9 @@ const partialMock = mock<IUserService>({
 // 実際の実装を呼び出しつつモック
 const spyMock = mock<IUserService>();
 spyMock.someMethod.mockImplementation(async (param) => {
-  // 実際の処理 + テスト用の処理
-  const result = await realService.someMethod(param);
-  return { ...result, testFlag: true };
+ // 実際の処理 + テスト用の処理
+ const result = await realService.someMethod(param);
+ return { ...result, testFlag: true };
 });
 ```
 
@@ -225,11 +232,11 @@ spyMock.someMethod.mockImplementation(async (param) => {
 
 ```typescript
 beforeEach(() => {
-  // 全モックをリセット
-  vi.clearAllMocks();
-  
-  // 特定のモックのみリセット
-  mockUserRepository.mockClear();
+ // 全モックをリセット
+ vi.clearAllMocks();
+
+ // 特定のモックのみリセット
+ mockUserRepository.mockClear();
 });
 ```
 
@@ -245,14 +252,14 @@ export const createAutoMockUserRepository = () => mock<IUserRepository>();
 
 // 2. beforeEach でモック初期化
 beforeEach(() => {
-  mockRepo = createAutoMockUserRepository();
-  container.registerInstance(INJECTION_TOKENS.UserRepository, mockRepo);
+ mockRepo = createAutoMockUserRepository();
+ container.registerInstance(INJECTION_TOKENS.UserRepository, mockRepo);
 });
 
 // 3. テスト内で型安全な設定
 it('should work', async () => {
-  mockRepo.save.mockResolvedValue(undefined);
-  // テスト実行
+ mockRepo.save.mockResolvedValue(undefined);
+ // テスト実行
 });
 ```
 
@@ -264,9 +271,9 @@ const mockRepo = { save: vi.fn() } as any;
 
 // ❌ 手動でメソッドを列挙
 const mockRepo = {
-  save: vi.fn(),
-  findById: vi.fn(),
-  // 新メソッド追加のたびに手動更新...
+ save: vi.fn(),
+ findById: vi.fn(),
+ // 新メソッド追加のたびに手動更新...
 };
 
 // ❌ グローバルなモック（テスト間で影響）

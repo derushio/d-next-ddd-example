@@ -37,29 +37,29 @@ graph TB
         B[Server Actions] --> D
         C[Page Components] --> D
     end
-    
+
     subgraph "📋 Application Layer"
         E[Use Cases] --> H[ビジネスフロー]
         F[DTOs] --> H
         G[App Services] --> H
     end
-    
+
     subgraph "👑 Domain Layer"
         I[Entities] --> L[ビジネスルール]
         J[Value Objects] --> L
         K[Domain Services] --> L
     end
-    
+
     subgraph "🔧 Infrastructure Layer"
         M[Repositories] --> P[技術実装]
         N[External APIs] --> P
         O[Database] --> P
     end
-    
+
     A --> E
     E --> I
     E --> M
-    
+
     style D fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style H fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style L fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -71,21 +71,21 @@ graph TB
 ```typescript
 // ❌ 禁止: レイヤー越境の直接依存
 // Presentation → Infrastructure
-import { PrismaClient } from '@prisma/client'; // NG
-
-// ❌ 禁止: Domain → Application
-import { CreateUserUseCase } from '@/layers/application'; // NG
-
-// ❌ 禁止: フレームワーク依存のDomain
-import { NextRequest } from 'next/server'; // Domain層でNG
 
 // ✅ 推奨: 適切な依存関係
 // Presentation → Application
 import { resolve } from '@/diContainer';
-import { INJECTION_TOKENS } from '@/layers/infrastructure/di/tokens';
+// ❌ 禁止: Domain → Application
+import { CreateUserUseCase } from '@/layers/application'; // NG
 
 // Application → Domain (Interface)
 import { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
+import { INJECTION_TOKENS } from '@/di/tokens';
+
+import { PrismaClient } from '@prisma/client'; // NG
+
+// ❌ 禁止: フレームワーク依存のDomain
+import { NextRequest } from 'next/server'; // Domain層でNG
 ```
 
 ---
@@ -97,49 +97,50 @@ import { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 ```typescript
 // ✅ UseCase戻り値は必ずResult型
 export class CreateUserUseCase {
-  async execute(request: CreateUserRequest): Promise<Result<CreateUserResponse>> {
-    try {
-      // 1. 入力検証
-      const emailResult = Email.create(request.email);
-      if (isFailure(emailResult)) {
-        return emailResult; // そのまま失敗を返す
-      }
+ async execute(
+  request: CreateUserRequest,
+ ): Promise<Result<CreateUserResponse>> {
+  try {
+   // 1. 入力検証
+   const emailResult = Email.create(request.email);
+   if (isFailure(emailResult)) {
+    return emailResult; // そのまま失敗を返す
+   }
 
-      // 2. ビジネスロジック実行
-      const user = await this.createUser(emailResult.data);
-      
-      // 3. 成功レスポンス組み立て
-      return success({
-        userId: user.getId().toString(),
-        name: user.getName().toString(),
-        email: user.getEmail().toString(),
-        createdAt: user.getCreatedAt().toISOString()
-      });
+   // 2. ビジネスロジック実行
+   const user = await this.createUser(emailResult.data);
 
-    } catch (error) {
-      // 4. インフラエラーの統一処理
-      this.logger.error('ユーザー作成中にエラーが発生', { error });
-      return failure('ユーザー作成に失敗しました', 'UNEXPECTED_ERROR');
-    }
+   // 3. 成功レスポンス組み立て
+   return success({
+    userId: user.getId().toString(),
+    name: user.getName().toString(),
+    email: user.getEmail().toString(),
+    createdAt: user.getCreatedAt().toISOString(),
+   });
+  } catch (error) {
+   // 4. インフラエラーの統一処理
+   this.logger.error('ユーザー作成中にエラーが発生', { error });
+   return failure('ユーザー作成に失敗しました', 'UNEXPECTED_ERROR');
   }
+ }
 }
 
 // ✅ Server ActionsでのResult型処理
 export async function createUserAction(formData: FormData) {
-  const useCase = resolve(INJECTION_TOKENS.CreateUserUseCase);
-  const result = await useCase.execute(request);
+ const useCase = resolve(INJECTION_TOKENS.CreateUserUseCase);
+ const result = await useCase.execute(request);
 
-  if (isFailure(result)) {
-    return {
-      success: false,
-      message: result.error.message
-    };
-  }
-
+ if (isFailure(result)) {
   return {
-    success: true,
-    data: result.data
+   success: false,
+   message: result.error.message,
   };
+ }
+
+ return {
+  success: true,
+  data: result.data,
+ };
 }
 ```
 
@@ -153,16 +154,16 @@ export async function createUserAction(formData: FormData) {
 // ✅ 推奨: Application/Domain/Infrastructure層
 @injectable()
 export class CreateUserUseCase {
-  constructor(
-    @inject(INJECTION_TOKENS.UserRepository) 
-    private readonly userRepository: IUserRepository,
-    @inject(INJECTION_TOKENS.HashService)
-    private readonly hashService: IHashService,
-    @inject(INJECTION_TOKENS.Logger)
-    private readonly logger: ILogger
-  ) {}
+ constructor(
+  @inject(INJECTION_TOKENS.UserRepository)
+  private readonly userRepository: IUserRepository,
+  @inject(INJECTION_TOKENS.HashService)
+  private readonly hashService: IHashService,
+  @inject(INJECTION_TOKENS.Logger)
+  private readonly logger: ILogger,
+ ) {}
 
-  // UseCase実装...
+ // UseCase実装...
 }
 ```
 
@@ -173,10 +174,10 @@ export class CreateUserUseCase {
 'use server';
 
 export async function createUserAction(formData: FormData) {
-  // 動的解決パターン
-  const useCase = resolve(INJECTION_TOKENS.CreateUserUseCase);
-  const result = await useCase.execute(request);
-  // 処理...
+ // 動的解決パターン
+ const useCase = resolve(INJECTION_TOKENS.CreateUserUseCase);
+ const result = await useCase.execute(request);
+ // 処理...
 }
 ```
 
@@ -244,25 +245,26 @@ export function InteractiveUserForm() {
 // ✅ 推奨: Server Actionsパターン
 'use server';
 
-import { redirect } from 'next/navigation';
 import { resolve } from '@/diContainer';
 
+import { redirect } from 'next/navigation';
+
 export async function updateUserAction(formData: FormData) {
-  // バリデーション
-  const input = {
-    name: formData.get('name') as string,
-    email: formData.get('email') as string
-  };
+ // バリデーション
+ const input = {
+  name: formData.get('name') as string,
+  email: formData.get('email') as string,
+ };
 
-  // UseCase実行
-  const useCase = resolve(INJECTION_TOKENS.UpdateUserUseCase);
-  const result = await useCase.execute(input);
+ // UseCase実行
+ const useCase = resolve(INJECTION_TOKENS.UpdateUserUseCase);
+ const result = await useCase.execute(input);
 
-  if (isFailure(result)) {
-    return { success: false, message: result.error.message };
-  }
+ if (isFailure(result)) {
+  return { success: false, message: result.error.message };
+ }
 
-  redirect('/users');
+ redirect('/users');
 }
 ```
 
@@ -278,28 +280,28 @@ import { setupTestEnvironment } from '@tests/utils/helpers/testHelpers';
 import { createAutoMockUserRepository } from '@tests/utils/mocks/autoMocks';
 
 describe('CreateUserUseCase', () => {
-  setupTestEnvironment(); // DIコンテナリセット必須
+ setupTestEnvironment(); // DIコンテナリセット必須
 
-  let useCase: CreateUserUseCase;
-  let mockRepository: MockProxy<IUserRepository>;
+ let useCase: CreateUserUseCase;
+ let mockRepository: MockProxy<IUserRepository>;
 
-  beforeEach(() => {
-    // 自動モック生成
-    mockRepository = createAutoMockUserRepository();
-    container.registerInstance(INJECTION_TOKENS.UserRepository, mockRepository);
-    
-    useCase = container.resolve(CreateUserUseCase);
-  });
+ beforeEach(() => {
+  // 自動モック生成
+  mockRepository = createAutoMockUserRepository();
+  container.registerInstance(INJECTION_TOKENS.UserRepository, mockRepository);
 
-  // Result型対応テスト
-  it('should create user successfully', async () => {
-    const result = await useCase.execute(validInput);
-    
-    expect(isSuccess(result)).toBe(true);
-    if (isSuccess(result)) {
-      expect(result.data.name).toBe('Test User');
-    }
-  });
+  useCase = container.resolve(CreateUserUseCase);
+ });
+
+ // Result型対応テスト
+ it('should create user successfully', async () => {
+  const result = await useCase.execute(validInput);
+
+  expect(isSuccess(result)).toBe(true);
+  if (isSuccess(result)) {
+   expect(result.data.name).toBe('Test User');
+  }
+ });
 });
 ```
 
@@ -312,23 +314,26 @@ describe('CreateUserUseCase', () => {
 ```typescript
 // ✅ 推奨: なぜその実装なのかを説明
 export class User {
-  changeName(newName: UserName): Result<void> {
-    // ビジネスルール: アカウント作成から24時間以内は名前変更不可
-    // 理由: スパム防止・セキュリティ確保のため
-    if (this.createdAt.getTime() > Date.now() - 24 * 60 * 60 * 1000) {
-      return failure('アカウント作成から24時間以内は名前変更できません', 'NAME_CHANGE_TOO_SOON');
-    }
-
-    this.name = newName;
-    this.updatedAt = new Date();
-    return success(undefined);
+ changeName(newName: UserName): Result<void> {
+  // ビジネスルール: アカウント作成から24時間以内は名前変更不可
+  // 理由: スパム防止・セキュリティ確保のため
+  if (this.createdAt.getTime() > Date.now() - 24 * 60 * 60 * 1000) {
+   return failure(
+    'アカウント作成から24時間以内は名前変更できません',
+    'NAME_CHANGE_TOO_SOON',
+   );
   }
 
-  // ❌ 避ける: 何をしているかの説明
-  // changeName(newName: UserName): Result<void> {
-  //   // 名前を変更する
-  //   this.name = newName;
-  // }
+  this.name = newName;
+  this.updatedAt = new Date();
+  return success(undefined);
+ }
+
+ // ❌ 避ける: 何をしているかの説明
+ // changeName(newName: UserName): Result<void> {
+ //   // 名前を変更する
+ //   this.name = newName;
+ // }
 }
 ```
 
@@ -363,17 +368,17 @@ graph LR
         C[Test Coverage: 90%+] --> E
         D[Complexity: <10] --> E
     end
-    
+
     subgraph "🚀 継続的改善"
         F[自動チェック]
         G[レビュー必須]
         H[品質監視]
     end
-    
+
     E --> F
     E --> G
     E --> H
-    
+
     style E fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style F fill:#0369a1,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style G fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff

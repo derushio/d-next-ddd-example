@@ -25,11 +25,11 @@ graph LR
     subgraph "段階的実装"
         A[ステップ確認] --> B[作業実行] --> C[成果確認] --> D[次ステップ]
     end
-    
+
     subgraph "品質保証"
         C --> E[テスト実装] --> F[レビュー] --> G[完了]
     end
-    
+
     D --> A
 ```
 
@@ -48,13 +48,13 @@ graph TB
         B --> C[制約条件特定]
         C --> D[成功基準定義]
     end
-    
+
     subgraph "成果物"
         E[要件定義書]
         F[技術制約リスト]
         G[受け入れ条件]
     end
-    
+
     D --> E
     D --> F
     D --> G
@@ -63,6 +63,7 @@ graph TB
 **作業内容:**
 
 1. **ビジネス要件のヒアリング・整理**
+
    - [ ] 機能の目的・価値の確認
    - [ ] ユーザーストーリーの明確化
    - [ ] 業務フロー・制約条件の把握
@@ -88,13 +89,13 @@ graph LR
         B -->|Partial| D[パターン拡張]
         B -->|No| E[新パターン検討]
     end
-    
+
     subgraph "決定事項"
         F[実装方針]
         G[使用パターン]
         H[影響範囲]
     end
-    
+
     C --> F
     D --> G
     E --> H
@@ -103,6 +104,7 @@ graph LR
 **作業内容:**
 
 1. **[アーキテクチャ概要](../../architecture/overview.md) との照合**
+
    - [ ] 既存レイヤー構成での実現可能性確認
    - [ ] Clean Architecture原則との整合性確認
    - [ ] 依存関係方向の妥当性確認
@@ -127,13 +129,13 @@ graph TB
         B --> C[依存関係整理]
         C --> D[スケジュール策定]
     end
-    
+
     subgraph "品質計画"
         E[テスト戦略]
         F[レビュー計画]
         G[検証手順]
     end
-    
+
     D --> E
     D --> F
     D --> G
@@ -142,6 +144,7 @@ graph TB
 **作業内容:**
 
 1. **実装順序の決定**
+
    - [ ] [実装判断ガイド](decision-guide.md) に基づく順序決定
    - [ ] 新規ドメイン vs 既存拡張の判断
    - [ ] レイヤー間の実装依存関係整理
@@ -170,13 +173,13 @@ graph TB
         B --> C[バリデーション実装]
         C --> D[テスト実装]
     end
-    
+
     subgraph "品質確認"
         E[境界値テスト]
         F[バリデーション確認]
         G[不変性確認]
     end
-    
+
     D --> E
     D --> F
     D --> G
@@ -185,6 +188,7 @@ graph TB
 **作業内容:**
 
 1. **概念分析・モデリング**
+
    - [ ] 業務概念の Value Object 抽出
    - [ ] [パターンガイド](patterns-guide.md) のValue Objectテンプレート参照
    - [ ] 属性・制約条件・ビジネスルールの整理
@@ -194,18 +198,22 @@ graph TB
    ```typescript
    // 実装例：UserId Value Object
    export class UserId {
-     private constructor(private readonly value: string) {}
-   
-     static create(value: string): Result<UserId> {
-       // バリデーション実装
-     }
-   
-     static generate(): UserId {
-       // 新ID生成実装
-     }
-   
-     toString(): string { return this.value; }
-     equals(other: UserId): boolean { return this.value === other.value; }
+    private constructor(private readonly value: string) {}
+
+    static create(value: string): Result<UserId> {
+     // バリデーション実装
+    }
+
+    static generate(): UserId {
+     // 新ID生成実装
+    }
+
+    toString(): string {
+     return this.value;
+    }
+    equals(other: UserId): boolean {
+     return this.value === other.value;
+    }
    }
    ```
 
@@ -230,13 +238,13 @@ graph LR
         B --> C[ビジネスロジック]
         C --> D[不変条件]
     end
-    
+
     subgraph "実装要素"
         E[ID管理]
         F[ファクトリメソッド]
         G[状態変更メソッド]
     end
-    
+
     D --> E
     D --> F
     D --> G
@@ -245,6 +253,7 @@ graph LR
 **作業内容:**
 
 1. **Entity設計**
+
    - [ ] 一意識別子（ID）の設計
    - [ ] ライフサイクル管理の設計
    - [ ] 状態変更ルールの定義
@@ -254,24 +263,24 @@ graph LR
    ```typescript
    // 実装例：User Entity
    export class User {
-     private constructor(
-       private readonly id: UserId,
-       private name: UserName,
-       private email: Email,
-       // ...
-     ) {}
-   
-     static create(name: UserName, email: Email): Result<User> {
-       // 新規作成ファクトリ
-     }
-   
-     static reconstruct(/* parameters */): User {
-       // 復元ファクトリ（Repository用）
-     }
-   
-     changeName(newName: UserName): Result<void> {
-       // ビジネスルール付き状態変更
-     }
+    private constructor(
+     private readonly id: UserId,
+     private name: UserName,
+     private email: Email,
+     // ...
+    ) {}
+
+    static create(name: UserName, email: Email): Result<User> {
+     // 新規作成ファクトリ
+    }
+
+    static reconstruct(/* parameters */): User {
+     // 復元ファクトリ（Repository用）
+    }
+
+    changeName(newName: UserName): Result<void> {
+     // ビジネスルール付き状態変更
+    }
    }
    ```
 
@@ -296,7 +305,7 @@ graph TB
         B -->|No| C[Domain Service作成]
         B -->|Yes| D[Entity/VOで実装]
     end
-    
+
     subgraph "実装内容"
         C --> E[サービスクラス作成]
         E --> F[ビジネスロジック実装]
@@ -307,6 +316,7 @@ graph TB
 **作業内容:**
 
 1. **Domain Service必要性判断**
+
    - [ ] 複数Entity間のビジネスロジック存在確認
    - [ ] 外部システム連携の必要性確認
    - [ ] ドメイン知識の集約必要性確認
@@ -316,14 +326,14 @@ graph TB
    ```typescript
    @injectable()
    export class UserDomainService {
-     constructor(
-       @inject(INJECTION_TOKENS.UserRepository) 
-       private readonly userRepository: IUserRepository
-     ) {}
-   
-     async isDuplicateEmail(email: Email): Promise<boolean> {
-       // 複雑なビジネスロジック実装
-     }
+    constructor(
+     @inject(INJECTION_TOKENS.UserRepository)
+     private readonly userRepository: IUserRepository,
+    ) {}
+
+    async isDuplicateEmail(email: Email): Promise<boolean> {
+     // 複雑なビジネスロジック実装
+    }
    }
    ```
 
@@ -345,13 +355,13 @@ graph LR
         B[出力DTO] --> D
         C[内部DTO] --> D
     end
-    
+
     subgraph "実装要素"
         E[型安全性]
         F[バリデーション]
         G[変換ロジック]
     end
-    
+
     D --> E
     D --> F
     D --> G
@@ -360,6 +370,7 @@ graph LR
 **作業内容:**
 
 1. **DTO設計**
+
    - [ ] UseCase入力・出力の型定義
    - [ ] プリミティブ型による外部境界の設計
    - [ ] レイヤー間データ転送の設計
@@ -369,17 +380,17 @@ graph LR
    ```typescript
    // Request DTO
    export interface CreateUserRequest {
-     name: string;
-     email: string;
-     password: string;
+    name: string;
+    email: string;
+    password: string;
    }
-   
+
    // Response DTO
    export interface CreateUserResponse {
-     userId: string;
-     name: string;
-     email: string;
-     createdAt: string;
+    userId: string;
+    name: string;
+    email: string;
+    createdAt: string;
    }
    ```
 
@@ -398,13 +409,13 @@ graph TB
         B --> C[エラーハンドリング]
         C --> D[ログ出力]
     end
-    
+
     subgraph "Result型活用"
         E[成功時処理]
         F[失敗時処理]
         G[例外処理]
     end
-    
+
     D --> E
     D --> F
     D --> G
@@ -413,6 +424,7 @@ graph TB
 **作業内容:**
 
 1. **UseCase クラス実装**
+
    - [ ] [パターンガイド](patterns-guide.md) のUseCaseテンプレート適用
    - [ ] 依存性注入の設定（`@injectable`, `@inject`）
    - [ ] Result型による統一エラーハンドリング
@@ -422,18 +434,20 @@ graph TB
    ```typescript
    @injectable()
    export class CreateUserUseCase {
-     constructor(
-       @inject(INJECTION_TOKENS.UserRepository) 
-       private readonly userRepository: IUserRepository,
-       // 他の依存関係...
-     ) {}
-   
-     async execute(request: CreateUserRequest): Promise<Result<CreateUserResponse>> {
-       // 1. バリデーション
-       // 2. ビジネスロジック実行
-       // 3. 永続化
-       // 4. 結果返却
-     }
+    constructor(
+     @inject(INJECTION_TOKENS.UserRepository)
+     private readonly userRepository: IUserRepository,
+     // 他の依存関係...
+    ) {}
+
+    async execute(
+     request: CreateUserRequest,
+    ): Promise<Result<CreateUserResponse>> {
+     // 1. バリデーション
+     // 2. ビジネスロジック実行
+     // 3. 永続化
+     // 4. 結果返却
+    }
    }
    ```
 
@@ -457,13 +471,13 @@ graph LR
         B --> C[Container登録]
         C --> D[依存解決確認]
     end
-    
+
     subgraph "動作確認"
         E[Unit Test]
         F[Integration Test]
         G[実行確認]
     end
-    
+
     D --> E
     D --> F
     D --> G
@@ -472,6 +486,7 @@ graph LR
 **作業内容:**
 
 1. **DI設定実装**
+
    - [ ] `tokens.ts` にトークンと型定義追加
    - [ ] `applicationContainer.ts` にサービス登録
    - [ ] 循環依存がないことを確認
@@ -500,13 +515,13 @@ graph TB
         B --> C[戻り値設計]
         C --> D[例外設計]
     end
-    
+
     subgraph "実装指針"
         E[ドメイン保護]
         F[実装隠蔽]
         G[テスタビリティ]
     end
-    
+
     D --> E
     D --> F
     D --> G
@@ -515,6 +530,7 @@ graph TB
 **作業内容:**
 
 1. **Interface設計**
+
    - [ ] ドメイン要件からCRUD操作抽出
    - [ ] 戻り値・引数の型設計
    - [ ] 例外ケースの整理
@@ -523,10 +539,10 @@ graph TB
 
    ```typescript
    export interface IUserRepository {
-     findById(id: UserId): Promise<User | null>;
-     findByEmail(email: Email): Promise<User | null>;
-     save(user: User): Promise<void>;
-     delete(id: UserId): Promise<void>;
+    findById(id: UserId): Promise<User | null>;
+    findByEmail(email: Email): Promise<User | null>;
+    save(user: User): Promise<void>;
+    delete(id: UserId): Promise<void>;
    }
    ```
 
@@ -545,13 +561,13 @@ graph LR
         B --> C[エラー処理]
         C --> D[ログ出力]
     end
-    
+
     subgraph "品質要素"
         E[型安全性]
         F[例外安全性]
         G[パフォーマンス]
     end
-    
+
     D --> E
     D --> F
     D --> G
@@ -560,6 +576,7 @@ graph LR
 **作業内容:**
 
 1. **Repository実装**
+
    - [ ] [パターンガイド](patterns-guide.md) のRepositoryテンプレート適用
    - [ ] ドメインオブジェクト ↔ Prismaデータ変換実装
    - [ ] エラーハンドリング・ログ出力実装
@@ -569,19 +586,23 @@ graph LR
    ```typescript
    @injectable()
    export class PrismaUserRepository implements IUserRepository {
-     constructor(
-       @inject(INJECTION_TOKENS.PrismaClient) 
-       private readonly prisma: PrismaClient,
-       @inject(INJECTION_TOKENS.Logger) 
-       private readonly logger: ILogger
-     ) {}
-   
-     async findById(id: UserId): Promise<User | null> {
-       // パターンガイドテンプレートに従った実装
-     }
-   
-     private toDomain(userData: any): User { /* 変換ロジック */ }
-     private toPersistence(user: User): any { /* 変換ロジック */ }
+    constructor(
+     @inject(INJECTION_TOKENS.PrismaClient)
+     private readonly prisma: PrismaClient,
+     @inject(INJECTION_TOKENS.Logger)
+     private readonly logger: ILogger,
+    ) {}
+
+    async findById(id: UserId): Promise<User | null> {
+     // パターンガイドテンプレートに従った実装
+    }
+
+    private toDomain(userData: any): User {
+     /* 変換ロジック */
+    }
+    private toPersistence(user: User): any {
+     /* 変換ロジック */
+    }
    }
    ```
 
@@ -600,13 +621,13 @@ graph TB
         B --> C[エラーケーステスト]
         C --> D[パフォーマンステスト]
     end
-    
+
     subgraph "検証項目"
         E[データ整合性]
         F[トランザクション]
         G[並行性]
     end
-    
+
     D --> E
     D --> F
     D --> G
@@ -637,13 +658,13 @@ graph LR
         B --> C[UseCase呼び出し]
         C --> D[結果処理]
     end
-    
+
     subgraph "UI統合"
         E[エラー表示]
         F[成功処理]
         G[リダイレクト]
     end
-    
+
     D --> E
     D --> F
     D --> G
@@ -652,6 +673,7 @@ graph LR
 **作業内容:**
 
 1. **Server Actions実装**
+
    - [ ] [パターンガイド](patterns-guide.md) のServer Actionsテンプレート適用
    - [ ] zodによるフォームバリデーション実装
    - [ ] Result型による結果処理実装
@@ -660,12 +682,12 @@ graph LR
 
    ```typescript
    'use server';
-   
+
    export async function createUserAction(
-     prevState: any,
-     formData: FormData
+    prevState: any,
+    formData: FormData,
    ): Promise<ActionResult> {
-     // パターンガイドに従った実装
+    // パターンガイドに従った実装
    }
    ```
 
@@ -684,13 +706,13 @@ graph TB
         B --> C[エラー処理]
         C --> D[アクセシビリティ]
     end
-    
+
     subgraph "品質確認"
         E[動作確認]
         F[レスポンシブ]
         G[ユーザビリティ]
     end
-    
+
     D --> E
     D --> F
     D --> G
@@ -722,13 +744,13 @@ graph LR
         B --> C[Playwright実装]
         C --> D[エラーケーステスト]
     end
-    
+
     subgraph "品質確認"
         E[機能動作]
         F[セキュリティ]
         G[パフォーマンス]
     end
-    
+
     D --> E
     D --> F
     D --> G
@@ -756,13 +778,13 @@ graph TB
         B --> C[パフォーマンス]
         C --> D[セキュリティ]
     end
-    
+
     subgraph "合格基準"
         E[Application: 94%+]
         F[Domain: 90%+]
         G[Infrastructure: 85%+]
     end
-    
+
     D --> E
     D --> F
     D --> G
@@ -795,7 +817,7 @@ graph LR
         B[品質達成度] --> D
         C[問題・課題] --> D
     end
-    
+
     subgraph "改善実施"
         D --> E[パターン見直し]
         E --> F[ガイド更新]
@@ -825,18 +847,18 @@ graph LR
 
 ### 📚 **実装段階別詳細ガイド**
 
-| Phase | 詳細ガイド | 参考パターン | 品質基準 |
-|-------|-----------|-------------|----------|
-| **要件・設計** | [実装判断ガイド](decision-guide.md) | [アーキテクチャ概要](../../architecture/overview.md) | 要件明確化 |
-| **Domain実装** | [Domain実装](../development/domain.md) | [パターンガイド](patterns-guide.md) | カバレッジ90%+ |
-| **Application実装** | [UseCase実装](../development/usecase.md) | [Result型パターン](../../architecture/patterns/result-pattern.md) | カバレッジ94%+ |
-| **Infrastructure実装** | [Repository実装](../development/repository.md) | [インフラ層](../../architecture/layers/infrastructure.md) | カバレッジ85%+ |
-| **Presentation実装** | [Server Actions](../frontend/server-actions.md) | [フロントエンド](../frontend/) | E2Eテスト成功 |
+| Phase                  | 詳細ガイド                                      | 参考パターン                                                      | 品質基準       |
+| ---------------------- | ----------------------------------------------- | ----------------------------------------------------------------- | -------------- |
+| **要件・設計**         | [実装判断ガイド](decision-guide.md)             | [アーキテクチャ概要](../../architecture/overview.md)              | 要件明確化     |
+| **Domain実装**         | [Domain実装](../development/domain.md)          | [パターンガイド](patterns-guide.md)                               | カバレッジ90%+ |
+| **Application実装**    | [UseCase実装](../development/usecase.md)        | [Result型パターン](../../architecture/patterns/result-pattern.md) | カバレッジ94%+ |
+| **Infrastructure実装** | [Repository実装](../development/repository.md)  | [インフラ層](../../architecture/layers/infrastructure.md)         | カバレッジ85%+ |
+| **Presentation実装**   | [Server Actions](../frontend/server-actions.md) | [フロントエンド](../frontend/)                                    | E2Eテスト成功  |
 
 ### 🎯 **継続学習リソース**
 
 - **深掘り**: [設計パターン詳細](../../architecture/patterns/) で理論を深化
-- **効率化**: [開発ツール](../../reference/tools.md) で作業効率向上  
+- **効率化**: [開発ツール](../../reference/tools.md) で作業効率向上
 - **品質向上**: [テスト戦略](../../testing/strategy.md) で品質保証強化
 - **チーム開発**: [チーム協働](../team/) でチーム開発力向上
 

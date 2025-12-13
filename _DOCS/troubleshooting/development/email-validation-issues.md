@@ -7,8 +7,8 @@ Email Value Objectのバリデーションテストで、一部の不正なメ�
 ```typescript
 // ❌ 通ってしまう不正なテスト例
 test('連続ドットは無効', () => {
-  expect(() => new Email('user@domain..com')).toThrow();
-  // ❌ エラーが投げられずテストが失敗
+ expect(() => new Email('user@domain..com')).toThrow();
+ // ❌ エラーが投げられずテストが失敗
 });
 ```
 
@@ -36,36 +36,42 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 ```typescript
 export class Email {
-  private readonly value: string;
-  // 改良された正規表現（連続ドットを避ける）
-  private static readonly EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@.]+$/;
+ private readonly value: string;
+ // 改良された正規表現（連続ドットを避ける）
+ private static readonly EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@.]+$/;
 
-  constructor(email: string) {
-    if (!email?.trim()) {
-      throw new DomainError('メールアドレスは必須です', 'EMAIL_REQUIRED');
-    }
-
-    const trimmedEmail = email.trim().toLowerCase();
-
-    // 基本的な正規表現チェック
-    if (!Email.EMAIL_REGEX.test(trimmedEmail)) {
-      throw new DomainError('無効なメールアドレス形式です', 'INVALID_EMAIL_FORMAT');
-    }
-
-    // 連続ドットチェック
-    if (trimmedEmail.includes('..')) {
-      throw new DomainError('無効なメールアドレス形式です', 'INVALID_EMAIL_FORMAT');
-    }
-
-    // その他の詳細チェック
-    const [local, domain] = trimmedEmail.split('@');
-    
-    if (local.length > 64 || domain.length > 255) {
-      throw new DomainError('メールアドレスが長すぎます', 'EMAIL_TOO_LONG');
-    }
-
-    this.value = trimmedEmail;
+ constructor(email: string) {
+  if (!email?.trim()) {
+   throw new DomainError('メールアドレスは必須です', 'EMAIL_REQUIRED');
   }
+
+  const trimmedEmail = email.trim().toLowerCase();
+
+  // 基本的な正規表現チェック
+  if (!Email.EMAIL_REGEX.test(trimmedEmail)) {
+   throw new DomainError(
+    '無効なメールアドレス形式です',
+    'INVALID_EMAIL_FORMAT',
+   );
+  }
+
+  // 連続ドットチェック
+  if (trimmedEmail.includes('..')) {
+   throw new DomainError(
+    '無効なメールアドレス形式です',
+    'INVALID_EMAIL_FORMAT',
+   );
+  }
+
+  // その他の詳細チェック
+  const [local, domain] = trimmedEmail.split('@');
+
+  if (local.length > 64 || domain.length > 255) {
+   throw new DomainError('メールアドレスが長すぎます', 'EMAIL_TOO_LONG');
+  }
+
+  this.value = trimmedEmail;
+ }
 }
 ```
 
@@ -73,37 +79,37 @@ export class Email {
 
 ```typescript
 describe('Email Value Object', () => {
-  describe('無効なメールアドレス', () => {
-    const invalidEmails = [
-      'user@domain..com',      // 連続ドット
-      'user@.domain.com',      // ドメイン先頭ドット
-      'user@domain.com.',      // ドメイン末尾ドット
-      'user@@domain.com',      // 連続@
-      'user@',                 // ドメイン部分なし
-      '@domain.com',           // ローカル部分なし
-      'user@domain',           // TLD なし
-      'user name@domain.com',  // スペース含む
-      '',                      // 空文字
-      '   ',                   // 空白のみ
-    ];
+ describe('無効なメールアドレス', () => {
+  const invalidEmails = [
+   'user@domain..com', // 連続ドット
+   'user@.domain.com', // ドメイン先頭ドット
+   'user@domain.com.', // ドメイン末尾ドット
+   'user@@domain.com', // 連続@
+   'user@', // ドメイン部分なし
+   '@domain.com', // ローカル部分なし
+   'user@domain', // TLD なし
+   'user name@domain.com', // スペース含む
+   '', // 空文字
+   '   ', // 空白のみ
+  ];
 
-    test.each(invalidEmails)('"%s" は無効', (email) => {
-      expect(() => new Email(email)).toThrow();
-    });
+  test.each(invalidEmails)('"%s" は無効', (email) => {
+   expect(() => new Email(email)).toThrow();
   });
+ });
 
-  describe('有効なメールアドレス', () => {
-    const validEmails = [
-      'user@domain.com',
-      'user.name@domain.co.jp',
-      'user+tag@domain.com',
-      'user123@domain-name.org',
-    ];
+ describe('有効なメールアドレス', () => {
+  const validEmails = [
+   'user@domain.com',
+   'user.name@domain.co.jp',
+   'user+tag@domain.com',
+   'user123@domain-name.org',
+  ];
 
-    test.each(validEmails)('"%s" は有効', (email) => {
-      expect(() => new Email(email)).not.toThrow();
-    });
+  test.each(validEmails)('"%s" は有効', (email) => {
+   expect(() => new Email(email)).not.toThrow();
   });
+ });
 });
 ```
 

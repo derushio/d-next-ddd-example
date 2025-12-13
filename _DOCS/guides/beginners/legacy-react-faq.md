@@ -55,7 +55,7 @@ export default function MyComponent() {
 ```typescript
 // resolve is not defined エラー
 export default async function Page() {
-  const useCase = resolve('GetProductsUseCase'); // ReferenceError
+ const useCase = resolve('GetProductsUseCase'); // ReferenceError
 }
 ```
 
@@ -63,10 +63,10 @@ export default async function Page() {
 
 ```typescript
 // ✅ 正しいインポート
-import { resolve } from '@/layers/infrastructure/di/resolver';
+import { resolve } from '@/di/resolver';
 
 export default async function Page() {
-  const useCase = resolve('GetProductsUseCase'); // OK！
+ const useCase = resolve('GetProductsUseCase'); // OK！
 }
 ```
 
@@ -87,12 +87,12 @@ const useCase = resolve('GetProductsUseCase');
 ```typescript
 // ❌ 従来の方法
 export async function getUsers() {
-  try {
-    const users = await userRepository.findAll();
-    return users; // 成功時の型
-  } catch (error) {
-    throw error; // エラーが予期しない場所で発生
-  }
+ try {
+  const users = await userRepository.findAll();
+  return users; // 成功時の型
+ } catch (error) {
+  throw error; // エラーが予期しない場所で発生
+ }
 }
 ```
 
@@ -101,20 +101,20 @@ export async function getUsers() {
 ```typescript
 // ✅ Result型使用
 export async function getUsers(): Promise<Result<User[]>> {
-  try {
-    const users = await userRepository.findAll();
-    return success(users); // 成功時
-  } catch (error) {
-    return failure('ユーザー取得に失敗', 'USER_FETCH_ERROR'); // 失敗時
-  }
+ try {
+  const users = await userRepository.findAll();
+  return success(users); // 成功時
+ } catch (error) {
+  return failure('ユーザー取得に失敗', 'USER_FETCH_ERROR'); // 失敗時
+ }
 }
 
 // 使用時
 const result = await getUsers();
 if (isSuccess(result)) {
-  console.log(result.data); // 型安全にアクセス
+ console.log(result.data); // 型安全にアクセス
 } else {
-  console.error(result.error.message); // エラー情報
+ console.error(result.error.message); // エラー情報
 }
 ```
 
@@ -129,12 +129,12 @@ if (isSuccess(result)) {
 ```mermaid
 flowchart TD
     Start[新しい機能を追加したい] --> Question1{何を作る？}
-    
+
     Question1 -->|UI表示| UI[📱 src/components/ または src/app/]
     Question1 -->|データ取得・操作| Logic[📋 src/layers/application/usecases/]
     Question1 -->|ビジネスルール| Business[🧠 src/layers/domain/entities/]
     Question1 -->|データベース操作| Data[🗄️ src/layers/infrastructure/repositories/]
-    
+
     UI --> UIDetail[Server Component: src/app/<br>Client Component: src/components/]
     Logic --> LogicDetail[UseCase: ビジネスフローを制御]
     Business --> BusinessDetail[Entity: ビジネスルール・検証]
@@ -147,7 +147,7 @@ flowchart TD
 「商品検索機能」を追加する場合：
 
 1. 🧠 商品とは何か？ → src/layers/domain/entities/Product.ts
-2. 🗄️ 商品をどう保存？ → src/layers/infrastructure/repositories/ProductRepository.ts  
+2. 🗄️ 商品をどう保存？ → src/layers/infrastructure/repositories/ProductRepository.ts
 3. 📋 検索の流れは？ → src/layers/application/usecases/SearchProductsUseCase.ts
 4. 📱 画面はどう見せる？ → src/app/products/search/page.tsx
 5. 🎨 検索フォームは？ → src/components/products/SearchForm.tsx
@@ -188,11 +188,11 @@ const useCase = new CreateUserUseCase(userRepository, logger, hashService);
 // ✅ DI有り：自動でインスタンス作成（楽々）
 @injectable() // これがあると...
 export class CreateUserUseCase {
-  constructor(
-    @inject('UserRepository') private userRepository: IUserRepository,
-    @inject('Logger') private logger: ILogger,
-    @inject('HashService') private hashService: IHashService
-  ) {}
+ constructor(
+  @inject('UserRepository') private userRepository: IUserRepository,
+  @inject('Logger') private logger: ILogger,
+  @inject('HashService') private hashService: IHashService,
+ ) {}
 }
 
 // 使用時：1行で取得！
@@ -213,12 +213,12 @@ graph LR
         S1[従来のReact: 簡単] --> S2[モダンアーキテクチャ: 複雑]
         S2 --> S3[結論: オーバーエンジニアリング]
     end
-    
+
     subgraph "🟡 中規模プロジェクト（6ヶ月-1年）"
         M1[従来のReact: ごちゃごちゃ] --> M2[モダンアーキテクチャ: 整理されてる]
         M2 --> M3[結論: ちょうど良い]
     end
-    
+
     subgraph "🟢 大規模プロジェクト（1年以上）"
         L1[従来のReact: 破綻] --> L2[モダンアーキテクチャ: スケールする]
         L2 --> L3[結論: 必須]
@@ -230,20 +230,26 @@ graph LR
 ```typescript
 // ❌ 従来の問題：同じロジックがあちこちに...
 // UserProfile.tsx
-const validateEmail = (email) => { /* 検証ロジック */ };
+const validateEmail = (email) => {
+ /* 検証ロジック */
+};
 
-// UserRegistration.tsx  
-const validateEmail = (email) => { /* また同じ検証ロジック... */ };
+// UserRegistration.tsx
+const validateEmail = (email) => {
+ /* また同じ検証ロジック... */
+};
 
 // UserEdit.tsx
-const validateEmail = (email) => { /* またまた同じ... */ };
+const validateEmail = (email) => {
+ /* またまた同じ... */
+};
 
 // ✅ モダンアーキテクチャ：ロジックが1箇所に集約
 // src/layers/domain/value-objects/Email.ts
 export class Email {
-  constructor(value: string) {
-    this.validate(value); // 検証ロジックは1箇所だけ！
-  }
+ constructor(value: string) {
+  this.validate(value); // 検証ロジックは1箇所だけ！
+ }
 }
 
 // どのコンポーネントからでも使用可能
@@ -254,12 +260,12 @@ const email = new Email(inputValue); // 型安全 & 検証済み
 
 **比較表：**
 
-| 項目 | 従来（API Route + fetch） | Server Actions |
-|------|-------------------------|----------------|
-| **ファイル数** | 2個（API Route + Component） | 1個（Action のみ） |
-| **型安全性** | ❌ fetchの型チェックなし | ✅ 完全な型安全性 |
-| **エラーハンドリング** | 手動でtry-catch | ✅ Result型で統一 |
-| **パフォーマンス** | ネットワーク経由 | ✅ サーバー内で完結 |
+| 項目                   | 従来（API Route + fetch）    | Server Actions      |
+| ---------------------- | ---------------------------- | ------------------- |
+| **ファイル数**         | 2個（API Route + Component） | 1個（Action のみ）  |
+| **型安全性**           | ❌ fetchの型チェックなし     | ✅ 完全な型安全性   |
+| **エラーハンドリング** | 手動でtry-catch              | ✅ Result型で統一   |
+| **パフォーマンス**     | ネットワーク経由             | ✅ サーバー内で完結 |
 
 **実装比較：**
 
@@ -267,46 +273,46 @@ const email = new Email(inputValue); // 型安全 & 検証済み
 // ❌ 従来の方法
 // 1. API Route作成
 export async function POST(request: Request) {
-  const data = await request.json();
-  // 処理...
-  return Response.json(result);
+ const data = await request.json();
+ // 処理...
+ return Response.json(result);
 }
 
 // 2. フロントエンドでfetch
 const handleSubmit = async () => {
-  try {
-    const response = await fetch('/api/users', {
-      method: 'POST',
-      body: JSON.stringify(data)
-    });
-    const result = await response.json();
-  } catch (error) {
-    // エラーハンドリング
-  }
+ try {
+  const response = await fetch('/api/users', {
+   method: 'POST',
+   body: JSON.stringify(data),
+  });
+  const result = await response.json();
+ } catch (error) {
+  // エラーハンドリング
+ }
 };
 
 // ✅ Server Actions の方法
 // 1. Server Action作成（1ファイル）
 export async function createUserAction(formData: FormData) {
-  const useCase = resolve('CreateUserUseCase');
-  const result = await useCase.execute({
-    name: formData.get('name') as string,
-    email: formData.get('email') as string,
-  });
-  
-  if (isFailure(result)) {
-    return { success: false, error: result.error.message };
-  }
-  
-  return { success: true };
+ const useCase = resolve('CreateUserUseCase');
+ const result = await useCase.execute({
+  name: formData.get('name') as string,
+  email: formData.get('email') as string,
+ });
+
+ if (isFailure(result)) {
+  return { success: false, error: result.error.message };
+ }
+
+ return { success: true };
 }
 
 // 2. フロントエンドで直接使用
 const handleSubmit = async (formData: FormData) => {
-  const result = await createUserAction(formData); // 型安全！
-  if (!result.success) {
-    setError(result.error);
-  }
+ const result = await createUserAction(formData); // 型安全！
+ if (!result.success) {
+  setError(result.error);
+ }
 };
 ```
 
@@ -321,11 +327,11 @@ const handleSubmit = async (formData: FormData) => {
 ```typescript
 // ❌ 手動モック作成（めんどくさい...）
 const mockUserRepository = {
-  findById: jest.fn(),
-  save: jest.fn(),
-  delete: jest.fn(),
-  findByEmail: jest.fn(),
-  // ... 他にも20個のメソッドを手動で書く必要 😱
+ findById: jest.fn(),
+ save: jest.fn(),
+ delete: jest.fn(),
+ findByEmail: jest.fn(),
+ // ... 他にも20個のメソッドを手動で書く必要 😱
 } as jest.Mocked<IUserRepository>;
 ```
 
@@ -349,15 +355,15 @@ graph TD
         subgraph "🧠 Domain Layer"
             D1[Entity Test<br>- ビジネスルール<br>- バリデーション<br>- 不変条件]
         end
-        
+
         subgraph "📋 Application Layer"
             A1[UseCase Test<br>- ビジネスフロー<br>- エラーハンドリング<br>- Result型]
         end
-        
+
         subgraph "🗄️ Infrastructure Layer"
             I1[Repository Test<br>- データアクセス<br>- 外部API連携<br>- エラー変換]
         end
-        
+
         subgraph "📱 Presentation Layer"
             P1[E2E Test<br>- ユーザー操作<br>- 画面表示<br>- フロー全体]
         end
@@ -369,27 +375,27 @@ graph TD
 ```typescript
 // 🧠 Domain Test：ビジネスルール
 describe('Product Entity', () => {
-  it('価格は0円以上である必要がある', () => {
-    expect(() => new Product('商品', -100)).toThrow();
-  });
+ it('価格は0円以上である必要がある', () => {
+  expect(() => new Product('商品', -100)).toThrow();
+ });
 });
 
-// 📋 Application Test：ビジネスフロー  
+// 📋 Application Test：ビジネスフロー
 describe('CreateProductUseCase', () => {
-  it('商品作成が成功する', async () => {
-    mockRepository.save.mockResolvedValue(undefined);
-    const result = await useCase.execute(validInput);
-    expect(isSuccess(result)).toBe(true);
-  });
+ it('商品作成が成功する', async () => {
+  mockRepository.save.mockResolvedValue(undefined);
+  const result = await useCase.execute(validInput);
+  expect(isSuccess(result)).toBe(true);
+ });
 });
 
 // 🗄️ Infrastructure Test：データアクセス
 describe('ProductRepository', () => {
-  it('商品データを正しく保存できる', async () => {
-    await repository.save(product);
-    const saved = await repository.findById(product.getId());
-    expect(saved).toEqual(product);
-  });
+ it('商品データを正しく保存できる', async () => {
+  await repository.save(product);
+  const saved = await repository.findById(product.getId());
+  expect(saved).toEqual(product);
+ });
 });
 ```
 
@@ -408,9 +414,9 @@ flowchart TD
     Step2 --> Step3[ステップ3: 同じパターンで新機能を作成]
     Step3 --> Step4[ステップ4: テストをコピー&修正]
     Step4 --> Step5[ステップ5: 動作確認]
-    
+
     style Step1 fill:#e1f5fe
-    style Step2 fill:#e8f5e8  
+    style Step2 fill:#e8f5e8
     style Step3 fill:#fff3e0
     style Step4 fill:#fce4ec
     style Step5 fill:#f3e5f5
@@ -439,13 +445,13 @@ flowchart TD
 ```mermaid
 flowchart TD
     Error[エラー発生] --> Check1{コンパイルエラー?}
-    
+
     Check1 -->|Yes| Compile[型エラー・インポートエラー<br>- 型定義確認<br>- インポートパス確認]
     Check1 -->|No| Check2{実行時エラー?}
-    
+
     Check2 -->|Yes| Runtime[実行時エラー<br>- ログ確認<br>- Result型確認<br>- DI設定確認]
     Check2 -->|No| Logic[ロジックエラー<br>- テスト実行<br>- デバッガー使用]
-    
+
     style Compile fill:#ffcdd2
     style Runtime fill:#fff3e0
     style Logic fill:#e8f5e8
@@ -470,14 +476,14 @@ console.log(result.data); // エラー！
 // ✅ 安全なコード
 const result = await useCase.execute();
 if (isSuccess(result)) {
-  console.log(result.data); // OK！
+ console.log(result.data); // OK！
 }
 
 // 🚨 よくあるエラー3：Server Component で useState
 // ReferenceError: useState is not defined
 
 // ✅ 解決法：'use client' 追加
-'use client';
+('use client');
 import { useState } from 'react';
 ```
 
@@ -498,7 +504,7 @@ graph LR
             L3[バンドルサイズ: 大きい]
             L4[ランタイム: 重い]
         end
-        
+
         subgraph "🟢 モダンアーキテクチャ"
             M1[初期開発: やや遅い]
             M2[保守・拡張: 早い]
@@ -525,7 +531,7 @@ graph LR
   50ms        → 20ms        → 5ms      → 10ms   → 85ms total
 
 Server Actions:
-  Server Action → UseCase → Response  
+  Server Action → UseCase → Response
   5ms          → 10ms    → 15ms total
 
 // 約70ms（約82%）の短縮！
@@ -547,13 +553,13 @@ graph TB
         A3[依存性注入]
         A4[Repository Pattern]
     end
-    
+
     subgraph "⚛️ React生態系（React特化）"
         R1[Server Components]
         R2[Server Actions]
         R3[Next.js App Router]
     end
-    
+
     subgraph "🌍 他の技術スタックでも使える"
         O1[Vue.js + Nuxt]
         O2[Angular]
@@ -561,7 +567,7 @@ graph TB
         O4[Spring Boot]
         O5[ASP.NET Core]
     end
-    
+
     A1 --> O1
     A2 --> O2
     A3 --> O3
@@ -584,25 +590,25 @@ graph TD
     Week1[Week 1: 必須] --> Week2[Week 2: 重要]
     Week2 --> Week3[Week 3: 応用]
     Week3 --> Week4[Week 4: 熟練]
-    
+
     subgraph "Week 1: 必須（これだけは覚える）"
         W1_1[Server/Client Components使い分け]
         W1_2[Result型パターン]
         W1_3[基本的なDI使用法]
     end
-    
+
     subgraph "Week 2: 重要（慣れてきたら）"
         W2_1[UseCase実装パターン]
         W2_2[Entity/Repository作成]
         W2_3[基本的なテスト書き方]
     end
-    
+
     subgraph "Week 3: 応用（余裕があれば）"
         W3_1[複雑なビジネスロジック]
         W3_2[トランザクション管理]
         W3_3[パフォーマンス最適化]
     end
-    
+
     subgraph "Week 4: 熟練（目指すレベル）"
         W4_1[アーキテクチャ設計]
         W4_2[チーム開発での運用]
@@ -619,7 +625,7 @@ graph TD
 ```bash
 # 🚨 エラーが出たらまず実行
 pnpm type-check          # 型エラーチェック
-pnpm lint               # コード品質チェック  
+pnpm lint               # コード品質チェック
 pnpm test:unit          # ユニットテスト実行
 
 # 🔧 開発中によく使う
@@ -636,14 +642,19 @@ rm -rf node_modules && pnpm install  # 依存関係リセット
 
 ```typescript
 // Result型関連
-import { Result, success, failure, isSuccess, isFailure } from '@/layers/application/types/Result';
-
+import {
+ failure,
+ isFailure,
+ isSuccess,
+ Result,
+ success,
+} from '@/layers/application/types/Result';
 // DI関連
-import { resolve } from '@/layers/infrastructure/di/resolver';
-import { injectable, inject } from 'tsyringe';
+import { resolve } from '@/di/resolver';
 
+import { inject, injectable } from 'tsyringe';
 // テスト関連
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { mock, MockProxy } from 'vitest-mock-extended';
 ```
 
@@ -654,11 +665,13 @@ import { mock, MockProxy } from 'vitest-mock-extended';
 ### 困った時の相談先
 
 1. **📚 ドキュメント確認**
+
    - [基本概念](./legacy-react-to-modern-architecture.md)
    - [図解ガイド](./architecture-diagrams.md)
    - [実践チュートリアル](./simple-tutorial.md)
 
 2. **🔍 コード例参照**
+
    - 既存の実装を参考にする
    - テストファイルでパターンを学ぶ
 

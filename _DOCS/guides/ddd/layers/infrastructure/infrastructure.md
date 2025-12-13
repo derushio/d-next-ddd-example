@@ -13,7 +13,7 @@ Infrastructure Layer は、技術的詳細と外部システム連携を担当�
 ```mermaid
 graph TD
     APP[📋 Application Layer] --> INFRA[🔧 Infrastructure Layer]
-    
+
     subgraph "Infrastructure Layer の構成"
         REPO[Repository Implementations]
         EXT_SERVICE[External Services]
@@ -22,14 +22,14 @@ graph TD
         DI[Dependency Injection]
         TYPES[Type Definitions]
     end
-    
+
     INFRA --> REPO
     INFRA --> EXT_SERVICE
     INFRA --> DB
     INFRA --> CONFIG
     INFRA --> DI
     INFRA --> TYPES
-    
+
     subgraph "外部システム"
         DATABASE[(Database)]
         API[External APIs]
@@ -37,13 +37,13 @@ graph TD
         CACHE[Cache]
         QUEUE[Message Queue]
     end
-    
+
     REPO --> DATABASE
     EXT_SERVICE --> API
     EXT_SERVICE --> FILE
     EXT_SERVICE --> CACHE
     EXT_SERVICE --> QUEUE
-    
+
     style APP fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style INFRA fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
     style REPO fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -62,13 +62,13 @@ sequenceDiagram
     participant Repo as 📚 Repository Impl
     participant DB as 🗄️ Database
     participant API as 🌐 External API
-    
+
     App->>Repo: findById(id)
     Repo->>DB: SELECT query
     DB-->>Repo: Raw data
     Repo->>Repo: Domain object conversion
     Repo-->>App: Domain entity
-    
+
     App->>EXT: sendEmail(data)
     EXT->>API: HTTP request
     API-->>EXT: Response
@@ -82,17 +82,20 @@ sequenceDiagram
 ### 責務 📋
 
 1. **Repository実装**
+
    - Domain Layer で定義されたインターフェースの具体的実装
    - データベースアクセスの詳細処理
    - データ変換（Domain ↔ Persistence）
 
 2. **外部サービス連携**
+
    - 外部API呼び出し
    - メール送信サービス
    - ファイルストレージ操作
    - キャッシュ管理
 
 3. **設定管理**
+
    - 環境変数の読み込み
    - 接続設定の管理
    - セキュリティ設定
@@ -148,10 +151,10 @@ sequenceDiagram
    ```typescript
    // ❌ 禁止：複数の操作を組み合わせたビジネスフロー
    export class UserRepository {
-     async createUserWithNotification(userData: any): Promise<void> {
-       await this.create(userData);
-       await this.sendWelcomeEmail(userData.email); // Application Layerの責務
-     }
+    async createUserWithNotification(userData: any): Promise<void> {
+     await this.create(userData);
+     await this.sendWelcomeEmail(userData.email); // Application Layerの責務
+    }
    }
    ```
 
@@ -160,8 +163,9 @@ sequenceDiagram
    ```typescript
    // ❌ 禁止：Infrastructure から Domain への依存（循環参照）
    import { UserDomainService } from '@/layers/domain/services/UserDomainService';
+
    export class UserRepository {
-     constructor(private domainService: UserDomainService) {} // 禁止
+    constructor(private domainService: UserDomainService) {} // 禁止
    }
    ```
 
@@ -177,17 +181,17 @@ graph TD
         UC[Use Cases]
         AS[Application Services]
     end
-    
+
     subgraph "Infrastructure Layer"
         REPO_IMPL[Repository Implementations]
         EXT_SERVICE[External Services]
         DB[Database Factory]
     end
-    
+
     UC --> REPO_IMPL
     UC --> EXT_SERVICE
     AS --> DB
-    
+
     style UC fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style AS fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
     style REPO_IMPL fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
@@ -209,20 +213,20 @@ graph TD
         REPO_IF[Repository Interface]
         EXT_IF[External Service Interface]
     end
-    
+
     subgraph "Infrastructure Layer"
         REPO_IMPL[Repository Implementation]
         EXT_IMPL[External Service Implementation]
     end
-    
+
     REPO_IMPL -.-> REPO_IF
     EXT_IMPL -.-> EXT_IF
-    
+
     style REPO_IF fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style EXT_IF fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
     style REPO_IMPL fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
     style EXT_IMPL fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
-    
+
     classDef dependencyInversion stroke-dasharray: 5 5,stroke:#4caf50
     class REPO_IMPL-->REPO_IF,EXT_IMPL-->EXT_IF dependencyInversion
 ```
@@ -236,11 +240,11 @@ graph TD
     PRES[🎨 Presentation Layer] -.-> INFRA[🔧 Infrastructure Layer]
     PRES --> APP[📋 Application Layer]
     APP --> INFRA
-    
+
     style PRES fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style APP fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style INFRA fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
-    
+
     classDef forbidden stroke-dasharray: 5 5,stroke:#f44336
     class PRES-->INFRA forbidden
 ```
@@ -304,28 +308,28 @@ Infrastructure Layer は以下のコンポーネントで構成されていま�
 ```typescript
 // ✅ 推薦：Domain Interface の実装
 export class PrismaUserRepository implements IUserRepository {
-  constructor(private prisma: PrismaClient) {}
-  
-  async findById(id: UserId): Promise<User | null> {
-    const userData = await this.prisma.user.findUnique({
-      where: { id: id.toString() }
-    });
-    
-    return userData ? this.toDomainObject(userData) : null;
-  }
-  
-  // Domain オブジェクトへの変換
-  private toDomainObject(data: any): User {
-    return User.reconstruct(
-      new UserId(data.id),
-      new Email(data.email),
-      data.name,
-      data.experiencePoints,
-      data.level,
-      data.createdAt,
-      data.lastLoginAt
-    );
-  }
+ constructor(private prisma: PrismaClient) {}
+
+ async findById(id: UserId): Promise<User | null> {
+  const userData = await this.prisma.user.findUnique({
+   where: { id: id.toString() },
+  });
+
+  return userData ? this.toDomainObject(userData) : null;
+ }
+
+ // Domain オブジェクトへの変換
+ private toDomainObject(data: any): User {
+  return User.reconstruct(
+   new UserId(data.id),
+   new Email(data.email),
+   data.name,
+   data.experiencePoints,
+   data.level,
+   data.createdAt,
+   data.lastLoginAt,
+  );
+ }
 }
 ```
 
@@ -334,30 +338,30 @@ export class PrismaUserRepository implements IUserRepository {
 ```typescript
 // ✅ 推薦：Infrastructure 固有エラーの適切な処理
 export class SendGridEmailService implements IEmailService {
-  async sendWelcomeEmail(email: string, name: string): Promise<void> {
-    try {
-      await sgMail.send({
-        to: email,
-        from: process.env.FROM_EMAIL!,
-        subject: 'ようこそ！',
-        html: this.buildWelcomeTemplate(name)
-      });
-    } catch (error) {
-      if (error.response?.status === 429) {
-        throw new InfrastructureError(
-          'メール送信レート制限に達しました',
-          'EMAIL_RATE_LIMIT',
-          error
-        );
-      }
-      
-      throw new InfrastructureError(
-        'メール送信に失敗しました',
-        'EMAIL_SEND_FAILED',
-        error
-      );
-    }
+ async sendWelcomeEmail(email: string, name: string): Promise<void> {
+  try {
+   await sgMail.send({
+    to: email,
+    from: process.env.FROM_EMAIL!,
+    subject: 'ようこそ！',
+    html: this.buildWelcomeTemplate(name),
+   });
+  } catch (error) {
+   if (error.response?.status === 429) {
+    throw new InfrastructureError(
+     'メール送信レート制限に達しました',
+     'EMAIL_RATE_LIMIT',
+     error,
+    );
+   }
+
+   throw new InfrastructureError(
+    'メール送信に失敗しました',
+    'EMAIL_SEND_FAILED',
+    error,
+   );
   }
+ }
 }
 ```
 
@@ -366,23 +370,23 @@ export class SendGridEmailService implements IEmailService {
 ```typescript
 // ✅ 推薦：トランザクション対応Repository
 export class PrismaUserRepository implements IUserRepository {
-  async save(user: User, transaction?: PrismaTransaction): Promise<void> {
-    const client = transaction || this.prisma;
-    const data = this.toPersistenceObject(user);
-    
-    await client.user.upsert({
-      where: { id: data.id },
-      update: { ...data, updatedAt: new Date() },
-      create: data
-    });
-  }
-  
-  async delete(id: UserId, transaction?: PrismaTransaction): Promise<void> {
-    const client = transaction || this.prisma;
-    await client.user.delete({
-      where: { id: id.toString() }
-    });
-  }
+ async save(user: User, transaction?: PrismaTransaction): Promise<void> {
+  const client = transaction || this.prisma;
+  const data = this.toPersistenceObject(user);
+
+  await client.user.upsert({
+   where: { id: data.id },
+   update: { ...data, updatedAt: new Date() },
+   create: data,
+  });
+ }
+
+ async delete(id: UserId, transaction?: PrismaTransaction): Promise<void> {
+  const client = transaction || this.prisma;
+  await client.user.delete({
+   where: { id: id.toString() },
+  });
+ }
 }
 ```
 
@@ -391,21 +395,21 @@ export class PrismaUserRepository implements IUserRepository {
 ```typescript
 // ✅ 推薦：設定値の適切な管理
 export class DatabaseConfig {
-  static get connectionString(): string {
-    const url = process.env.DATABASE_URL;
-    if (!url) {
-      throw new ConfigurationError('DATABASE_URL is not configured');
-    }
-    return url;
+ static get connectionString(): string {
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+   throw new ConfigurationError('DATABASE_URL is not configured');
   }
-  
-  static get maxConnections(): number {
-    return parseInt(process.env.DB_MAX_CONNECTIONS || '10');
-  }
-  
-  static get timeout(): number {
-    return parseInt(process.env.DB_TIMEOUT || '30000');
-  }
+  return url;
+ }
+
+ static get maxConnections(): number {
+  return parseInt(process.env.DB_MAX_CONNECTIONS || '10');
+ }
+
+ static get timeout(): number {
+  return parseInt(process.env.DB_TIMEOUT || '30000');
+ }
 }
 ```
 
@@ -428,34 +432,34 @@ export class DatabaseConfig {
 ```typescript
 // ✅ Repository統合テストの例
 describe('PrismaUserRepository', () => {
-  let repository: PrismaUserRepository;
-  let prisma: PrismaClient;
-  
-  beforeEach(async () => {
-    prisma = new PrismaClient();
-    repository = new PrismaUserRepository(prisma);
-    await prisma.$transaction(async (tx) => {
-      await tx.user.deleteMany(); // テストデータリセット
-    });
+ let repository: PrismaUserRepository;
+ let prisma: PrismaClient;
+
+ beforeEach(async () => {
+  prisma = new PrismaClient();
+  repository = new PrismaUserRepository(prisma);
+  await prisma.$transaction(async (tx) => {
+   await tx.user.deleteMany(); // テストデータリセット
   });
-  
-  it('ユーザーの保存と取得ができる', async () => {
-    // Arrange
-    const user = User.create(
-      new UserId('test-123'),
-      new Email('test@example.com'),
-      'テストユーザー'
-    );
-    
-    // Act
-    await repository.save(user);
-    const savedUser = await repository.findById(new UserId('test-123'));
-    
-    // Assert
-    expect(savedUser).not.toBeNull();
-    expect(savedUser!.getName()).toBe('テストユーザー');
-    expect(savedUser!.getEmail().toString()).toBe('test@example.com');
-  });
+ });
+
+ it('ユーザーの保存と取得ができる', async () => {
+  // Arrange
+  const user = User.create(
+   new UserId('test-123'),
+   new Email('test@example.com'),
+   'テストユーザー',
+  );
+
+  // Act
+  await repository.save(user);
+  const savedUser = await repository.findById(new UserId('test-123'));
+
+  // Assert
+  expect(savedUser).not.toBeNull();
+  expect(savedUser!.getName()).toBe('テストユーザー');
+  expect(savedUser!.getEmail().toString()).toBe('test@example.com');
+ });
 });
 ```
 
@@ -494,18 +498,18 @@ describe('PrismaUserRepository', () => {
 ```typescript
 // Prisma接続プール設定
 const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL
-    }
+ datasources: {
+  db: {
+   url: process.env.DATABASE_URL,
   },
-  // 接続プール設定
-  __internal: {
-    engine: {
-      poolSize: 10,
-      idleTimeout: 30000
-    }
-  }
+ },
+ // 接続プール設定
+ __internal: {
+  engine: {
+   poolSize: 10,
+   idleTimeout: 30000,
+  },
+ },
 });
 ```
 
@@ -515,7 +519,7 @@ const prisma = new PrismaClient({
 // インデックスを活用した効率的なクエリ
 async findByEmail(email: Email): Promise<User | null> {
   const userData = await this.prisma.user.findUnique({
-    where: { 
+    where: {
       email: email.toString() // email カラムにインデックス設定
     },
     select: {
@@ -529,7 +533,7 @@ async findByEmail(email: Email): Promise<User | null> {
       // 必要なフィールドのみ取得
     }
   });
-  
+
   return userData ? this.toDomainObject(userData) : null;
 }
 ```
