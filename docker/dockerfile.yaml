@@ -22,7 +22,7 @@ RUN pnpm build
 
 FROM base AS next
 COPY --from=prod-deps /app/node_modules /app/node_modules
-COPY --from=build /app/src/data-accesses/infra/prisma/generated /app/src/data-accesses/infra/prisma/generated
+COPY --from=build /app/src/layers/infrastructure/persistence/prisma/generated /app/src/layers/infrastructure/persistence/prisma/generated
 COPY --from=build /app/.next /app/.next
 EXPOSE 3000
 CMD [ "pnpm", "start" ]
