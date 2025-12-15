@@ -71,8 +71,7 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends React.ComponentProps<'button'>,
-    VariantProps<typeof buttonVariants> {
+  extends React.ComponentProps<'button'>, VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   loading?: boolean; // 既存システムの loading 機能
   fullWidth?: boolean; // 既存システムの fullWidth 機能
