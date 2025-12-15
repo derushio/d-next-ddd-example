@@ -99,6 +99,7 @@ import { UserRepository } from '@/layers/infrastructure/...'; // 禁止
 - [ ] **定数値の重複** → 定数ファイルに集約
 
 ただし、**早すぎる抽象化は避ける**：
+
 - 2回の重複 → まだ様子を見る
 - 文脈が異なる類似コード → 無理に共通化しない
 
@@ -156,6 +157,31 @@ export default async function UsersPage() {
     </div>
   );
 }
+```
+
+### 3.4 UIスタイリング規約
+
+```tsx
+// ✅ 必須: クリッカブル要素には cursor-pointer を付与
+// ボタン、リンク、クリック可能なカード等
+
+// ❌ 悪い: クリックできるのにカーソルが変わらない
+<div onClick={handleClick}>クリックしてね</div>
+
+// ✅ 良い: cursor-pointerでクリック可能を明示
+<div onClick={handleClick} className="cursor-pointer">クリックしてね</div>
+
+// ✅ 良い: button/a要素は通常自動適用されるが、明示も推奨
+<button className="cursor-pointer">送信</button>
+```
+
+```
+クリッカブル要素のチェックリスト:
+- [ ] onClick ハンドラを持つ要素 → cursor-pointer
+- [ ] カスタムボタン/リンクコンポーネント → cursor-pointer
+- [ ] クリック可能なカード/リストアイテム → cursor-pointer
+- [ ] タブ、アコーディオンヘッダー → cursor-pointer
+- [ ] ドロップダウントリガー → cursor-pointer
 ```
 
 ---
