@@ -24,7 +24,7 @@ datasource db {
 
 /// ユーザーテーブル
 model User {
-  id String @id @default(cuid())
+  id String @id
 
   name String
 
@@ -43,7 +43,7 @@ model User {
 
 /// ユーザーのサインインセッション
 model UserSession {
-  id String @id @default(cuid())
+  id String @id
 
   User   User   @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   userId String

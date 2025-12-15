@@ -38,8 +38,7 @@ const cardVariants = cva(
 );
 
 export interface CardProps
-  extends React.ComponentProps<'div'>,
-    VariantProps<typeof cardVariants> {
+  extends React.ComponentProps<'div'>, VariantProps<typeof cardVariants> {
   hover?: boolean; // 既存システムの hover 機能
 }
 

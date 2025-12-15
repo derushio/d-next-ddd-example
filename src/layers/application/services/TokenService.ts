@@ -3,12 +3,13 @@ import type { IConfigService } from '@/layers/application/interfaces/IConfigServ
 import type { IHashService } from '@/layers/application/interfaces/IHashService';
 import type { ILogger } from '@/layers/application/interfaces/ILogger';
 import { failure, Result, success } from '@/layers/application/types/Result';
+import { UserSession } from '@/layers/domain/entities/UserSession';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type {
-  CreateSessionDTO,
   ISessionRepository,
   UserSessionWithUser,
 } from '@/layers/domain/repositories/ISessionRepository';
+import { UserId } from '@/layers/domain/value-objects/UserId';
 import { uuidv4 } from '@/utils/uuidv4';
 
 import { addMinutes } from 'date-fns';
@@ -63,6 +64,7 @@ export class TokenService implements ITokenService {
    *
    * アクセストークンとリセットトークンのペアを生成し、
    * ハッシュ化してDBに永続化する。
+   * SessionIdはUserSession.create()内でCUID2として自動生成される。
    *
    * @param userId - セッション作成対象のユーザID
    * @returns 生トークンと永続化されたセッション情報
@@ -95,21 +97,21 @@ export class TokenService implements ITokenService {
 
       this.logger.info('新規トークンセッション作成開始', { userId });
 
-      // トークンをハッシュ化してセッション作成用データ準備
-      const sessionData: CreateSessionDTO = {
-        userId,
-        accessTokenHash: await this.hashService.generateHash(accessToken),
+      // UserSession Entityを作成（IDはCUID2で自動生成）
+      const userSessionEntity = UserSession.create(
+        new UserId(userId),
+        await this.hashService.generateHash(accessToken),
         accessTokenExpireAt,
-        resetTokenHash: await this.hashService.generateHash(resetToken),
+        await this.hashService.generateHash(resetToken),
         resetTokenExpireAt,
-      };
+      );
 
       // SessionRepository経由でセッションを永続化
-      const session = await this.sessionRepository.create(sessionData);
+      const session = await this.sessionRepository.create(userSessionEntity);
 
       this.logger.info('新規トークンセッション作成完了', {
         userId,
-        sessionId: session.id,
+        sessionId: session.session.id.value,
         accessTokenExpireAt,
         resetTokenExpireAt,
       });

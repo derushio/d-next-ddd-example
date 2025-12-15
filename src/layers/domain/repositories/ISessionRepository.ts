@@ -1,27 +1,24 @@
-import type { UserSessionWithUser } from '@/layers/domain/types/Session';
+import type { User } from '@/layers/domain/entities/User';
+import type { UserSession } from '@/layers/domain/entities/UserSession';
+import type { SessionId } from '@/layers/domain/value-objects/SessionId';
+import type { UserId } from '@/layers/domain/value-objects/UserId';
 
 /**
- * セッション作成用のDTO
- * NextAuth.jsのユーザセッション管理に使用
+ * セッションとユーザー情報を含む複合型
+ * Repository から返される際に使用
  */
-export interface CreateSessionDTO {
-  userId: string;
-  accessTokenHash: string;
-  accessTokenExpireAt: Date;
-  resetTokenHash: string;
-  resetTokenExpireAt: Date;
+export interface UserSessionWithUser {
+  session: UserSession;
+  user: User;
 }
 
 /**
  * セッション検索条件の型定義
  */
 export interface SessionFindCondition {
-  userId: string;
-  id: string;
+  userId: UserId;
+  id: SessionId;
 }
-
-// Re-export for convenience
-export type { UserSessionWithUser } from '@/layers/domain/types/Session';
 
 /**
  * SessionRepositoryのインターフェース
@@ -30,15 +27,15 @@ export type { UserSessionWithUser } from '@/layers/domain/types/Session';
 export interface ISessionRepository {
   /**
    * 新しいセッションを作成する
-   * @param data セッション作成データ
-   * @returns 作成されたセッション（Userを含む）
+   * @param session 作成するセッションEntity
+   * @returns 作成されたセッション（関連Userを含む）
    */
-  create(data: CreateSessionDTO): Promise<UserSessionWithUser>;
+  create(session: UserSession): Promise<UserSessionWithUser>;
 
   /**
    * 指定条件でセッションを検索する
    * @param condition 検索条件
-   * @returns 見つかったセッション、またはnull
+   * @returns 見つかったセッション（関連Userを含む）、またはnull
    */
   findFirst(
     condition: SessionFindCondition,
