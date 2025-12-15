@@ -2,10 +2,10 @@
 
 import { getUserById } from '@/app/server-actions/user/getUserById';
 import { DeleteUserButton } from '@/components/features/user/DeleteUserButton';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import { Separator } from '@/components/ui/Separator';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 import { clsx } from 'clsx';
 import Link from 'next/link';

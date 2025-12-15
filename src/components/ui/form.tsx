@@ -1,6 +1,6 @@
 'use client';
 
-import { Label } from '@/components/ui/Label';
+import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils-shadcn';
 
 import * as LabelPrimitive from '@radix-ui/react-label';

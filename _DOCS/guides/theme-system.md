@@ -29,7 +29,7 @@ shadcn/ui統合により、HSL形式のCSS変数とTailwindCSS v4対応を追加
 - **♿ アクセシビリティ**: 適切なコントラスト比の確保
 - **🧩 shadcn/ui完全対応**: HSL形式変数によるshadcn/ui標準準拠
 - **⚡ TailwindCSS v4統合**: @theme inline指定による最適化
-- **🔄 Bridge System**: 既存システムとの段階的移行対応
+- **🔄 統一配置**: `@/components/ui/` にカスタマイズ済みコンポーネントを配置
 
 ## shadcn/ui統合概要
 
@@ -484,33 +484,33 @@ graph TD
 </Button>
 ```
 
-### 🔄 Bridge System活用
+### 🔄 コンポーネントインポート
 
-#### 段階的移行のためのImport戦略
+#### 統一されたインポートパス
 
 ```tsx
-// ✅ 推奨：Enhanced Componentsをデフォルト使用
-// ✅ 明示的選択：shadcn/ui版を使用
+// ✅ 推奨：@/components/ui/ から直接インポート
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Alert } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
 
-// ✅ レガシー維持：既存版を使用
-
-// ✅ 標準shadcn/ui Components
+// ✅ Form関連コンポーネント
 import {
- Alert,
- Button,
- Card,
- Form,
- FormControl,
- FormField,
- FormItem,
- FormLabel,
- FormMessage,
- Button as LegacyButton,
- Card as LegacyCard,
- Button as ShadcnButton,
- Card as ShadcnCard,
-} from '@/components/ui-bridge';
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 ```
+
+**⚠️ 運用ルール**:
+
+- 既存カスタマイズ済みコンポーネントは `pnpm ui:add` で追加しない
+- 新規コンポーネントのみ `ui:add` で追加（そのまま使用可能）
+- 命名規則: kebab-case（shadcn/ui標準に準拠）
 
 ### 使用例
 
@@ -850,12 +850,12 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
 #### shadcn/ui コンポーネント最適化
 
 ```tsx
-// ✅ Enhanced Components使用による最適化
-import { Button } from '@/components/ui-bridge';
+// ✅ カスタマイズ済みコンポーネントを使用
+import { Button } from '@/components/ui/button';
 
-// 自動的に最適なコンポーネント（shadcn/ui Enhanced）を使用
+// 既存機能（gradient, loading）+ shadcn/ui標準機能が統合
 <Button variant='primary' gradient={true}>
- // 既存機能 + shadcn/ui標準機能が統合
+  統合機能付きボタン
 </Button>;
 ```
 
@@ -864,20 +864,12 @@ import { Button } from '@/components/ui-bridge';
 #### 適切なComponent選択
 
 ```tsx
-// ✅ Good: 新規実装時はshadcn/ui Enhanced推奨
-// ✅ Good: 標準shadcn/ui機能が必要な場合
-
-// ✅ Good: 段階的移行時の明示的選択
-import {
- Alert,
- Button,
- Card,
- Dialog,
- Form,
- FormField,
- Card as LegacyCard,
- Button as ShadcnButton,
-} from '@/components/ui-bridge';
+// ✅ Good: @/components/ui/ から個別インポート
+import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Dialog } from '@/components/ui/dialog';
+import { Form, FormField } from '@/components/ui/form';
 ```
 
 #### CSS Variables使い分け
@@ -960,25 +952,22 @@ import {
 </Alert>
 ```
 
-#### 5. **Bridge System Import問題**
+#### 5. **コンポーネントインポートパス問題**
 
-**問題**: 適切なコンポーネントがインポートされない
+**問題**: 間違ったパスからインポートしている
 
 ```tsx
-// ❌ Problem: 直接インポート
-import { Button } from '@/components/ui-shadcn/button-enhanced';
-import { Card } from '@/components/ui-legacy/Card';
+// ❌ Problem: 存在しないパス
+import { Button } from '@/components/ui-shadcn/button';
+import { Card } from '@/components/ui-bridge';
 
-// ✅ Solution: Bridge System使用
-import { Button, Card } from '@/components/ui-bridge';
-// デフォルトで最適なコンポーネント（Enhanced版）を使用
-
-// 明示的選択が必要な場合
-import {
- Button as ShadcnButton,
- Card as LegacyCard,
-} from '@/components/ui-bridge';
+// ✅ Solution: @/components/ui/ から個別インポート
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Alert } from '@/components/ui/alert';
 ```
+
+**注意**: ファイル名はkebab-case（`button.tsx`）でshadcn/ui標準に準拠しています。
 
 #### 6. **TailwindCSS v4変数が認識されない**
 

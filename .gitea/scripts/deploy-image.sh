@@ -3,7 +3,7 @@
 ## docker imageのbuildとpush
 cd "../../"
 
-proj="d-next-resources"
+proj="d-next-ddd-example"
 commit=$1
 
 login_docker() {

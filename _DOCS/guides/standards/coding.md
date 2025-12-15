@@ -195,9 +195,9 @@ export async function createUserAction(formData: FormData) {
 import { Button, Input, Card } from '@/components/ui';
 
 // ✅ 推奨: 個別インポート
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card } from '@/components/ui/card';
 ```
 
 ### 📍 Alias使用の統一

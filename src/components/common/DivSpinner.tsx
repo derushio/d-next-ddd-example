@@ -1,4 +1,4 @@
-import { Loading } from '@/components/ui/Loading';
+import { Loading } from '@/components/ui/loading';
 
 import { clsx } from 'clsx';
 

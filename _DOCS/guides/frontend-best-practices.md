@@ -255,8 +255,11 @@ graph LR
 **Enhanced Components活用パターン**
 
 ```typescript
-// Bridge System経由での最適なコンポーネント使用
-import { Button, Card, Alert, Dialog } from '@/components/ui-bridge';
+// @/components/ui/ からカスタマイズ済みコンポーネントをインポート
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Alert } from '@/components/ui/alert';
+import { Dialog } from '@/components/ui/dialog';
 
 // shadcn/ui Enhanced Button（既存機能統合）
 export function ActionButtons() {
@@ -298,9 +301,9 @@ import {
   FormLabel,
   FormMessage,
   FormDescription,
-} from '@/components/ui-bridge';
-import { Input } from '@/components/ui-bridge';
-import { Button } from '@/components/ui-bridge';
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 const formSchema = z.object({
   username: z.string().min(2, {
@@ -376,8 +379,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui-bridge';
-import { Button } from '@/components/ui-bridge';
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 export function ConfirmDialog() {
   return (
@@ -504,8 +507,8 @@ export function DashboardPage() {
 **shadcn/ui Enhanced Components でのCompound Pattern活用**
 
 ```typescript
-// ✅ 推奨：shadcn/ui Enhanced Card（Compound Pattern統合）
-import { Card } from '@/components/ui-bridge';
+// ✅ 推奨：カスタマイズ済みCard（Compound Pattern統合）
+import { Card } from '@/components/ui/card';
 
 // 既存システムのCompound Patternサポート
 export function ProductCard({ product }: { product: Product }) {
@@ -549,7 +552,7 @@ import {
   CardDescription,
   CardContent,
   CardFooter,
-} from '@/components/ui-bridge';
+} from '@/components/ui/card';
 
 export function NewsCard({ article }: { article: Article }) {
   return (
@@ -582,7 +585,7 @@ export function NewsCard({ article }: { article: Article }) {
 
 ```typescript
 // ✅ Enhanced Button活用パターン
-import { Button } from '@/components/ui-bridge';
+import { Button } from '@/components/ui/button';
 
 export function ActionButtonGroup() {
   const [isLoading, setIsLoading] = useState(false);
@@ -619,7 +622,7 @@ export function ActionButtonGroup() {
 }
 
 // ✅ 統合Alert活用パターン
-import { Alert, AlertDescription } from '@/components/ui-bridge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, CheckCircle, Info, AlertTriangle } from 'lucide-react';
 
 export function StatusAlerts() {
@@ -788,11 +791,13 @@ class ErrorBoundary extends React.Component<
 
 ### shadcn/ui統合開発のベストプラクティス
 
-1. **Bridge System優先使用**
+1. **@/components/ui/ から直接インポート**
 
    ```typescript
-   // ✅ 推奨：Bridge経由でコンポーネント使用
-   import { Alert, Button, Card } from '@/components/ui-bridge';
+   // ✅ 推奨：個別インポート
+   import { Alert } from '@/components/ui/alert';
+   import { Button } from '@/components/ui/button';
+   import { Card } from '@/components/ui/card';
    ```
 
 2. **Enhanced Components活用**
@@ -840,10 +845,9 @@ class ErrorBoundary extends React.Component<
 - [開発ガイド](../development-guide.md) - 開発フロー全般
 - [テスト戦略](../testing-strategy.md) - Enhanced Componentsテスト手法
 
-### 🔄 shadcn/ui移行関連
+### 🔄 shadcn/ui関連
 
 - [shadcn/ui移行計画](../../shadcn-ui-migration-plan.md) - 段階的移行戦略詳細
-- [Bridge Systemガイド](../ddd/layers/components/ui-bridge-system.md) - コンポーネント統合システム
 
 ### 📋 DDD・Clean Architecture
 

@@ -1,8 +1,8 @@
 'use client';
 
 import { useToast } from '@/components/providers/ToastProvider';
-import { Button } from '@/components/ui/Button';
-import { Toast } from '@/components/ui/Toast';
+import { Button } from '@/components/ui/button';
+import { Toast } from '@/components/ui/toast';
 import { useIsMountedCheck } from '@/hooks/useIsMountedCheck';
 import { useBreakpoint } from '@/hooks/useMediaQuery';
 

@@ -49,4 +49,5 @@ next-env.d.ts
 /db
 
 .codegpt
-.playwright-mcp/
+
+.playwright-mcp

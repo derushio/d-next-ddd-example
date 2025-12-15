@@ -1,4 +1,4 @@
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui/card';
 
 import { clsx } from 'clsx';
 import { HiExclamationTriangle } from 'react-icons/hi2';

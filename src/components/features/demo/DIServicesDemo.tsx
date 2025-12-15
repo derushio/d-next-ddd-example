@@ -1,7 +1,7 @@
 'use server';
 
-import { Badge } from '@/components/ui/Badge';
-import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import { resolve } from '@/di/resolver';
 import { Email } from '@/layers/domain/value-objects/Email';
 

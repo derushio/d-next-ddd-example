@@ -24,7 +24,7 @@
 ### 重要な技術選択
 
 - **Result型パターン** - 例外処理の代わりに型安全なエラーハンドリング
-- **shadcn/ui統合** - Enhanced Components + Bridge System による統一UI
+- **shadcn/ui統合** - `@/components/ui/` にカスタマイズ済みコンポーネントを配置
 - **Server Actions優先** - Client Componentsは最小限に抑制
 - **依存性注入** - TSyringeによるテスタブルな設計
 
@@ -71,9 +71,17 @@ pnpm test:e2e          # E2Eテスト
 ### shadcn/ui
 
 ```bash
-pnpm ui:add           # コンポーネント追加
+pnpm ui:add           # コンポーネント追加（※下記の運用ルール参照）
 pnpm ui:list          # 利用可能コンポーネント一覧
 ```
+
+**⚠️ shadcn/ui 運用ルール**:
+
+- **既存カスタマイズ済みコンポーネントは `ui:add` しない**
+  - 対象: button, card, input, alert, badge, dialog, form, label, separator, sonner, toast, loading, spinner
+- **新規コンポーネントのみ `ui:add` で追加**（そのまま使用可能）
+  - 例: `pnpm ui:add accordion`, `pnpm ui:add tabs`
+- **命名規則**: kebab-case（shadcn/ui標準に準拠）
 
 ### データベース
 
@@ -178,7 +186,7 @@ async function createUser(
 
 ```typescript
 // ✅ 推奨：個別インポート + alias使用
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { SignInForm } from '@/components/features/auth/SignInForm';
 
 // ❌ 禁止：相対パス・index.ts経由
@@ -195,8 +203,9 @@ import { Button } from '@/components/ui';
 ### 🎨 スタイルルール
 
 - **統一システム**: `@/utils/style-utilities` のユーティリティ関数使用
-- **shadcn/ui**: Bridge System (`@/components/ui-bridge`) 経由で使用
+- **shadcn/ui**: `@/components/ui/` から直接インポート
 - **テーマ変数**: `bg-[var(--primary)]` 形式でCSS変数使用
+- **cn関数**: `@/lib/utils-shadcn` の `cn()` でクラス名結合
 
 ---
 

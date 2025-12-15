@@ -1,7 +1,7 @@
 'use client';
 
 import { useLayout } from '@/components/providers/LayoutProvider';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { useIsMountedCheck } from '@/hooks/useIsMountedCheck';
 
 import { clsx } from 'clsx';

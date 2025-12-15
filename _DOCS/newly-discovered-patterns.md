@@ -70,26 +70,32 @@ const buttonVariants = cva('inline-flex items-center justify-center', {
 
 ---
 
-## 🌉 shadcn/ui Bridge System - 完全統合アーキテクチャ
+## 🌉 shadcn/ui カスタマイズ済みコンポーネント
 
 ### 概要
 
-既存システムとshadcn/ui標準機能の完全統合を実現するBridge System。段階的移行と機能拡張を同時実現。
+`@/components/ui/` に配置されたshadcn/uiベースのカスタマイズ済みコンポーネント群。既存システム機能とshadcn/ui標準機能を統合。
 
 ### 実装アーキテクチャ
 
-#### Bridge Index構造
+#### コンポーネント配置
+
+```
+src/components/ui/
+├── button.tsx    # gradient, loading, fullWidth 機能を統合
+├── card.tsx      # Compound Pattern対応
+├── input.tsx     # label, icon, error 表示機能
+├── alert.tsx     # ステートカラー対応
+└── ...           # kebab-case（shadcn/ui標準）
+```
+
+#### インポートパターン
 
 ```typescript
-// src/components/ui-bridge/index.ts
-// 🔗 Perfect Integration Bridge
-export { Button as LegacyButton } from '@/components/ui-legacy/Button';
-export { Button as ShadcnButton } from '@/components/ui-shadcn/button-enhanced';
-export { Button } from '@/components/ui-shadcn/button-enhanced'; // Default
-
-export { Card as LegacyCard } from '@/components/ui-legacy/Card';
-export { Card as ShadcnCard } from '@/components/ui-shadcn/card-enhanced';
-export { Card } from '@/components/ui-shadcn/card-enhanced'; // Default
+// ✅ 推奨：@/components/ui/ から個別インポート
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Alert } from '@/components/ui/alert';
 ```
 
 #### Enhanced Components Pattern
@@ -103,19 +109,22 @@ interface ButtonProps
  gradient?: boolean;
  loading?: boolean;
  fullWidth?: boolean;
- leftIcon?: React.ReactNode;
- rightIcon?: React.ReactNode;
 
  // shadcn/ui標準機能は自動継承
- // variant, size, etc.
+ // variant, size, asChild, etc.
 }
 ```
+
+### 運用ルール
+
+- **既存カスタマイズ済みコンポーネントは `pnpm ui:add` で追加しない**
+- **新規コンポーネントのみ `ui:add` で追加**（そのまま使用可能）
+- **命名規則**: kebab-case（shadcn/ui標準に準拠）
 
 ### 実装成果
 
 - **完全互換性**: 既存コンポーネントの100%互換性維持
 - **機能拡張**: shadcn/ui標準機能の完全活用
-- **段階的移行**: 無理のない移行プロセス
 - **開発効率**: 統一インターフェースによる開発速度向上
 
 ---

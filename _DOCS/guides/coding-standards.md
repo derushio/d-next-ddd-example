@@ -293,8 +293,8 @@ import React, { useState } from 'react';
 
 ```typescript
 // ✅ 推奨
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 // ❌ 禁止
 import { Button, Input } from '@/components/ui'; // index.ts経由

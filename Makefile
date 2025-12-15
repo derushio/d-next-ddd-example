@@ -1,11 +1,36 @@
 up:
 	docker compose -f docker/compose.yaml --env-file=".env" up -d pg
 	@echo "⏳ Waiting for PostgreSQL to be ready..."
-	@until docker compose -f docker/compose.yaml --env-file=".env" exec -T pg pg_isready -U postgres > /dev/null 2>&1; do \
-		echo "  PostgreSQL is not ready yet, waiting..."; \
+	@TIMEOUT=30; \
+	COUNT=0; \
+	while [ $$COUNT -lt $$TIMEOUT ]; do \
+		if docker compose -f docker/compose.yaml --env-file=".env" exec -T pg pg_isready -U postgres > /dev/null 2>&1; then \
+			echo "✅ PostgreSQL is ready!"; \
+			break; \
+		fi; \
+		CONTAINER_STATUS=$$(docker compose -f docker/compose.yaml --env-file=".env" ps pg --format '{{.State}}' 2>/dev/null || echo "unknown"); \
+		if [ "$$CONTAINER_STATUS" = "exited" ] || [ "$$CONTAINER_STATUS" = "dead" ]; then \
+			echo ""; \
+			echo "❌ PostgreSQL container failed to start!"; \
+			echo ""; \
+			echo "=== Container Logs ==="; \
+			docker compose -f docker/compose.yaml --env-file=".env" logs pg 2>&1 | tail -20; \
+			echo ""; \
+			echo "💡 Hint: Check if .env file exists and has correct DB_USER, DB_PASSWORD, DB_NAME, DB_PORT"; \
+			exit 1; \
+		fi; \
+		echo "  PostgreSQL is not ready yet, waiting... ($$COUNT/$$TIMEOUT)"; \
 		sleep 1; \
-	done
-	@echo "✅ PostgreSQL is ready!"
+		COUNT=$$((COUNT + 1)); \
+	done; \
+	if [ $$COUNT -ge $$TIMEOUT ]; then \
+		echo ""; \
+		echo "❌ Timeout waiting for PostgreSQL!"; \
+		echo ""; \
+		echo "=== Container Logs ==="; \
+		docker compose -f docker/compose.yaml --env-file=".env" logs pg 2>&1 | tail -20; \
+		exit 1; \
+	fi
 	pnpm db:migrate:dev
 	pnpm db:seed
 
@@ -51,12 +76,12 @@ setup:
 	# Install Playwright browsers for E2E testing
 	pnpm exec playwright install chromium firefox
 
-	# Replace d-next-resources with project name from package.json
+	# Replace d-next-ddd-example with project name from package.json
 	PROJECT_NAME=$$(jq -r '.name' package.json) && \
 	command -v fd >/dev/null 2>&1 || { echo "Error: fd command is required but not found." >&2; exit 1; } && \
 	fd --hidden --no-ignore -t f \
 		-E node_modules -E .next -E dist -E .git \
-		-x sed -i "s/d-next-resources/$${PROJECT_NAME}/g" {}
+		-x sed -i "s/d-next-ddd-example/$${PROJECT_NAME}/g" {}
 
 	# Setup Git hooks
 	@echo ""

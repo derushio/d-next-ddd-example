@@ -64,9 +64,30 @@ const useCase = resolve(INJECTION_TOKENS.UseCase);
 ### 正しい例
 
 ```typescript
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { UserService } from '@/layers/application/services/UserService';
 ```
+
+## shadcn/ui 運用ルール
+
+### コンポーネント配置
+
+- **配置先**: `@/components/ui/` にカスタマイズ済みコンポーネントを配置
+- **命名規則**: kebab-case（`button.tsx`, `card.tsx`）- shadcn/ui標準に準拠
+
+### インポート
+
+```typescript
+// ✅ 推奨：個別インポート
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+```
+
+### 新規コンポーネント追加
+
+- **既存カスタマイズ済みコンポーネントは `pnpm ui:add` しない**
+  - 対象: button, card, input, alert, badge, dialog, form, label, separator, sonner, toast, loading, spinner
+- **新規のみ `ui:add` で追加**（そのまま使用可能、リネーム不要）
 
 ## React・UI実装規約
 

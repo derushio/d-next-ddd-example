@@ -1,7 +1,7 @@
 'use client';
 
 import { deleteUser } from '@/app/server-actions/user/deleteUser';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 import { clsx } from 'clsx';
 import { useRouter } from 'next/navigation';

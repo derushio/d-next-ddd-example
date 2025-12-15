@@ -5,13 +5,13 @@ import {
   type GetUsersParams,
 } from '@/app/server-actions/user/getUsers';
 import { DeleteUserButton } from '@/components/features/user/DeleteUserButton';
-import { Alert } from '@/components/ui/Alert';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
-import { Loading } from '@/components/ui/Loading';
-import { Separator } from '@/components/ui/Separator';
+import { Alert } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Loading } from '@/components/ui/loading';
+import { Separator } from '@/components/ui/separator';
 
 import { clsx } from 'clsx';
 import { useRouter } from 'next/navigation';
