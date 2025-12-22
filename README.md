@@ -18,10 +18,10 @@ graph LR
     B --> C[🚀 実践チュートリアル]
     C --> D[🤔 FAQ・トラブル解決]
 
-    style A fill:#ffcdd2
-    style B fill:#c8e6c9
-    style C fill:#bbdefb
-    style D fill:#d1c4e9
+    style A fill:#ffcdd2,color:#333
+    style B fill:#c8e6c9,color:#333
+    style C fill:#bbdefb,color:#333
+    style D fill:#d1c4e9,color:#333
 ```
 
 **📖 おすすめの順序（目安：1-2週間程度）：**
