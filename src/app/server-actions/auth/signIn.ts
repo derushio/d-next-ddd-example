@@ -3,15 +3,10 @@
 import 'reflect-metadata';
 
 import { resolve } from '@/di/resolver';
-import { isFailure, isSuccess } from '@/layers/application/types/Result';
-
-import { z } from 'zod';
-
-// バリデーションスキーマ
-const signInSchema = z.object({
-  email: z.string().email('有効なメールアドレスを入力してください'),
-  password: z.string().min(8, 'パスワードは8文字以上で入力してください'),
-});
+import { isSuccess } from '@/layers/application/types/Result';
+// 共通バリデーションスキーマ（DRY原則）
+import { signInSchema } from '@/layers/infrastructure/types/zod/authSchema';
+import { getClientIp } from '@/utils/getClientIp';
 
 /**
  * サインイン Server Action
@@ -50,12 +45,16 @@ export async function signIn(formData: FormData) {
 
     const { email, password } = validatedFields.data;
 
+    // クライアントIPアドレスを取得（Rate Limiting用）
+    const ipAddress = await getClientIp();
+
     // resolve()でSignInUseCaseを取得してサインイン処理
     const signInUseCase = resolve('SignInUseCase');
 
     const result = await signInUseCase.execute({
       email,
       password,
+      ipAddress,
     });
 
     // Result型のパターンマッチング

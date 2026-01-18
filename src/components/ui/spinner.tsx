@@ -13,6 +13,7 @@ export function Spinner({ size = 'md', className }: SpinnerProps) {
   };
 
   return (
+    // biome-ignore lint/a11y/useSemanticElements: role="status"はローディング状態を示すために意図的に使用
     <div
       className={clsx(
         'animate-spin rounded-full border-2 border-gray-200 border-t-violet-600 shadow-lg',

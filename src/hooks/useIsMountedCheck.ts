@@ -34,19 +34,25 @@ export function useIsMountedCheck() {
     const subscribers = subscribersRef.current;
 
     isMountedRef.current = true;
-    subscribers.forEach((callback) => callback());
+    subscribers.forEach((callback) => {
+      callback();
+    });
 
     // 少し遅延してからisMountedDelayをtrueに
     const timer = setTimeout(() => {
       isMountedDelayRef.current = true;
-      subscribers.forEach((callback) => callback());
+      subscribers.forEach((callback) => {
+        callback();
+      });
     }, 100);
 
     return () => {
       clearTimeout(timer);
       isMountedRef.current = false;
       isMountedDelayRef.current = false;
-      subscribers.forEach((callback) => callback());
+      subscribers.forEach((callback) => {
+        callback();
+      });
     };
   }, []);
 

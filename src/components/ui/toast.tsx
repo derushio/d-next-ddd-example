@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils-shadcn';
 
 import { clsx } from 'clsx';
-import * as React from 'react';
+import type * as React from 'react';
 import { HiXMark } from 'react-icons/hi2';
 // Sonner integration (for modern toast usage)
 import { Toaster as Sonner, toast } from 'sonner';
@@ -49,6 +49,7 @@ function Toast({
       {/* クローズボタン */}
       {showCloseButton && onClose && (
         <button
+          type='button'
           onClick={onClose}
           className={clsx(
             'absolute top-2 right-2 p-1 rounded-full',

@@ -3,7 +3,7 @@
 import {
   createContext,
   memo,
-  ReactNode,
+  type ReactNode,
   useCallback,
   useContext,
   useState,

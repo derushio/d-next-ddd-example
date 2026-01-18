@@ -1,5 +1,5 @@
 import { clsx } from 'clsx';
-import { HTMLAttributes } from 'react';
+import type { HTMLAttributes } from 'react';
 
 export interface LoadingProps extends HTMLAttributes<HTMLDivElement> {
   size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -57,6 +57,7 @@ export function Loading({
       xmlns='http://www.w3.org/2000/svg'
       fill='none'
       viewBox='0 0 24 24'
+      aria-hidden='true'
     >
       <circle
         className={clsx('opacity-25')}
@@ -148,6 +149,7 @@ export function Loading({
   };
 
   return (
+    // biome-ignore lint/a11y/useSemanticElements: role="status"はローディング状態を示すために意図的に使用
     <div
       className={clsx(containerClasses, className)}
       role='status'

@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils-shadcn';
 
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
-import * as React from 'react';
+import type * as React from 'react';
 
 // 既存システムの gradient 機能を shadcn/ui に統合
 const buttonVariants = cva(
@@ -71,7 +71,8 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends React.ComponentProps<'button'>, VariantProps<typeof buttonVariants> {
+  extends React.ComponentProps<'button'>,
+    VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   loading?: boolean; // 既存システムの loading 機能
   fullWidth?: boolean; // 既存システムの fullWidth 機能
@@ -112,6 +113,7 @@ function Button({
           xmlns='http://www.w3.org/2000/svg'
           fill='none'
           viewBox='0 0 24 24'
+          aria-hidden='true'
         >
           <circle
             className='opacity-25'

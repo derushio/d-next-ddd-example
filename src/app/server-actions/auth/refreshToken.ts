@@ -3,7 +3,7 @@
 import 'reflect-metadata';
 
 import { resolve } from '@/di/resolver';
-import { isFailure, isSuccess } from '@/layers/application/types/Result';
+import { isSuccess } from '@/layers/application/types/Result';
 
 import { z } from 'zod';
 

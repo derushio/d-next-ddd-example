@@ -8,7 +8,7 @@ import { ToastProvider } from '@/components/providers/ToastProvider';
 import { useIsMountedCheck } from '@/hooks/useIsMountedCheck';
 
 import { clsx } from 'clsx';
-import { memo, ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 
 // 後方互換性のためのエイリアス（段階的移行用）
 export { LayoutContext as BodyStateContext } from '@/components/providers/LayoutProvider';

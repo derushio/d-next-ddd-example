@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 /* =================================
    統一テーマシステム v2.0
@@ -494,5 +494,5 @@ body {
 
 .h-screen {
   /* 元々はvh */
-  height: 100svh !important;
+  height: 100svh;
 }

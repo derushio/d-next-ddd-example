@@ -6,7 +6,7 @@ import { HeaderClient } from '@/components/layout/header/HeaderClient';
 import { Sidenav } from '@/components/layout/sidebar/Sidenav';
 
 import { clsx } from 'clsx';
-import { ReactNode, Suspense } from 'react';
+import { type ReactNode, Suspense } from 'react';
 
 /**
  * BodyClientからServer Componentに戻すためのコンポーネント

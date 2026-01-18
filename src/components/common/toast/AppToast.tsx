@@ -1,14 +1,12 @@
 'use client';
 
 import { useToast } from '@/components/providers/ToastProvider';
-import { Button } from '@/components/ui/button';
 import { Toast } from '@/components/ui/toast';
 import { useIsMountedCheck } from '@/hooks/useIsMountedCheck';
 import { useBreakpoint } from '@/hooks/useMediaQuery';
 
 import { clsx } from 'clsx';
-import { memo, ReactNode, useEffect, useState } from 'react';
-import { HiXMark } from 'react-icons/hi2';
+import { memo, type ReactNode, useState } from 'react';
 import { useInterval } from 'usehooks-ts';
 
 /**

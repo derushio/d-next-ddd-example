@@ -3,7 +3,7 @@
 import { NavigationItem } from '@/components/features/navigation/NavigationItem';
 import { useLayout } from '@/components/providers/LayoutProvider';
 import { useIsMountedCheck } from '@/hooks/useIsMountedCheck';
-import { getAuth } from '@/layers/infrastructure/persistence/nextAuth';
+import type { getAuth } from '@/layers/infrastructure/persistence/nextAuth';
 
 import { clsx } from 'clsx';
 import { usePathname } from 'next/navigation';

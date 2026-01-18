@@ -7,15 +7,11 @@
 
 import {
   cn,
-  colorClasses,
   getBaseComponentClass,
   getCardClass,
   getFormControlClass,
-  getGradientClass,
-  getShadowClass,
   gradientClasses,
   presetClasses,
-  shadowClasses,
   transitionClasses,
   type GradientVariant,
   type SizeVariant,
@@ -36,15 +32,24 @@ function ButtonBefore() {
       </h3>
 
       {/* 各ボタンで個別にスタイル定義 */}
-      <button className='inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-[1.05] active:scale-[0.95] disabled:opacity-50 disabled:cursor-not-allowed'>
+      <button
+        type='button'
+        className='inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-[1.05] active:scale-[0.95] disabled:opacity-50 disabled:cursor-not-allowed'
+      >
         Primary Button（68文字）
       </button>
 
-      <button className='inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-500 via-pink-500 to-rose-500 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-[1.05] active:scale-[0.95] disabled:opacity-50 disabled:cursor-not-allowed'>
+      <button
+        type='button'
+        className='inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-500 via-pink-500 to-rose-500 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-[1.05] active:scale-[0.95] disabled:opacity-50 disabled:cursor-not-allowed'
+      >
         Danger Button（65文字）
       </button>
 
-      <button className='inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-[1.05] active:scale-[0.95] disabled:opacity-50 disabled:cursor-not-allowed'>
+      <button
+        type='button'
+        className='inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-[1.05] active:scale-[0.95] disabled:opacity-50 disabled:cursor-not-allowed'
+      >
         Info Button（64文字）
       </button>
     </div>
@@ -60,15 +65,16 @@ function ButtonAfter() {
       </h3>
 
       {/* 統一プリセット使用 */}
-      <button className={presetClasses.primaryButton}>
+      <button type='button' className={presetClasses.primaryButton}>
         Primary Button（プリセット）
       </button>
 
-      <button className={presetClasses.dangerButton}>
+      <button type='button' className={presetClasses.dangerButton}>
         Danger Button（プリセット）
       </button>
 
       <button
+        type='button'
         className={cn(
           getBaseComponentClass('button', 'md', 'ocean', true),
           'text-white',
@@ -101,6 +107,7 @@ function DynamicButton({
 }: DynamicButtonProps) {
   return (
     <button
+      type='button'
       className={cn(
         getBaseComponentClass('button', size, variant, true),
         'text-white',
@@ -197,6 +204,7 @@ function GradientShowcase() {
             <h4 className='font-semibold text-lg mb-2'>{name}</h4>
             <p className='text-sm opacity-90'>{gradientClasses[variant]}</p>
             <button
+              type='button'
               className={cn(
                 'mt-3 px-4 py-2 rounded-lg',
                 'bg-white/20 hover:bg-white/30',
@@ -225,10 +233,14 @@ function FormExamples() {
 
       <div className='space-y-4'>
         <div>
-          <label className='block text-sm font-medium text-[var(--text-primary)] mb-2'>
+          <label
+            htmlFor='standard-input'
+            className='block text-sm font-medium text-[var(--text-primary)] mb-2'
+          >
             標準入力フィールド
           </label>
           <input
+            id='standard-input'
             type='text'
             placeholder='統一スタイル適用'
             className={getFormControlClass('md', 'default')}
@@ -236,10 +248,14 @@ function FormExamples() {
         </div>
 
         <div>
-          <label className='block text-sm font-medium text-[var(--text-primary)] mb-2'>
+          <label
+            htmlFor='error-input'
+            className='block text-sm font-medium text-[var(--text-primary)] mb-2'
+          >
             エラー状態フィールド
           </label>
           <input
+            id='error-input'
             type='text'
             placeholder='エラー状態のスタイル'
             className={getFormControlClass('md', 'error')}
@@ -247,10 +263,14 @@ function FormExamples() {
         </div>
 
         <div>
-          <label className='block text-sm font-medium text-[var(--text-primary)] mb-2'>
+          <label
+            htmlFor='success-input'
+            className='block text-sm font-medium text-[var(--text-primary)] mb-2'
+          >
             成功状態フィールド
           </label>
           <input
+            id='success-input'
             type='text'
             placeholder='成功状態のスタイル'
             className={getFormControlClass('md', 'success')}
@@ -278,10 +298,14 @@ function InteractiveDemo() {
 
       <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
         <div>
-          <label className='block text-sm font-medium text-[var(--text-primary)] mb-2'>
+          <label
+            htmlFor='gradient-select'
+            className='block text-sm font-medium text-[var(--text-primary)] mb-2'
+          >
             グラデーション選択
           </label>
           <select
+            id='gradient-select'
             value={selectedVariant}
             onChange={(e) =>
               setSelectedVariant(e.target.value as GradientVariant)
@@ -297,10 +321,14 @@ function InteractiveDemo() {
         </div>
 
         <div>
-          <label className='block text-sm font-medium text-[var(--text-primary)] mb-2'>
+          <label
+            htmlFor='size-select'
+            className='block text-sm font-medium text-[var(--text-primary)] mb-2'
+          >
             サイズ選択
           </label>
           <select
+            id='size-select'
             value={selectedSize}
             onChange={(e) => setSelectedSize(e.target.value as SizeVariant)}
             className={getFormControlClass('md', 'default')}
@@ -373,9 +401,9 @@ function EfficiencyStats() {
       </h3>
 
       <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-        {stats.map((stat, index) => (
+        {stats.map((stat) => (
           <div
-            key={index}
+            key={stat.metric}
             className={cn(
               getCardClass('md', stat.color as GradientVariant, true),
               'text-white',

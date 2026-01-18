@@ -197,95 +197,89 @@ export function UserListClient({ initialParams = {} }: UserListProps) {
               </div>
             </Card>
           ) : (
-            <>
-              {users.users.map((user) => (
-                <Card key={user.id} variant='bordered' padding='md' hover>
-                  <Card.Content>
-                    <div
-                      className={clsx(
-                        'flex flex-col sm:flex-row sm:items-center justify-between gap-3',
-                      )}
-                    >
-                      <div className={clsx('flex-1')}>
-                        <div className={clsx('flex items-center gap-3 mb-2')}>
-                          <h3
-                            className={clsx(
-                              'text-lg font-semibold text-[var(--text-primary)]',
-                            )}
-                          >
-                            {user.name}
-                          </h3>
-                          <Badge variant='secondary'>
-                            ID: {user.id.slice(0, 8)}...
-                          </Badge>
-                        </div>
-                        <p
+            users.users.map((user) => (
+              <Card key={user.id} variant='bordered' padding='md' hover>
+                <Card.Content>
+                  <div
+                    className={clsx(
+                      'flex flex-col sm:flex-row sm:items-center justify-between gap-3',
+                    )}
+                  >
+                    <div className={clsx('flex-1')}>
+                      <div className={clsx('flex items-center gap-3 mb-2')}>
+                        <h3
                           className={clsx(
-                            'text-sm text-[var(--text-muted)] mb-1',
+                            'text-lg font-semibold text-[var(--text-primary)]',
                           )}
                         >
-                          📧 {user.email}
-                        </p>
-                        <div
-                          className={clsx(
-                            'flex flex-col sm:flex-row sm:items-center gap-2 text-xs text-[var(--text-muted)]',
-                          )}
-                        >
-                          <span>
-                            作成:{' '}
-                            {new Date(user.createdAt).toLocaleDateString(
-                              'ja-JP',
-                            )}
-                          </span>
-                          <Separator
-                            orientation='vertical'
-                            className={clsx('hidden sm:block h-3')}
-                          />
-                          <span>
-                            更新:{' '}
-                            {new Date(user.updatedAt).toLocaleDateString(
-                              'ja-JP',
-                            )}
-                          </span>
-                        </div>
+                          {user.name}
+                        </h3>
+                        <Badge variant='secondary'>
+                          ID: {user.id.slice(0, 8)}...
+                        </Badge>
                       </div>
-
-                      {/* アクション */}
-                      <div className={clsx('flex gap-2')}>
-                        <Button
-                          variant='secondary'
-                          size='sm'
-                          disabled={isLoading}
-                          onClick={() => router.push(`/users/${user.id}`)}
-                          className={clsx('cursor-pointer')}
-                        >
-                          詳細
-                        </Button>
-                        <Button
-                          variant='outline'
-                          size='sm'
-                          disabled={isLoading}
-                          onClick={() => router.push(`/users/${user.id}/edit`)}
-                          className={clsx('cursor-pointer')}
-                        >
-                          編集
-                        </Button>
-                        <DeleteUserButton
-                          userId={user.id}
-                          userName={user.name}
-                          variant='destructive'
-                          size='sm'
-                          onSuccess={() => {
-                            // 削除成功後にユーザーリストを再取得
-                            fetchUsers();
-                          }}
+                      <p
+                        className={clsx(
+                          'text-sm text-[var(--text-muted)] mb-1',
+                        )}
+                      >
+                        📧 {user.email}
+                      </p>
+                      <div
+                        className={clsx(
+                          'flex flex-col sm:flex-row sm:items-center gap-2 text-xs text-[var(--text-muted)]',
+                        )}
+                      >
+                        <span>
+                          作成:{' '}
+                          {new Date(user.createdAt).toLocaleDateString('ja-JP')}
+                        </span>
+                        <Separator
+                          orientation='vertical'
+                          className={clsx('hidden sm:block h-3')}
                         />
+                        <span>
+                          更新:{' '}
+                          {new Date(user.updatedAt).toLocaleDateString('ja-JP')}
+                        </span>
                       </div>
                     </div>
-                  </Card.Content>
-                </Card>
-              ))}
-            </>
+
+                    {/* アクション */}
+                    <div className={clsx('flex gap-2')}>
+                      <Button
+                        variant='secondary'
+                        size='sm'
+                        disabled={isLoading}
+                        onClick={() => router.push(`/users/${user.id}`)}
+                        className={clsx('cursor-pointer')}
+                      >
+                        詳細
+                      </Button>
+                      <Button
+                        variant='outline'
+                        size='sm'
+                        disabled={isLoading}
+                        onClick={() => router.push(`/users/${user.id}/edit`)}
+                        className={clsx('cursor-pointer')}
+                      >
+                        編集
+                      </Button>
+                      <DeleteUserButton
+                        userId={user.id}
+                        userName={user.name}
+                        variant='destructive'
+                        size='sm'
+                        onSuccess={() => {
+                          // 削除成功後にユーザーリストを再取得
+                          fetchUsers();
+                        }}
+                      />
+                    </div>
+                  </div>
+                </Card.Content>
+              </Card>
+            ))
           )}
 
           {/* ページネーション */}

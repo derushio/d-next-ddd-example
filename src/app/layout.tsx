@@ -25,6 +25,7 @@ import type { Metadata } from 'next';
 function ThemeModeScript() {
   return (
     <script
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: テーマ初期化スクリプトは静的で安全なコード
       dangerouslySetInnerHTML={{
         __html: `
           (function() {

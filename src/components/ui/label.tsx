@@ -3,7 +3,7 @@
 import { cn } from '@/lib/utils-shadcn';
 
 import * as LabelPrimitive from '@radix-ui/react-label';
-import * as React from 'react';
+import type * as React from 'react';
 
 function Label({
   className,

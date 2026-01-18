@@ -3,10 +3,7 @@
 import 'reflect-metadata';
 
 import { resolve } from '@/di/resolver';
-import { isFailure, isSuccess } from '@/layers/application/types/Result';
-
-import { signOut as nextAuthSignOut } from 'next-auth/react';
-import { redirect } from 'next/navigation';
+import { isFailure } from '@/layers/application/types/Result';
 
 /**
  * サインアウト Server Action

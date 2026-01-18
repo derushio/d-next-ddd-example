@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useIsMountedCheck } from '@/hooks/useIsMountedCheck';
 
 import { clsx } from 'clsx';
-import { memo, ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 import { HiBars3, HiSparkles } from 'react-icons/hi2';
 
 /**

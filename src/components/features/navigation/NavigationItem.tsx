@@ -14,15 +14,10 @@
 
 'use client';
 
-import {
-  cn,
-  colorClasses,
-  gradientClasses,
-  transitionClasses,
-} from '@/utils/style-utilities';
+import { cn, transitionClasses } from '@/utils/style-utilities';
 
 import Link from 'next/link';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 interface NavigationItemProps {
   href: string;
@@ -122,7 +117,7 @@ interface EffectsProps {
   variant: string;
 }
 
-function NavigationEffects({ isActive, variant }: EffectsProps) {
+function NavigationEffects({ isActive }: EffectsProps) {
   return (
     <>
       {/* ホバー背景効果 - z-indexを適切に設定し、全体に適用 */}

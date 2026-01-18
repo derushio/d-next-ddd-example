@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils-shadcn';
 
 import { cva, type VariantProps } from 'class-variance-authority';
-import * as React from 'react';
+import type * as React from 'react';
 
 // 🌟 Enhanced Card システム - Aurora Gradient対応
 const cardVariants = cva(
@@ -38,7 +38,8 @@ const cardVariants = cva(
 );
 
 export interface CardProps
-  extends React.ComponentProps<'div'>, VariantProps<typeof cardVariants> {
+  extends React.ComponentProps<'div'>,
+    VariantProps<typeof cardVariants> {
   hover?: boolean; // 既存システムの hover 機能
 }
 
