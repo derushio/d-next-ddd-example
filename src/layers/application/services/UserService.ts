@@ -1,7 +1,11 @@
 import { INJECTION_TOKENS } from '@/di/tokens';
 import type { IHashService } from '@/layers/application/interfaces/IHashService';
 import type { ILogger } from '@/layers/application/interfaces/ILogger';
-import { failure, Result, success } from '@/layers/application/types/Result';
+import {
+  failure,
+  type Result,
+  success,
+} from '@/layers/application/types/Result';
 import { User } from '@/layers/domain/entities/User';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';

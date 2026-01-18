@@ -1,6 +1,10 @@
 import { INJECTION_TOKENS } from '@/di/tokens';
 import type { ILogger } from '@/layers/application/interfaces/ILogger';
-import { failure, Result, success } from '@/layers/application/types/Result';
+import {
+  failure,
+  type Result,
+  success,
+} from '@/layers/application/types/Result';
 import type { User } from '@/layers/domain/entities/User';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type {

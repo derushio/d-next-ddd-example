@@ -1,6 +1,10 @@
 // 分離されたDIコンテナアーキテクチャから最上位コンテナを直接インポート
 import { applicationContainer } from '@/di/containers/application.container';
-import { INJECTION_TOKENS, ServiceType, ServiceTypeMap } from '@/di/tokens';
+import {
+  INJECTION_TOKENS,
+  type ServiceType,
+  type ServiceTypeMap,
+} from '@/di/tokens';
 
 /**
  * 型推論機能付きDIサービス取得関数
@@ -23,7 +27,7 @@ export function resolve<K extends keyof ServiceTypeMap>(
   serviceName: K,
 ): ServiceType<K> {
   return applicationContainer.resolve<ServiceType<K>>(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TSyringeの型システム制約によりSymbol型をanyでキャスト必要
+    // biome-ignore lint/suspicious/noExplicitAny: TSyringeの型システム制約によりSymbol型をanyでキャスト必要
     INJECTION_TOKENS[serviceName] as any,
   );
 }

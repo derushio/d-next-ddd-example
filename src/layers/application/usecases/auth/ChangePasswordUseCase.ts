@@ -1,7 +1,11 @@
 import { INJECTION_TOKENS } from '@/di/tokens';
 import type { IHashService } from '@/layers/application/interfaces/IHashService';
 import type { ILogger } from '@/layers/application/interfaces/ILogger';
-import { failure, Result, success } from '@/layers/application/types/Result';
+import {
+  failure,
+  type Result,
+  success,
+} from '@/layers/application/types/Result';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import type { UserDomainService } from '@/layers/domain/services/UserDomainService';
@@ -25,7 +29,7 @@ export class ChangePasswordUseCase {
     @inject(INJECTION_TOKENS.UserRepository)
     private userRepository: IUserRepository,
     @inject(INJECTION_TOKENS.UserDomainService)
-    private userDomainService: UserDomainService,
+    _userDomainService: UserDomainService,
     @inject(INJECTION_TOKENS.HashService) private hashService: IHashService,
     @inject(INJECTION_TOKENS.Logger) private logger: ILogger,
   ) {}

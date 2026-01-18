@@ -1,6 +1,9 @@
 import { DomainError } from '@/layers/domain/errors/DomainError';
-import { Email } from '@/layers/domain/value-objects/Email';
-import { generateUserId, UserId } from '@/layers/domain/value-objects/UserId';
+import type { Email } from '@/layers/domain/value-objects/Email';
+import {
+  generateUserId,
+  type UserId,
+} from '@/layers/domain/value-objects/UserId';
 
 export class User {
   private constructor(

@@ -16,7 +16,7 @@ import { container } from 'tsyringe';
 export const coreContainer = container.createChildContainer();
 
 // Prevent duplicate registration
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- DIコンテナのコンストラクタ型は実行時に多様な引数パターンを受け取るためanyが必要
+// biome-ignore lint/suspicious/noExplicitAny: DIコンテナのコンストラクタ型は実行時に多様な引数パターンを受け取るためanyが必要
 function safeRegister<T>(token: symbol, creator: new (...args: any[]) => T) {
   if (!coreContainer.isRegistered(token)) {
     coreContainer.registerSingleton(creator);

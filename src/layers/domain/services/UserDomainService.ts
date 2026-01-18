@@ -1,5 +1,5 @@
 import { INJECTION_TOKENS } from '@/di/tokens';
-import { User } from '@/layers/domain/entities/User';
+import type { User } from '@/layers/domain/entities/User';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IHashService } from '@/layers/domain/interfaces/IHashService';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
@@ -44,7 +44,7 @@ export class UserDomainService implements IUserDomainService {
     }
 
     // 禁止文字チェック
-    const forbiddenChars = /[<>\"'&]/;
+    const forbiddenChars = /[<>"'&]/;
     if (forbiddenChars.test(name)) {
       throw new DomainError(
         '名前に使用できない文字が含まれています',

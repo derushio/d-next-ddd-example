@@ -1,6 +1,10 @@
 import { INJECTION_TOKENS } from '@/di/tokens';
 import type { ILogger } from '@/layers/application/interfaces/ILogger';
-import { failure, Result, success } from '@/layers/application/types/Result';
+import {
+  failure,
+  type Result,
+  success,
+} from '@/layers/application/types/Result';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 
 import { inject, injectable } from 'tsyringe';
@@ -19,8 +23,7 @@ export interface RefreshTokenResponse {
 @injectable()
 export class RefreshTokenUseCase {
   constructor(
-    @inject(INJECTION_TOKENS.UserRepository)
-    private userRepository: IUserRepository,
+    @inject(INJECTION_TOKENS.UserRepository) _userRepository: IUserRepository,
     @inject(INJECTION_TOKENS.Logger) private logger: ILogger,
   ) {}
 

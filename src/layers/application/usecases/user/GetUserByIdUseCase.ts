@@ -3,11 +3,10 @@ import type { ILogger } from '@/layers/application/interfaces/ILogger';
 import {
   failure,
   isFailure,
-  Result,
+  type Result,
   success,
 } from '@/layers/application/types/Result';
 import type { GetCurrentUserUseCase } from '@/layers/application/usecases/auth/GetCurrentUserUseCase';
-import type { User } from '@/layers/domain/entities/User';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import { UserId } from '@/layers/domain/value-objects/UserId';

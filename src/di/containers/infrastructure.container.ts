@@ -4,10 +4,14 @@ import { coreContainer } from '@/di/containers/core.container';
 import { INJECTION_TOKENS } from '@/di/tokens';
 import { PrismaSessionRepository } from '@/layers/infrastructure/repositories/implementations/PrismaSessionRepository';
 import { PrismaUserRepository } from '@/layers/infrastructure/repositories/implementations/PrismaUserRepository';
+// [HYGEN:REPO_IMPORTS]
+
 import { AuthSessionService } from '@/layers/infrastructure/services/AuthSessionService';
 import { ErrorHandler } from '@/layers/infrastructure/services/ErrorHandler';
 import { HashService } from '@/layers/infrastructure/services/HashService';
 import { Logger } from '@/layers/infrastructure/services/Logger';
+import { LoginAttemptService } from '@/layers/infrastructure/services/LoginAttemptService';
+import { RateLimitService } from '@/layers/infrastructure/services/RateLimitService';
 
 /**
  * Infrastructure Container - インフラストラクチャ層
@@ -21,7 +25,7 @@ import { Logger } from '@/layers/infrastructure/services/Logger';
 export const infrastructureContainer = coreContainer.createChildContainer();
 
 // Prevent duplicate registration
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- DIコンテナのコンストラクタ型は実行時に多様な引数パターンを受け取るためanyが必要
+// biome-ignore lint/suspicious/noExplicitAny: DIコンテナのコンストラクタ型は実行時に多様な引数パターンを受け取るためanyが必要
 function safeRegister<T>(token: symbol, creator: new (...args: any[]) => T) {
   if (!infrastructureContainer.isRegistered(token)) {
     infrastructureContainer.registerSingleton(creator);
@@ -34,9 +38,12 @@ safeRegister(INJECTION_TOKENS.HashService, HashService);
 safeRegister(INJECTION_TOKENS.Logger, Logger);
 safeRegister(INJECTION_TOKENS.ErrorHandler, ErrorHandler);
 safeRegister(INJECTION_TOKENS.AuthSessionService, AuthSessionService);
+safeRegister(INJECTION_TOKENS.LoginAttemptService, LoginAttemptService);
+safeRegister(INJECTION_TOKENS.RateLimitService, RateLimitService);
 
 // Repository registrations (Infrastructure層の一部)
 safeRegister(INJECTION_TOKENS.UserRepository, PrismaUserRepository);
 safeRegister(INJECTION_TOKENS.SessionRepository, PrismaSessionRepository);
+// [HYGEN:REPO_REGISTER]
 
 console.log('✅ Infrastructure Container初期化完了');

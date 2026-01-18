@@ -3,7 +3,7 @@ import type { ILogger } from '@/layers/application/interfaces/ILogger';
 import {
   failure,
   isFailure,
-  Result,
+  type Result,
   success,
 } from '@/layers/application/types/Result';
 import type { GetCurrentUserUseCase } from '@/layers/application/usecases/auth/GetCurrentUserUseCase';

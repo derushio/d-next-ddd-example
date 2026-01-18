@@ -16,6 +16,7 @@ import { CreateUserUseCase } from '@/layers/application/usecases/user/CreateUser
 import { DeleteUserUseCase } from '@/layers/application/usecases/user/DeleteUserUseCase';
 import { GetUserByIdUseCase } from '@/layers/application/usecases/user/GetUserByIdUseCase';
 import { GetUsersUseCase } from '@/layers/application/usecases/user/GetUsersUseCase';
+// [HYGEN:USECASE_IMPORTS]
 
 /**
  * Application Container - アプリケーション層（最上位）
@@ -27,7 +28,7 @@ import { GetUsersUseCase } from '@/layers/application/usecases/user/GetUsersUseC
 export const applicationContainer = domainContainer.createChildContainer();
 
 // Prevent duplicate registration
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- DIコンテナのコンストラクタ型は実行時に多様な引数パターンを受け取るためanyが必要
+// biome-ignore lint/suspicious/noExplicitAny: DIコンテナのコンストラクタ型は実行時に多様な引数パターンを受け取るためanyが必要
 function safeRegister<T>(token: symbol, creator: new (...args: any[]) => T) {
   if (!applicationContainer.isRegistered(token)) {
     applicationContainer.registerSingleton(creator);
@@ -50,6 +51,7 @@ safeRegister(INJECTION_TOKENS.GetUsersUseCase, GetUsersUseCase);
 safeRegister(INJECTION_TOKENS.GetUserByIdUseCase, GetUserByIdUseCase);
 safeRegister(INJECTION_TOKENS.DeleteUserUseCase, DeleteUserUseCase);
 safeRegister(INJECTION_TOKENS.UpdateUserUseCase, UpdateUserUseCase);
+// [HYGEN:USECASE_REGISTER]
 
 // Legacy Service registrations (will be phased out)
 safeRegister(INJECTION_TOKENS.UserService, UserService);

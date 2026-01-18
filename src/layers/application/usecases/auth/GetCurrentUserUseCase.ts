@@ -3,7 +3,11 @@ import 'reflect-metadata';
 import { INJECTION_TOKENS } from '@/di/tokens';
 import type { IAuthSessionService } from '@/layers/application/interfaces/IAuthSessionService';
 import type { ILogger } from '@/layers/application/interfaces/ILogger';
-import { failure, Result, success } from '@/layers/application/types/Result';
+import {
+  failure,
+  type Result,
+  success,
+} from '@/layers/application/types/Result';
 
 import { inject, injectable } from 'tsyringe';
 

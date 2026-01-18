@@ -1,33 +1,39 @@
-import { genCuid2 } from '@/utils/cuid2';
+import {
+  EntityId,
+  generateCuid2,
+} from '@/layers/domain/value-objects/EntityId';
 
-export class UserId {
-  public readonly value: string;
-
-  constructor(value: string) {
-    this.validateUserId(value);
-    this.value = value;
+/**
+ * ユーザーID Value Object
+ *
+ * ユーザーを一意に識別するためのID。
+ * CUID2形式（小文字英数字、7-32文字）を使用。
+ */
+export class UserId extends EntityId {
+  protected getEmptyErrorCode(): string {
+    return 'USER_ID_REQUIRED';
   }
 
-  toString(): string {
-    return this.value;
+  protected getInvalidFormatErrorCode(): string {
+    return 'INVALID_USER_ID_FORMAT';
   }
 
+  protected getEmptyMessage(): string {
+    return 'User IDは必須です';
+  }
+
+  protected getInvalidFormatMessage(): string {
+    return 'User IDの形式が正しくありません';
+  }
+
+  /**
+   * 型安全なequals（UserIdとSessionIdの混同を防止）
+   */
   equals(other: UserId): boolean {
-    return this.value === other.value;
-  }
-
-  private validateUserId(value: string): void {
-    if (!value || value.trim().length === 0) {
-      throw new Error('User IDは必須です');
-    }
-
-    // CUID2形式のチェック
-    if (value.length < 7 || value.length > 32) {
-      throw new Error('User IDの形式が正しくありません');
-    }
+    return super.equals(other);
   }
 }
 
 export const generateUserId = (): UserId => {
-  return new UserId(genCuid2());
+  return new UserId(generateCuid2());
 };

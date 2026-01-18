@@ -3,13 +3,13 @@ import type { ILogger } from '@/layers/application/interfaces/ILogger';
 import {
   failure,
   isFailure,
-  Result,
+  type Result,
   success,
 } from '@/layers/application/types/Result';
 import type { GetCurrentUserUseCase } from '@/layers/application/usecases/auth/GetCurrentUserUseCase';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
-import { UserDomainService } from '@/layers/domain/services/UserDomainService';
+import type { UserDomainService } from '@/layers/domain/services/UserDomainService';
 import { Email } from '@/layers/domain/value-objects/Email';
 import { UserId } from '@/layers/domain/value-objects/UserId';
 

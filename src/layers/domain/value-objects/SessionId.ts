@@ -1,41 +1,39 @@
-import { DomainError } from '@/layers/domain/errors/DomainError';
-import { genCuid2 } from '@/utils/cuid2';
+import {
+  EntityId,
+  generateCuid2,
+} from '@/layers/domain/value-objects/EntityId';
 
 /**
  * セッションID Value Object
- * ユーザーセッションを一意に識別するためのID
+ *
+ * ユーザーセッションを一意に識別するためのID。
+ * CUID2形式（小文字英数字、7-32文字）を使用。
  */
-export class SessionId {
-  public readonly value: string;
-
-  constructor(value: string) {
-    this.validateSessionId(value);
-    this.value = value;
+export class SessionId extends EntityId {
+  protected getEmptyErrorCode(): string {
+    return 'SESSION_ID_REQUIRED';
   }
 
-  toString(): string {
-    return this.value;
+  protected getInvalidFormatErrorCode(): string {
+    return 'INVALID_SESSION_ID_FORMAT';
   }
 
+  protected getEmptyMessage(): string {
+    return 'セッションIDは必須です';
+  }
+
+  protected getInvalidFormatMessage(): string {
+    return 'セッションIDの形式が正しくありません';
+  }
+
+  /**
+   * 型安全なequals（UserIdとSessionIdの混同を防止）
+   */
   equals(other: SessionId): boolean {
-    return this.value === other.value;
-  }
-
-  private validateSessionId(value: string): void {
-    if (!value || value.trim().length === 0) {
-      throw new DomainError('セッションIDは必須です', 'INVALID_SESSION_ID');
-    }
-
-    // CUID2形式のチェック（7-32文字）
-    if (value.length < 7 || value.length > 32) {
-      throw new DomainError(
-        'セッションIDの形式が正しくありません',
-        'INVALID_SESSION_ID_FORMAT',
-      );
-    }
+    return super.equals(other);
   }
 }
 
 export const generateSessionId = (): SessionId => {
-  return new SessionId(genCuid2());
+  return new SessionId(generateCuid2());
 };

@@ -14,7 +14,7 @@ import { UserDomainService } from '@/layers/domain/services/UserDomainService';
 export const domainContainer = infrastructureContainer.createChildContainer();
 
 // Prevent duplicate registration
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- DIコンテナのコンストラクタ型は実行時に多様な引数パターンを受け取るためanyが必要
+// biome-ignore lint/suspicious/noExplicitAny: DIコンテナのコンストラクタ型は実行時に多様な引数パターンを受け取るためanyが必要
 function safeRegister<T>(token: symbol, creator: new (...args: any[]) => T) {
   if (!domainContainer.isRegistered(token)) {
     domainContainer.registerSingleton(creator);

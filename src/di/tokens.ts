@@ -11,6 +11,8 @@ import type { IAuthSessionService } from '@/layers/application/interfaces/IAuthS
 import type { IConfigService } from '@/layers/application/interfaces/IConfigService';
 import type { IHashService } from '@/layers/application/interfaces/IHashService';
 import type { ILogger } from '@/layers/application/interfaces/ILogger';
+import type { ILoginAttemptService } from '@/layers/application/interfaces/ILoginAttemptService';
+import type { IRateLimitService } from '@/layers/application/interfaces/IRateLimitService';
 // Service型のインポート
 // Legacy Application Services (will be phased out)
 import type { AuthService } from '@/layers/application/services/AuthService';
@@ -28,6 +30,8 @@ import type { CreateUserUseCase } from '@/layers/application/usecases/user/Creat
 import type { DeleteUserUseCase } from '@/layers/application/usecases/user/DeleteUserUseCase';
 import type { GetUserByIdUseCase } from '@/layers/application/usecases/user/GetUserByIdUseCase';
 import type { GetUsersUseCase } from '@/layers/application/usecases/user/GetUsersUseCase';
+// [HYGEN:USECASE_IMPORTS]
+
 import type { ISessionRepository } from '@/layers/domain/repositories/ISessionRepository';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 // Domain Services
@@ -46,11 +50,16 @@ export const INJECTION_TOKENS = {
   Logger: Symbol.for('Logger'),
   ErrorHandler: Symbol.for('ErrorHandler'),
   AuthSessionService: Symbol.for('AuthSessionService'),
+  /** ログイン試行管理・アカウントロックアウトService */
+  LoginAttemptService: Symbol.for('LoginAttemptService'),
+  /** Rate Limitサービス（認証リクエスト制限） */
+  RateLimitService: Symbol.for('RateLimitService'),
 
   // Repository Layer
   UserRepository: Symbol.for('UserRepository'),
   /** Phase 3追加: userSession テーブル操作Repository */
   SessionRepository: Symbol.for('SessionRepository'),
+  // [HYGEN:REPO_TOKENS]
 
   // Domain Services
   UserDomainService: Symbol.for('UserDomainService'),
@@ -67,6 +76,7 @@ export const INJECTION_TOKENS = {
   RefreshTokenUseCase: Symbol.for('RefreshTokenUseCase'),
   ResetPasswordUseCase: Symbol.for('ResetPasswordUseCase'),
   ChangePasswordUseCase: Symbol.for('ChangePasswordUseCase'),
+  // [HYGEN:USECASE_TOKENS]
 
   // Legacy Application Services (will be phased out)
   UserService: Symbol.for('UserService'),
@@ -94,10 +104,13 @@ export interface ServiceTypeMap {
   Logger: ILogger;
   ErrorHandler: IErrorHandler;
   AuthSessionService: IAuthSessionService;
+  LoginAttemptService: ILoginAttemptService;
+  RateLimitService: IRateLimitService;
 
   // Repository Layer
   UserRepository: IUserRepository;
   SessionRepository: ISessionRepository;
+  // [HYGEN:REPO_TYPEMAP]
 
   // Domain Services
   UserDomainService: UserDomainService;
@@ -114,6 +127,7 @@ export interface ServiceTypeMap {
   RefreshTokenUseCase: RefreshTokenUseCase;
   ResetPasswordUseCase: ResetPasswordUseCase;
   ChangePasswordUseCase: ChangePasswordUseCase;
+  // [HYGEN:USECASE_TYPEMAP]
 
   // Legacy Application Services (will be phased out)
   UserService: UserService;

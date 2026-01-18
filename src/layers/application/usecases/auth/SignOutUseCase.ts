@@ -1,6 +1,6 @@
 import { INJECTION_TOKENS } from '@/di/tokens';
 import type { ILogger } from '@/layers/application/interfaces/ILogger';
-import { Result, success } from '@/layers/application/types/Result';
+import { type Result, success } from '@/layers/application/types/Result';
 
 import { inject, injectable } from 'tsyringe';
 

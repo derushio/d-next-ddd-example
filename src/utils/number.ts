@@ -42,9 +42,7 @@ export function randomPow(
     return start;
   }
 
-  const p = reverse
-    ? 1 - Math.pow(Math.random(), pow)
-    : Math.pow(Math.random(), pow);
+  const p = reverse ? 1 - Math.random() ** pow : Math.random() ** pow;
 
   const res = (end - start) * p + start;
   return float ? res : lo.round(res);

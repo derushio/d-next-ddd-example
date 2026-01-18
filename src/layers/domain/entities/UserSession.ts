@@ -1,9 +1,9 @@
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import {
   generateSessionId,
-  SessionId,
+  type SessionId,
 } from '@/layers/domain/value-objects/SessionId';
-import { UserId } from '@/layers/domain/value-objects/UserId';
+import type { UserId } from '@/layers/domain/value-objects/UserId';
 
 /**
  * ユーザーセッション Entity
