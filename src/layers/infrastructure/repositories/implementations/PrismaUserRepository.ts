@@ -1,7 +1,8 @@
 import { INJECTION_TOKENS } from '@/di/tokens';
 import { User } from '@/layers/domain/entities/User';
 import { DomainError } from '@/layers/domain/errors/DomainError';
-import {
+import type { ITransaction } from '@/layers/domain/repositories/ITransaction';
+import type {
   IUserRepository,
   UserSearchCriteria,
 } from '@/layers/domain/repositories/IUserRepository';
@@ -12,7 +13,7 @@ import type {
   PrismaClient,
   User as PrismaUser,
 } from '@/layers/infrastructure/persistence/prisma/generated';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 
 import { inject, injectable } from 'tsyringe';
 
@@ -23,28 +24,36 @@ export class PrismaUserRepository implements IUserRepository {
     @inject(INJECTION_TOKENS.Logger) private logger: ILogger,
   ) {}
 
-  async findById(id: UserId, transaction?: unknown): Promise<User | null> {
-    this.logger.info('ユーザーID検索開始', { userId: id.toString() });
+  /**
+   * トランザクションコンテキストからPrismaClientを取得
+   * ITransactionは実行時にはPrismaClientとして扱われる
+   */
+  private getClient(transaction?: ITransaction): PrismaClient {
+    return (transaction as unknown as PrismaClient) || this.prisma;
+  }
+
+  async findById(id: UserId, transaction?: ITransaction): Promise<User | null> {
+    this.logger.info('ユーザーID検索開始', { userId: id.value });
 
     try {
-      const client = (transaction as PrismaClient) || this.prisma;
+      const client = this.getClient(transaction);
       const userData = await client.user.findUnique({
-        where: { id: id.toString() },
+        where: { id: id.value },
       });
 
       if (userData) {
         this.logger.info('ユーザーID検索成功', {
-          userId: id.toString(),
+          userId: id.value,
           email: userData.email,
         });
         return this.toDomainObject(userData);
       } else {
-        this.logger.info('ユーザーが見つかりません', { userId: id.toString() });
+        this.logger.info('ユーザーが見つかりません', { userId: id.value });
         return null;
       }
     } catch (error) {
       this.logger.error('ユーザーID検索に失敗', {
-        userId: id.toString(),
+        userId: id.value,
         error: error instanceof Error ? error.message : 'Unknown error',
         stack: error instanceof Error ? error.stack : undefined,
       });
@@ -55,28 +64,28 @@ export class PrismaUserRepository implements IUserRepository {
   }
 
   async findByEmail(email: Email): Promise<User | null> {
-    this.logger.info('ユーザーEmail検索開始', { email: email.toString() });
+    this.logger.info('ユーザーEmail検索開始', { email: email.value });
 
     try {
       const userData = await this.prisma.user.findUnique({
-        where: { email: email.toString() },
+        where: { email: email.value },
       });
 
       if (userData) {
         this.logger.info('ユーザーEmail検索成功', {
-          email: email.toString(),
+          email: email.value,
           userId: userData.id,
         });
         return this.toDomainObject(userData);
       } else {
         this.logger.info('Emailに一致するユーザーが見つかりません', {
-          email: email.toString(),
+          email: email.value,
         });
         return null;
       }
     } catch (error) {
       this.logger.error('ユーザーEmail検索に失敗', {
-        email: email.toString(),
+        email: email.value,
         error: error instanceof Error ? error.message : 'Unknown error',
         stack: error instanceof Error ? error.stack : undefined,
       });
@@ -124,14 +133,14 @@ export class PrismaUserRepository implements IUserRepository {
     return users.map(this.toDomainObject);
   }
 
-  async save(user: User, transaction?: unknown): Promise<void> {
+  async save(user: User, transaction?: ITransaction): Promise<void> {
     this.logger.info('ユーザー保存開始', {
-      userId: user.id.toString(),
-      email: user.email.toString(),
+      userId: user.id.value,
+      email: user.email.value,
     });
 
     try {
-      const client = (transaction as PrismaClient) || this.prisma;
+      const client = this.getClient(transaction);
       const data = this.toPersistenceObject(user);
 
       await client.user.upsert({
@@ -145,13 +154,13 @@ export class PrismaUserRepository implements IUserRepository {
       });
 
       this.logger.info('ユーザー保存成功', {
-        userId: user.id.toString(),
-        email: user.email.toString(),
+        userId: user.id.value,
+        email: user.email.value,
       });
     } catch (error) {
       this.logger.error('ユーザー保存に失敗', {
-        userId: user.id.toString(),
-        email: user.email.toString(),
+        userId: user.id.value,
+        email: user.email.value,
         error: error instanceof Error ? error.message : 'Unknown error',
         stack: error instanceof Error ? error.stack : undefined,
       });
@@ -172,14 +181,14 @@ export class PrismaUserRepository implements IUserRepository {
     }
   }
 
-  async update(user: User, transaction?: unknown): Promise<void> {
+  async update(user: User, transaction?: ITransaction): Promise<void> {
     this.logger.info('ユーザー更新開始', {
-      userId: user.id.toString(),
-      email: user.email.toString(),
+      userId: user.id.value,
+      email: user.email.value,
     });
 
     try {
-      const client = (transaction as PrismaClient) || this.prisma;
+      const client = this.getClient(transaction);
       const data = this.toPersistenceObject(user);
 
       await client.user.update({
@@ -192,13 +201,13 @@ export class PrismaUserRepository implements IUserRepository {
       });
 
       this.logger.info('ユーザー更新成功', {
-        userId: user.id.toString(),
-        email: user.email.toString(),
+        userId: user.id.value,
+        email: user.email.value,
       });
     } catch (error) {
       this.logger.error('ユーザー更新に失敗', {
-        userId: user.id.toString(),
-        email: user.email.toString(),
+        userId: user.id.value,
+        email: user.email.value,
         error: error instanceof Error ? error.message : 'Unknown error',
         stack: error instanceof Error ? error.stack : undefined,
       });
@@ -230,7 +239,7 @@ export class PrismaUserRepository implements IUserRepository {
 
   async delete(id: UserId): Promise<void> {
     await this.prisma.user.delete({
-      where: { id: id.toString() },
+      where: { id: id.value },
     });
   }
 
@@ -262,8 +271,8 @@ export class PrismaUserRepository implements IUserRepository {
   // 永続化オブジェクト変換（Infrastructure層の責務）
   private toPersistenceObject(user: User) {
     return {
-      id: user.id.toString(),
-      email: user.email.toString(),
+      id: user.id.value,
+      email: user.email.value,
       name: user.name,
       passwordHash: user.passwordHash,
       createdAt: user.createdAt,

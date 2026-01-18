@@ -1,5 +1,5 @@
 import { INJECTION_TOKENS } from '@/di/tokens';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 
 import { inject, injectable } from 'tsyringe';
 

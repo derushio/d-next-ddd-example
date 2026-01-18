@@ -91,7 +91,7 @@ export class Logger implements ILogger {
       timestamp: new Date().toISOString(),
       level,
       message,
-      service: 'd-next-ddd-example',
+      service: 'd-next-resources',
       environment: process.env.NODE_ENV || 'development',
       traceId: this.generateTraceId(),
       ...meta,

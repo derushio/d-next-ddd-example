@@ -2,10 +2,7 @@ import 'reflect-metadata';
 
 import { resolve } from '@/di/resolver';
 import { prisma } from '@/layers/infrastructure/persistence/prisma';
-import {
-  Prisma,
-  PrismaClient,
-} from '@/layers/infrastructure/persistence/prisma/generated';
+import type { Prisma } from '@/layers/infrastructure/persistence/prisma/generated';
 
 const user = {
   name: 'テストユーザー',

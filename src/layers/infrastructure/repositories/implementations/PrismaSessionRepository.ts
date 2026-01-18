@@ -11,7 +11,7 @@ import { Email } from '@/layers/domain/value-objects/Email';
 import { SessionId } from '@/layers/domain/value-objects/SessionId';
 import { UserId } from '@/layers/domain/value-objects/UserId';
 import type { PrismaClient } from '@/layers/infrastructure/persistence/prisma/generated';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 
 import { inject, injectable } from 'tsyringe';
 

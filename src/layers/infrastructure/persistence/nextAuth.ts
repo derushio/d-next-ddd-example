@@ -1,25 +1,38 @@
 import 'reflect-metadata';
 
+import { Env } from '@/app/server-actions/env/Env';
 import { resolve } from '@/di/resolver';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 import { isSuccess } from '@/layers/application/types/Result';
 // Prisma Client
 import { prisma } from '@/layers/infrastructure/persistence/prisma';
+// 共通バリデーションスキーマ（DRY原則）
+import { signInSchema } from '@/layers/infrastructure/types/zod/authSchema';
+import { maskEmail, prepareLogData } from '@/utils/logMasking';
 
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import {
+import type {
   GetServerSidePropsContext,
   NextApiRequest,
   NextApiResponse,
 } from 'next';
-import { getServerSession, NextAuthOptions } from 'next-auth';
+import { getServerSession, type NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { z } from 'zod';
 
-// Validation Schema
-const signInSchema = z.object({
-  email: z.string().email('有効なメールアドレスを入力してください'),
-  password: z.string().min(1, 'パスワードを入力してください'),
-});
+/**
+ * ログ出力用ヘルパー
+ * DIコンテナからLoggerを取得し、環境に応じたマスキングを適用
+ */
+function getAuthLogger(): ILogger {
+  return resolve('Logger');
+}
+
+/**
+ * ログデータの準備（マスキング適用）
+ */
+function prepareAuthLogData<T extends Record<string, unknown>>(data: T): T {
+  return prepareLogData(data, Env.LOG_MASK_PII);
+}
 
 /**
  * NextAuth.js設定
@@ -33,15 +46,15 @@ export const authOptions: NextAuthOptions = {
   // Prisma Adapter使用
   adapter: PrismaAdapter(prisma),
 
-  // セッション戦略
+  // セッション戦略（環境変数で設定可能）
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30日
+    maxAge: Env.SESSION_MAX_AGE_SECONDS,
   },
 
-  // JWT設定
+  // JWT設定（環境変数で設定可能）
   jwt: {
-    maxAge: 30 * 24 * 60 * 60, // 30日
+    maxAge: Env.JWT_MAX_AGE_SECONDS,
   },
 
   // 認証プロバイダー設定
@@ -61,18 +74,23 @@ export const authOptions: NextAuthOptions = {
         },
       },
       async authorize(credentials) {
+        const logger = getAuthLogger();
+
         try {
-          console.log('🔧 NextAuth認証処理開始 (DDD準拠)', {
-            email: credentials?.email,
-          });
+          // 開発環境のみ詳細ログ出力、本番環境ではマスキング済み
+          logger.debug(
+            'NextAuth認証処理開始',
+            prepareAuthLogData({ email: credentials?.email }),
+          );
 
           // バリデーション
           const validatedFields = signInSchema.safeParse(credentials);
           if (!validatedFields.success) {
-            console.log(
-              '⚠️ NextAuth バリデーションエラー',
-              validatedFields.error,
-            );
+            logger.warn('NextAuth バリデーションエラー', {
+              errors: validatedFields.error.issues.map(
+                (issue) => issue.message,
+              ),
+            });
             return null;
           }
 
@@ -86,14 +104,18 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (!isSuccess(result)) {
-            console.log('⚠️ NextAuth SignInUseCase失敗', {
-              error: result.error.message,
-              code: result.error.code,
-            });
+            // 本番環境ではメールアドレスをマスキング
+            logger.warn(
+              'NextAuth SignInUseCase失敗',
+              prepareAuthLogData({
+                email: maskEmail(email),
+                code: result.error.code,
+              }),
+            );
             return null;
           }
 
-          console.log('✅ NextAuth SignInUseCase成功', {
+          logger.info('NextAuth SignInUseCase成功', {
             userId: result.data.user.id,
           });
 
@@ -104,7 +126,7 @@ export const authOptions: NextAuthOptions = {
             name: result.data.user.name,
           };
         } catch (error) {
-          console.error('❌ NextAuth認証処理エラー', {
+          logger.error('NextAuth認証処理エラー', {
             error: error instanceof Error ? error.message : 'Unknown error',
           });
           return null;
@@ -142,11 +164,15 @@ export const authOptions: NextAuthOptions = {
     },
 
     async signIn({ user, account }) {
-      console.log('✅ NextAuth サインイン成功', {
-        userId: user.id,
-        email: user.email,
-        provider: account?.provider,
-      });
+      const logger = getAuthLogger();
+      logger.info(
+        'NextAuth サインイン成功',
+        prepareAuthLogData({
+          userId: user.id,
+          email: user.email,
+          provider: account?.provider,
+        }),
+      );
       return true;
     },
   },
@@ -154,16 +180,21 @@ export const authOptions: NextAuthOptions = {
   // イベント設定
   events: {
     async signIn({ user, account, isNewUser }) {
-      console.log('📝 NextAuth サインインイベント', {
-        userId: user.id,
-        email: user.email,
-        provider: account?.provider,
-        isNewUser,
-      });
+      const logger = getAuthLogger();
+      logger.debug(
+        'NextAuth サインインイベント',
+        prepareAuthLogData({
+          userId: user.id,
+          email: user.email,
+          provider: account?.provider,
+          isNewUser,
+        }),
+      );
     },
 
     async signOut({ token }) {
-      console.log('📝 NextAuth サインアウトイベント', {
+      const logger = getAuthLogger();
+      logger.debug('NextAuth サインアウトイベント', {
         userId: token?.id,
       });
     },

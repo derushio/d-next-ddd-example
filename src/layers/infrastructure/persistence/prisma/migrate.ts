@@ -1,6 +1,6 @@
-import crypto from 'crypto';
-import fs from 'fs';
-import path from 'path';
+import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import { Env } from '@/app/server-actions/env/Env';
 import { prisma } from '@/layers/infrastructure/persistence/prisma';
@@ -22,9 +22,7 @@ export async function migrate() {
   await prisma.$queryRawTyped(createMigrationTable());
 
   const finishedMigrations = (
-    await prisma.$queryRawTyped<{
-      migration_name: string;
-    }>(queryFinishedMigrations())
+    await prisma.$queryRawTyped(queryFinishedMigrations())
   ).map((v) => v.migration_name);
 
   const migrations = (

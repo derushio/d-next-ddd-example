@@ -1,9 +1,13 @@
+import { Env } from '@/app/server-actions/env/Env';
 import { PrismaClient } from '@/layers/infrastructure/persistence/prisma/generated';
+
+import { PrismaPg } from '@prisma/adapter-pg';
 
 /**
  * データベースクライアントファクトリー
  * クリーンアーキテクチャの一歩として、PrismaClientの生成を集約
  */
+// biome-ignore lint/complexity/noStaticOnlyClass: シングルトンパターンの実装として意図的に静的クラスを使用
 export class DatabaseFactory {
   private static instance: PrismaClient | null = null;
 
@@ -13,7 +17,10 @@ export class DatabaseFactory {
    */
   static getInstance(): PrismaClient {
     if (!DatabaseFactory.instance) {
-      DatabaseFactory.instance = new PrismaClient();
+      const adapter = new PrismaPg({
+        connectionString: Env.DATABASE_URL,
+      });
+      DatabaseFactory.instance = new PrismaClient({ adapter });
     }
     return DatabaseFactory.instance;
   }
