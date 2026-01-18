@@ -95,7 +95,7 @@ describe('PrismaUserRepository', () => {
   expect(mockPrismaClient.user.create).toHaveBeenCalledWith({
    data: expect.objectContaining({
     id: expect.any(String),
-    email: userData.email.getValue(),
+    email: userData.email.value,
     name: userData.name,
    }),
   });
@@ -113,7 +113,7 @@ describe('PrismaUserRepository', () => {
 
   // Assert
   expect(mockPrismaClient.user.findUnique).toHaveBeenCalledWith({
-   where: { email: email.getValue() },
+   where: { email: email.value },
   });
   expect(result).toBeDefined();
  });
@@ -130,7 +130,7 @@ describe('PrismaUserRepository', () => {
 
   // Assert
   expect(mockPrismaClient.user.update).toHaveBeenCalledWith({
-   where: { id: userId.getValue() },
+   where: { id: userId.value },
    data: {
     name: updateData.name,
     updatedAt: expect.any(Date),
@@ -190,6 +190,6 @@ test('非同期テスト', async () => {
 ## 検証済み環境
 
 - Vitest 3.2.3
-- Prisma 5.x
+- Prisma 7.x
 - TypeScript 5.x
 - Clean Architecture + DDD

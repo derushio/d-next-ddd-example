@@ -179,6 +179,71 @@ export class Email {
 }
 ```
 
+### 1.5 **型安全なアクセスパターン** 🔐
+
+Value Object の内部値へのアクセス方法は、レイヤーによって推奨パターンが異なります。
+
+#### Application層（推奨: `.value`）
+
+```typescript
+// ✅ 推奨: .value で型安全にプリミティブ値を取得
+export class CreateUserUseCase {
+ async execute(request: CreateUserRequest): Promise<Result<CreateUserResponse>> {
+  const user = User.create(email, name, passwordHash);
+  await this.userRepository.save(user);
+
+  // Value Object: .value で明示的に型安全なアクセス
+  // プリミティブ型: 直接アクセス
+  return success({
+   id: user.id.value,        // UserId.value → string
+   name: user.name,          // string → 直接アクセス
+   email: user.email.value,  // Email.value → string
+   createdAt: user.createdAt, // Date → 直接アクセス
+  });
+ }
+}
+```
+
+**なぜ `.value` が推奨されるのか？**
+
+1. **型安全性**: `.value` プロパティは Value Object にのみ存在するため、コンパイラが正しく型チェックできる
+2. **明示性**: コードを読む人に「これは Value Object から値を取り出している」ことが明確
+3. **`.toString()` の問題**: JavaScript の全オブジェクトに `toString()` があるため、型チェックが弱い
+
+```typescript
+// ⚠️ 注意: .toString() は全オブジェクトに存在するため型安全性が低い
+const id = user.id.toString();  // UserId でなくても通る
+const name = user.name.toString(); // ❌ string に .toString() は冗長
+
+// ✅ .value を使えば Value Object であることを型で保証
+const id = user.id.value;  // UserId.value が存在しないとコンパイルエラー
+const name = user.name;    // string は直接アクセス
+```
+
+#### Infrastructure層（`.value` に統一）
+
+```typescript
+// ✅ Infrastructure層でも .value を使用（コードベース全体で統一）
+private toPersistence(user: User) {
+ return {
+  id: user.id.value,         // ✅ .value で統一
+  name: user.name,           // プリミティブ型は直接アクセス
+  email: user.email.value,   // ✅ .value で統一
+  createdAt: user.createdAt,
+ };
+}
+```
+
+**レイヤー別推奨パターンまとめ:**
+
+| レイヤー | Value Object アクセス | プリミティブ型 |
+| --- | --- | --- |
+| Application層 | `.value` | 直接アクセス |
+| Infrastructure層 | `.value` | 直接アクセス |
+| Domain層 | 内部で自由 | 直接アクセス |
+
+> **Note**: `.toString()` は後方互換性のため残されていますが、新規コードでは `.value` の使用を推奨します。
+
 ### 2. **値による等価性の実装** ⚖️
 
 ```typescript
@@ -641,7 +706,7 @@ export class Email {
 }
 
 // 使用例
-const email = user.getEmail();
+const email = user.email;
 if (!email.isEmpty()) {
  // メール送信処理
 }
@@ -703,7 +768,7 @@ describe('Email Value Object', () => {
    const email = new Email('test@example.com');
 
    // Assert
-   expect(email.toString()).toBe('test@example.com');
+   expect(email.value).toBe('test@example.com');
   });
 
   it('メールアドレスが正規化される', () => {
@@ -711,7 +776,7 @@ describe('Email Value Object', () => {
    const email = new Email('  Test@Example.COM  ');
 
    // Assert
-   expect(email.toString()).toBe('test@example.com');
+   expect(email.value).toBe('test@example.com');
   });
 
   it('不正なメールアドレスでエラーが発生する', () => {
@@ -753,9 +818,9 @@ describe('Money Value Object', () => {
    // Act
    const result = money1.add(money2);
 
-   // Assert
-   expect(result.getAmount()).toBe(150);
-   expect(result.getCurrency()).toBe('USD');
+   // Assert（public readonly で直接アクセス）
+   expect(result.amount).toBe(150);
+   expect(result.currency).toBe('USD');
   });
 
   it('異なる通貨の金額を加算するとエラーが発生する', () => {
@@ -776,9 +841,9 @@ describe('Money Value Object', () => {
    // Act
    const newMoney = originalMoney.add(new Money(50, 'USD'));
 
-   // Assert
-   expect(originalMoney.getAmount()).toBe(100); // 元のインスタンスは変更されない
-   expect(newMoney.getAmount()).toBe(150);
+   // Assert（元のインスタンスは変更されない）
+   expect(originalMoney.amount).toBe(100);
+   expect(newMoney.amount).toBe(150);
   });
  });
 });

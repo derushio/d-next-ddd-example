@@ -429,7 +429,7 @@ graph LR
 #### **動作確認**
 
 - [ ] 機能要件の動作確認完了
-- [ ] [E2Eテスト](../../testing/e2e/overview.md) 実行・合格
+- [ ] [E2Eテスト](../e2e-testing-guide.md) 実行・合格
 - [ ] パフォーマンス要件確認
 - [ ] 既存機能への影響確認
 
@@ -457,21 +457,21 @@ graph TB
     end
 
     subgraph "詳細実装ガイド"
-        C --> C1[../development/usecase.md]
-        D --> D1[../development/domain.md]
-        E --> E1[../development/repository.md]
-        F --> F1[../frontend/components.md]
+        C --> C1[use-cases.md]
+        D --> D1[domain-layer.md]
+        E --> E1[repository-implementations.md]
+        F --> F1[server-actions.md]
     end
 ```
 
 ### 📚 **参考ドキュメント・関連情報**
 
-| 実装フェーズ       | 主要ガイド                                           | 設計参考                                                          | 問題解決                                                            |
-| ------------------ | ---------------------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------- |
-| **Domain実装**     | [Domain実装ガイド](../development/domain.md)         | [ドメイン層詳細](../../architecture/layers/domain.md)             | [Domain問題](../../troubleshooting/development/domain.md)           |
-| **UseCase実装**    | [UseCase実装ガイド](../development/usecase.md)       | [Result型パターン](../../architecture/patterns/result-pattern.md) | [DI問題](../../troubleshooting/development/dependency-injection.md) |
-| **Repository実装** | [Repository実装ガイド](../development/repository.md) | [インフラ層詳細](../../architecture/layers/infrastructure.md)     | [DB問題](../../troubleshooting/development/database.md)             |
-| **UI実装**         | [コンポーネント開発](../frontend/components.md)      | [プレゼンテーション層](../../architecture/layers/presentation.md) | [フロントエンド問題](../../troubleshooting/frontend/)               |
+| 実装フェーズ       | 主要ガイド                                                              | 設計参考                                               | 問題解決                                                       |
+| ------------------ | ----------------------------------------------------------------------- | ------------------------------------------------------ | -------------------------------------------------------------- |
+| **Domain実装**     | [Domain層ガイド](../ddd/layers/domain-layer.md)                         | [Entity/VO実装](../ddd/layers/components/entities.md)  | [よくある問題](../../troubleshooting/common-issues.md)         |
+| **UseCase実装**    | [UseCase実装ガイド](../ddd/layers/components/use-cases.md)              | [エラーハンドリング](../ddd/cross-cutting/error-handling.md) | [DI設定](../ddd/layers/components/di-container.md)        |
+| **Repository実装** | [Repository実装ガイド](../ddd/layers/components/repository-implementations.md) | [インフラ層](../ddd/layers/infrastructure-layer.md)  | [Prismaモック](../../troubleshooting/development/prisma-mock-setup.md) |
+| **UI実装**         | [Server Actions](../ddd/layers/components/server-actions.md)            | [プレゼンテーション層](../ddd/layers/presentation-layer.md) | [フロントエンド](../frontend-best-practices.md)           |
 
 ### 🎓 **継続的スキル向上**
 

@@ -186,7 +186,7 @@ export class ActiveUserSpecification implements IUserSpecification {
  constructor(private readonly activityThreshold: Date) {}
 
  isSatisfiedBy(user: User): boolean {
-  return user.isActive() && user.getLastLoginAt() > this.activityThreshold;
+  return user.isActive && user.lastLoginAt > this.activityThreshold;
  }
 
  and(other: IUserSpecification): IUserSpecification {
@@ -204,7 +204,7 @@ export class ActiveUserSpecification implements IUserSpecification {
 
 export class PremiumUserSpecification implements IUserSpecification {
  isSatisfiedBy(user: User): boolean {
-  return user.getLevel() >= 5 && user.hasActiveSubscription();
+  return user.level >= 5 && user.hasActiveSubscription();
  }
 
  // and, or, not の実装...
@@ -309,15 +309,15 @@ export class PaginatedResult<T> {
  }
 
  getTotalPages(): number {
-  return Math.ceil(this.totalCount / this.pagination.getSize());
+  return Math.ceil(this.totalCount / this.pagination.size);
  }
 
  hasNextPage(): boolean {
-  return this.pagination.getPage() < this.getTotalPages();
+  return this.pagination.page < this.getTotalPages();
  }
 
  hasPreviousPage(): boolean {
-  return this.pagination.getPage() > 1;
+  return this.pagination.page > 1;
  }
 }
 ```
@@ -582,12 +582,12 @@ export function createUserRepositoryTests(
     await repository.save(user);
 
     // Act
-    const found = await repository.findById(user.getId());
+    const found = await repository.findById(user.id);
 
     // Assert
     expect(found).not.toBeNull();
-    expect(found!.getId().equals(user.getId())).toBe(true);
-    expect(found!.getEmail().equals(user.getEmail())).toBe(true);
+    expect(found!.id.equals(user.id)).toBe(true);
+    expect(found!.email.equals(user.email)).toBe(true);
    });
 
    it('存在しないユーザーの場合nullを返す', async () => {
@@ -612,9 +612,9 @@ export function createUserRepositoryTests(
     await repository.save(user);
 
     // Assert
-    const saved = await repository.findById(user.getId());
+    const saved = await repository.findById(user.id);
     expect(saved).not.toBeNull();
-    expect(saved!.getName()).toBe('New User');
+    expect(saved!.name).toBe('New User');
    });
   });
 
@@ -644,7 +644,7 @@ export function createUserRepositoryTests(
 
     // Assert
     expect(activeUsers).toHaveLength(1);
-    expect(activeUsers[0].getId().equals(activeUser.getId())).toBe(true);
+    expect(activeUsers[0].id.equals(activeUser.id)).toBe(true);
    });
   });
  });

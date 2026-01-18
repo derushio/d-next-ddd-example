@@ -21,8 +21,7 @@ Clean Architecture + DDD における効果的なユニットテスト戦略
 ### 🔗 このドキュメント後の推奨学習
 
 1. **実践**: [自動モック戦略](mocking.md) → 効率的テスト実装
-2. **統合**: [統合テスト](../integration/overview.md) → より広範囲のテスト
-3. **E2E**: [E2Eテスト](../e2e/overview.md) → エンドツーエンドの検証
+2. **E2E**: [E2Eテスト](../../guides/e2e-testing-guide.md) → エンドツーエンドの検証
 
 ---
 
@@ -104,31 +103,35 @@ graph LR
 **実装パターン例:**
 
 ```typescript
+import { DomainError } from '@/layers/domain/errors/DomainError';
+import { Email } from '@/layers/domain/value-objects/Email';
+
 describe('Email Value Object', () => {
  describe('作成', () => {
   it('有効なメールアドレスで作成できる', () => {
-   const result = Email.create('test@example.com');
+   // コンストラクタパターン（例外スロー型）
+   const email = new Email('test@example.com');
 
-   expect(isSuccess(result)).toBe(true);
-   if (isSuccess(result)) {
-    expect(result.data.toString()).toBe('test@example.com');
-   }
+   // .value プロパティでアクセス
+   expect(email.value).toBe('test@example.com');
   });
 
-  it('無効な形式の場合は失敗する', () => {
-   const result = Email.create('invalid-email');
+  it('無効な形式の場合はDomainErrorをスローする', () => {
+   expect(() => new Email('invalid-email')).toThrow(DomainError);
 
-   expect(isFailure(result)).toBe(true);
-   if (isFailure(result)) {
-    expect(result.error.code).toBe('EMAIL_INVALID_FORMAT');
+   try {
+    new Email('invalid-email');
+   } catch (error) {
+    expect(error).toBeInstanceOf(DomainError);
+    expect((error as DomainError).code).toBe('EMAIL_INVALID_FORMAT');
    }
   });
  });
 
  describe('等価性', () => {
   it('同じ値のEmailは等価', () => {
-   const email1 = Email.create('test@example.com').data!;
-   const email2 = Email.create('test@example.com').data!;
+   const email1 = new Email('test@example.com');
+   const email2 = new Email('test@example.com');
 
    expect(email1.equals(email2)).toBe(true);
   });
@@ -167,6 +170,11 @@ graph TB
 **UseCase テストパターン:**
 
 ```typescript
+import { container } from '@/di/container';
+import { resolve } from '@/di/resolver';
+import { INJECTION_TOKENS } from '@/di/tokens';
+import type { CreateUserUseCase } from '@/layers/application/usecases/user/CreateUserUseCase';
+
 describe('CreateUserUseCase', () => {
  setupTestEnvironment(); // DIコンテナリセット
 
@@ -178,7 +186,8 @@ describe('CreateUserUseCase', () => {
   mockRepository = createAutoMockUserRepository();
   container.registerInstance(INJECTION_TOKENS.UserRepository, mockRepository);
 
-  useCase = container.resolve(CreateUserUseCase);
+  // 型安全なresolve関数でUseCase取得
+  useCase = resolve('CreateUserUseCase');
  });
 
  describe('成功ケース', () => {
@@ -322,8 +331,8 @@ graph TB
 ### 🚀 実践・応用
 
 1. **[自動モック戦略](mocking.md)** - 効率的モック活用
-2. **[統合テスト](../integration/overview.md)** - より広範囲のテスト
-3. **[テストパターン](patterns.md)** - 実装パターン集
+2. **[E2Eテスト](../../guides/e2e-testing-guide.md)** - エンドツーエンドの検証
+3. **[実装パターンガイド](../../guides/implementation/patterns-guide.md)** - 実装パターン集
 
 ### 📚 深掘り学習
 

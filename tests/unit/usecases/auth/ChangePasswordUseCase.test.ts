@@ -1,7 +1,6 @@
 import { isFailure, isSuccess } from '@/layers/application/types/Result';
 import { ChangePasswordUseCase } from '@/layers/application/usecases/auth/ChangePasswordUseCase';
 import { User } from '@/layers/domain/entities/User';
-import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import type { UserDomainService } from '@/layers/domain/services/UserDomainService';
 import { Email } from '@/layers/domain/value-objects/Email';
@@ -9,7 +8,7 @@ import { UserId } from '@/layers/domain/value-objects/UserId';
 import { container } from '@/di/container';
 import { INJECTION_TOKENS } from '@/di/tokens';
 import type { IHashService } from '@/layers/infrastructure/services/HashService';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 
 import { setupTestEnvironment } from '@tests/utils/helpers/testHelpers';
 import {
@@ -56,7 +55,7 @@ describe('ChangePasswordUseCase', () => {
 
   describe('execute', () => {
     const validInput = {
-      userId: 'user-123',
+      userId: 'user123cuidabc456789',
       currentPassword: 'current123',
       newPassword: 'newpassword123',
     };
@@ -97,10 +96,9 @@ describe('ChangePasswordUseCase', () => {
         validInput.newPassword,
       );
       expect(mockUserRepository.update).toHaveBeenCalledWith(mockUser);
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        'パスワード変更処理開始',
-        { userId: validInput.userId },
-      );
+      expect(mockLogger.info).toHaveBeenCalledWith('パスワード変更処理開始', {
+        userId: validInput.userId,
+      });
       expect(mockLogger.info).toHaveBeenCalledWith('パスワード変更成功', {
         userId: validInput.userId,
       });
@@ -228,9 +226,7 @@ describe('ChangePasswordUseCase', () => {
       // Assert
       expect(isFailure(result)).toBe(true);
       if (isFailure(result)) {
-        expect(result.error.message).toBe(
-          '現在のパスワードが正しくありません',
-        );
+        expect(result.error.message).toBe('現在のパスワードが正しくありません');
         expect(result.error.code).toBe('INVALID_CURRENT_PASSWORD');
       }
 
@@ -271,7 +267,7 @@ describe('ChangePasswordUseCase', () => {
       // Arrange
       const nonExistentUserInput = {
         ...validInput,
-        userId: 'valid-cuid-but-user-not-exists',
+        userId: 'validcuidbutnotexists1',
       };
 
       // UserIdのバリデーションが通るが、ユーザーが見つからない場合のテスト
@@ -305,7 +301,7 @@ describe('ChangePasswordUseCase', () => {
         .mockResolvedValueOnce(true)
         .mockResolvedValueOnce(false);
       mockHashService.generateHash.mockResolvedValue('hashed_new_password');
-      
+
       const repositoryError = new Error('Database connection failed');
       mockUserRepository.update.mockRejectedValue(repositoryError);
 

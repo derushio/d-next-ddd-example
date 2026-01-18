@@ -43,7 +43,7 @@ describe('User Entity', () => {
   describe('reconstruct', () => {
     it('既存データから正常に再構築できる', () => {
       // Arrange
-      const id = new UserId('test-user-id');
+      const id = new UserId('testuseridcuid2abc12');
       const email = new Email('test@example.com');
       const name = 'Test User';
       const passwordHash = 'hashed-password';
@@ -143,7 +143,10 @@ describe('User Entity', () => {
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Act
-      const updatedUser = user.updateProfile(new Email('test@example.com'), 'Test Name');
+      const updatedUser = user.updateProfile(
+        new Email('test@example.com'),
+        'Test Name',
+      );
 
       // Assert
       expect(updatedUser.updatedAt.getTime()).toBeGreaterThan(

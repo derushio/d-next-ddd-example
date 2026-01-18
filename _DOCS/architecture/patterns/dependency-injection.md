@@ -541,19 +541,19 @@ graph TB
 ### 設計・実装
 
 - **[レイヤー概要](../layers/overview.md)** - レイヤードアーキテクチャ全体像
-- **[Result型パターン](result-pattern.md)** - エラーハンドリング統合
-- **[Repository パターン](repository-pattern.md)** - データアクセス抽象化
+- **[エラーハンドリング](../../guides/ddd/cross-cutting/error-handling.md)** - Result型パターン統合
+- **[Repository実装](../../guides/ddd/layers/components/repository-implementations.md)** - データアクセス抽象化
 
 ### 開発・実践
 
 - **[開発フロー](../../guides/development/workflow.md)** - 実際の開発手順
-- **[UseCase実装](../../guides/development/usecase.md)** - UseCase開発詳細
+- **[UseCase実装](../../guides/ddd/layers/components/use-cases.md)** - UseCase開発詳細
 - **[テスト戦略](../../testing/strategy.md)** - テスト実装手法
 
 ### 問題解決
 
-- **[DI関連問題](../../troubleshooting/development/dependency-injection.md)** - トラブルシューティング
-- **[設定詳細](../../reference/configuration/)** - 環境設定
+- **[DIコンテナ](../../guides/ddd/layers/components/di-container.md)** - DI設定詳細
+- **[よくある問題](../../troubleshooting/common-issues.md)** - トラブルシューティング
 - **[コマンドリファレンス](../../reference/commands.md)** - 開発コマンド
 
 ---

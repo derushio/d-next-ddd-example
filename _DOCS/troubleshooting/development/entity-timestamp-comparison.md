@@ -8,10 +8,10 @@ User entityなどのテストで、`updatedAt`フィールドの時刻比較が�
 // ❌ 失敗するテスト例
 test('プロフィール更新でupdatedAtが更新される', () => {
  const user = User.create(validData);
- const originalUpdatedAt = user.getUpdatedAt();
+ const originalUpdatedAt = user.updatedAt;
 
  user.updateProfile({ name: 'New Name' });
- const newUpdatedAt = user.getUpdatedAt();
+ const newUpdatedAt = user.updatedAt;
 
  expect(newUpdatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
  // ❌ 同じ時刻になってしまいテストが失敗
@@ -32,13 +32,13 @@ JavaScript/TypeScriptの`new Date()`は**ミリ秒単位**で時刻を生成し�
 // ✅ 正常に動作するテスト
 test('プロフィール更新でupdatedAtが更新される', async () => {
  const user = User.create(validData);
- const originalUpdatedAt = user.getUpdatedAt();
+ const originalUpdatedAt = user.updatedAt;
 
  // 10ms待機して時刻差を保証
  await new Promise((resolve) => setTimeout(resolve, 10));
 
  user.updateProfile({ name: 'New Name' });
- const newUpdatedAt = user.getUpdatedAt();
+ const newUpdatedAt = user.updatedAt;
 
  expect(newUpdatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
 });
@@ -54,13 +54,13 @@ test('プロフィール更新でupdatedAtが更新される', () => {
  });
 
  const user = User.create(validData);
- const originalUpdatedAt = user.getUpdatedAt();
+ const originalUpdatedAt = user.updatedAt;
 
  // 時刻を進める
  mockTime += 1000;
 
  user.updateProfile({ name: 'New Name' });
- const newUpdatedAt = user.getUpdatedAt();
+ const newUpdatedAt = user.updatedAt;
 
  expect(newUpdatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
 

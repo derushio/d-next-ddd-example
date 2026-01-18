@@ -166,7 +166,7 @@ graph TD
     note1["責務分離アーキテクチャ<br/>Client: UI担当, Server Actions: ビジネスロジック担当"]
 ```
 
-**判断理由**: Clean Architecture準拠とNext.js 15最適化により、責務分離を徹底
+**判断理由**: Clean Architecture準拠とNext.js 16最適化により、責務分離を徹底
 
 #### 実装例
 
@@ -175,7 +175,7 @@ graph TD
 'use server';
 export async function createUserServerAction(formData: FormData) {
   // サーバーサイドでDI解決
-  const createUserUseCase = resolve<CreateUserUseCase>('CreateUserUseCase');
+  const createUserUseCase = resolve('CreateUserUseCase');
 
   const result = await createUserUseCase.execute({
     name: formData.get('name') as string,
@@ -493,7 +493,7 @@ export class MockEmailService implements IEmailService {
 // 🎯 開発効率とメンテナンス性を両立
 
 // Prismaの型を基盤として活用
-import type { User as PrismaUser } from '@prisma/client';
+import type { User as PrismaUser } from '@/layers/infrastructure/persistence/prisma/generated';
 
 // Domain層での型定義
 export class User {
@@ -566,7 +566,7 @@ export async function createUserServerAction(
     }
 
     // Use Case実行
-    const createUserUseCase = resolve<CreateUserUseCase>('CreateUserUseCase');
+    const createUserUseCase = resolve('CreateUserUseCase');
     const user = await createUserUseCase.execute(parsed.data);
 
     // Next.js最適化
@@ -795,7 +795,7 @@ export class OptimizedContainer {
   const container = this.instance;
 
   // Repository は singleton として登録
-  container.register<IUserRepository>('UserRepository', {
+  container.register<IUserRepository>(INJECTION_TOKENS.UserRepository, {
    useFactory: () => {
     if (!this.singletonInstances.has('UserRepository')) {
      this.singletonInstances.set('UserRepository', new PrismaUserRepository());
@@ -805,13 +805,13 @@ export class OptimizedContainer {
   });
 
   // Use Case は transient として登録
-  container.register<CreateUserUseCase>('CreateUserUseCase', {
-   useFactory: (container) =>
+  container.register<CreateUserUseCase>(INJECTION_TOKENS.CreateUserUseCase, {
+   useFactory: (c) =>
     new CreateUserUseCase(
-     container.resolve('UserRepository'),
-     container.resolve('UserDomainService'),
-     container.resolve('EmailService'),
-     container.resolve('Logger'),
+     c.resolve(INJECTION_TOKENS.UserRepository),
+     c.resolve(INJECTION_TOKENS.UserDomainService),
+     c.resolve(INJECTION_TOKENS.EmailService),
+     c.resolve(INJECTION_TOKENS.Logger),
     ),
   });
  }
@@ -912,4 +912,4 @@ export class OptimizedDatabaseFactory {
 - [アーキテクチャ比較](./ddd/concepts/architecture-comparison.md) - 他の設計選択肢との比較
 - [テスト戦略](./testing-with-clean-architecture.md) - テスト手法の詳細
 - [Next.js統合パターン](./nextjs-integration-patterns.md) - Next.jsとの統合方法
-- [開発ガイド](./development-guide.md) - 実装手順とベストプラクティス
+- [開発ワークフロー](./development/workflow.md) - 実装手順とベストプラクティス

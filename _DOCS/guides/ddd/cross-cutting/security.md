@@ -26,6 +26,7 @@ graph TD
         BIZ[Business Rules]
         PERM[Permission Logic]
         ENCRYPT[Data Encryption]
+        TIMING[Timing Attack Protection]
     end
 
     subgraph "🗄️ Infrastructure Layer"
@@ -217,11 +218,10 @@ export class UpdateUserProfileUseCase {
  ): Promise<UpdateUserProfileRequest> {
   // SQLインジェクション対策
   if (this.containsSqlInjection(request.bio)) {
-   throw new ValidationError(
+   throw new DomainError(
     '不正な文字が含まれています',
-    'bio',
-    request.bio,
-    'INVALID_INPUT',
+    'VALIDATION_INVALID_INPUT',
+    { field: 'bio', value: request.bio },
    );
   }
 
@@ -291,13 +291,13 @@ export class CreateUserUseCase {
 export class User {
  canEditPost(post: Post): boolean {
   // 投稿者本人または管理者のみ編集可能
-  return post.getAuthorId().equals(this.id) || this.hasRole(UserRole.ADMIN);
+  return post.authorId.equals(this.id) || this.hasRole(UserRole.ADMIN);
  }
 
  canViewPrivateProfile(targetUser: User): boolean {
   // 本人、友達、または管理者のみ閲覧可能
   return (
-   this.id.equals(targetUser.getId()) ||
+   this.id.equals(targetUser.id) ||
    this.isFriendWith(targetUser) ||
    this.hasRole(UserRole.ADMIN)
   );
@@ -306,7 +306,7 @@ export class User {
  canPromoteUser(targetUser: User): boolean {
   // 管理者のみ、かつ自分より下位レベルのユーザーのみ昇格可能
   return (
-   this.hasRole(UserRole.ADMIN) && this.getLevel() > targetUser.getLevel()
+   this.hasRole(UserRole.ADMIN) && this.level > targetUser.level
   );
  }
 }
@@ -377,11 +377,10 @@ export class Password {
  static async create(plainPassword: string): Promise<Password> {
   // パスワード強度チェック
   if (!this.isStrongPassword(plainPassword)) {
-   throw new ValidationError(
+   throw new DomainError(
     'パスワードは8文字以上で、大文字・小文字・数字・記号を含む必要があります',
-    'password',
-    plainPassword,
-    'WEAK_PASSWORD',
+    'PASSWORD_TOO_WEAK',
+    { field: 'password' },
    );
   }
 
@@ -411,6 +410,132 @@ export class Password {
 }
 ```
 
+#### 3. タイミング攻撃対策 ⏱️
+
+タイミング攻撃は、処理時間の差異から機密情報を推測する攻撃手法です。認証やトークン比較で特に重要です。
+
+```typescript
+import { timingSafeEqual } from 'node:crypto';
+
+// ✅ 定数時間文字列比較（タイミング攻撃対策）
+export function timingSafeCompare(a: string, b: string): boolean {
+ // 長さが異なる場合も定数時間で比較
+ const aBuffer = Buffer.from(a, 'utf-8');
+ const bBuffer = Buffer.from(b, 'utf-8');
+
+ // 長さを揃えるためのパディング
+ const maxLength = Math.max(aBuffer.length, bBuffer.length);
+ const aPadded = Buffer.alloc(maxLength, 0);
+ const bPadded = Buffer.alloc(maxLength, 0);
+
+ aBuffer.copy(aPadded);
+ bBuffer.copy(bPadded);
+
+ // 長さチェックも定数時間で
+ const lengthMatch = aBuffer.length === bBuffer.length;
+
+ // timingSafeEqual は同じ長さのバッファのみ比較可能
+ return timingSafeEqual(aPadded, bPadded) && lengthMatch;
+}
+
+// ✅ トークン検証（タイミング攻撃対策済み）
+export class SessionService {
+ async validateSessionToken(providedToken: string): Promise<boolean> {
+  const session = await this.findByTokenPrefix(providedToken);
+
+  if (!session) {
+   // ユーザーが存在しない場合でも同じ処理時間を確保
+   await this.dummyCompare();
+   return false;
+  }
+
+  // 定数時間でトークン比較
+  return timingSafeCompare(providedToken, session.token);
+ }
+
+ // ダミー比較でタイミング差を隠蔽
+ private async dummyCompare(): Promise<void> {
+  const dummy = 'x'.repeat(64);
+  timingSafeCompare(dummy, dummy);
+ }
+}
+
+// ✅ パスワード検証（bcryptは内部で定数時間比較）
+export class AuthService {
+ async verifyPassword(
+  plainPassword: string,
+  hashedPassword: string,
+ ): Promise<boolean> {
+  // bcrypt.compare は定数時間比較を内部で実装済み
+  // ただし、ユーザーが存在しない場合のダミーハッシュ比較が必要
+
+  if (!hashedPassword) {
+   // ユーザー不存在時もダミーハッシュと比較して処理時間を統一
+   const dummyHash = await bcrypt.hash('dummy', 12);
+   await bcrypt.compare(plainPassword, dummyHash);
+   return false;
+  }
+
+  return bcrypt.compare(plainPassword, hashedPassword);
+ }
+}
+
+// ✅ ログイン処理（ユーザー列挙攻撃対策）
+export class SignInUseCase {
+ async execute(request: SignInRequest): Promise<Result<SignInResponse>> {
+  const startTime = Date.now();
+
+  const user = await this.userRepository.findByEmail(
+   new Email(request.email),
+  );
+
+  // ユーザーが存在しなくても同じエラーメッセージ
+  // かつ同じ処理時間になるよう制御
+  let isValid = false;
+
+  if (user) {
+   isValid = await this.authService.verifyPassword(
+    request.password,
+    user.passwordHash,
+   );
+  } else {
+   // ダミーのパスワード検証で処理時間を統一
+   await this.authService.verifyPassword(request.password, '');
+  }
+
+  // 処理時間を一定に（最低500ms）
+  const elapsed = Date.now() - startTime;
+  if (elapsed < 500) {
+   await this.sleep(500 - elapsed);
+  }
+
+  if (!isValid) {
+   // ユーザー存在有無を漏らさないエラーメッセージ
+   return failure(
+    'メールアドレスまたはパスワードが正しくありません',
+    'INVALID_CREDENTIALS',
+   );
+  }
+
+  // 認証成功処理...
+  return success(response);
+ }
+
+ private sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+ }
+}
+```
+
+**タイミング攻撃対策のポイント:**
+
+| 対策項目 | 説明 |
+| --- | --- |
+| **定数時間比較** | `crypto.timingSafeEqual` を使用して文字列比較 |
+| **ダミー処理** | ユーザー不存在時もダミー処理で時間を統一 |
+| **最小処理時間** | 認証処理に最低処理時間を設定 |
+| **統一エラー** | 失敗原因を特定できない汎用エラーメッセージ |
+
 ---
 
 ### Infrastructure Layer 🔧
@@ -424,7 +549,7 @@ export class PrismaUserRepository implements IUserRepository {
   // Prismaは自動的にSQLインジェクション対策済み
   const userData = await this.prisma.user.findUnique({
    where: {
-    email: email.toString(), // パラメータ化クエリが自動生成される
+    email: email.value, // パラメータ化クエリが自動生成される
    },
   });
 
@@ -675,6 +800,8 @@ describe('sanitizeHtml', () => {
 - [ ] **CSRF対策**: Server Actionsでの適切なCSRF保護
 - [ ] **XSS対策**: Content Security Policy設定とサニタイゼーション
 - [ ] **レート制限**: API呼び出し頻度の制限実装
+- [ ] **タイミング攻撃対策**: 定数時間比較・ダミー処理・最小処理時間の実装
+- [ ] **ユーザー列挙対策**: 認証失敗時の統一エラーメッセージ
 - [ ] **ログセキュリティ**: 機密情報のログ出力防止
 - [ ] **暗号化**: 機密データの適切な暗号化
 - [ ] **エラーハンドリング**: 情報漏洩を防ぐエラーメッセージ
@@ -695,4 +822,4 @@ describe('sanitizeHtml', () => {
 - [ロギング戦略](./logging-strategy.md) - セキュアなログ出力
 - [Application Layer ガイド](../layers/application-layer.md) - 認証・認可の実装
 - [Domain Layer ガイド](../layers/domain-layer.md) - ビジネスルールベースの権限制御
-- [テスト戦略](../../../testing-strategy.md) - セキュリティテストの実装
+- [テスト戦略](../../../testing/strategy.md) - セキュリティテストの実装

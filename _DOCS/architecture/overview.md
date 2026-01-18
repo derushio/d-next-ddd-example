@@ -1,6 +1,6 @@
 # アーキテクチャ概要 🏛️
 
-Next.js 15 + TypeScript + Clean Architecture + DDD による現代的Webアプリケーション設計
+Next.js 16 + TypeScript + Clean Architecture + DDD による現代的Webアプリケーション設計
 
 ---
 
@@ -52,7 +52,7 @@ graph LR
 
 1. **概念理解** → [設計原則詳細](principles.md) → [レイヤー構成詳細](layers/overview.md)
 2. **実装理解** → [開発フロー](../guides/development/workflow.md) → [最初の機能実装](../guides/development/first-feature.md)
-3. **深掘り学習** → [依存性注入パターン](patterns/dependency-injection.md) → [Result型パターン](patterns/result-pattern.md)
+3. **深掘り学習** → [依存性注入パターン](patterns/dependency-injection.md) → [エラーハンドリング](../guides/ddd/cross-cutting/error-handling.md)
 
 ---
 
@@ -192,8 +192,7 @@ graph LR
     subgraph "🔄 依存関係の方向"
         P[Presentation] --> A[Application]
         A --> D[Domain]
-        A --> I[Infrastructure]
-        I --> D
+        I[Infrastructure] --> D
     end
 
     subgraph "📊 データフローの方向"
@@ -333,7 +332,7 @@ graph TB
 ```mermaid
 graph LR
     subgraph "UI Framework"
-        NEXT[Next.js 15]
+        NEXT[Next.js 16]
         REACT[React 19]
         TS[TypeScript 5.x]
     end
@@ -363,8 +362,8 @@ graph LR
 ```mermaid
 graph LR
     subgraph "データベース"
-        SQLITE[SQLite]
-        PRISMA[Prisma 5.x]
+        POSTGRES[PostgreSQL]
+        PRISMA[Prisma 7.x]
         FACTORY[DatabaseFactory]
     end
 
@@ -380,7 +379,7 @@ graph LR
         PLAYWRIGHT[Playwright]
     end
 
-    SQLITE --> PRISMA
+    POSTGRES --> PRISMA
     PRISMA --> FACTORY
     NEXTAUTH --> HASH
     HASH --> SEC
@@ -525,12 +524,12 @@ graph LR
 ```mermaid
 graph LR
     subgraph "概念深化"
-        A1[設計原則詳細<br/>principles.md] --> A2[Clean Architecture理論<br/>patterns/clean-architecture.md]
-        A2 --> A3[DDD概念<br/>patterns/domain-driven-design.md]
+        A1[設計原則詳細<br/>principles.md] --> A2[Clean Architecture理論<br/>../guides/ddd/concepts/clean-architecture.md]
+        A2 --> A3[DDD概念<br/>../guides/ddd/concepts/domain-driven-design.md]
     end
 
     subgraph "技術理解"
-        B1[技術スタック詳細<br/>../reference/technologies.md] --> B2[技術選択理由<br/>../reference/decisions.md]
+        B1[技術スタック詳細<br/>../reference/technologies.md] --> B2[設計決定記録<br/>../guides/project-architecture-decisions.md]
     end
 
     A3 --> B1
@@ -549,7 +548,7 @@ graph LR
 
     subgraph "開発習得"
         C2 --> D1[開発フロー<br/>../guides/development/workflow.md]
-        D1 --> D2[UseCase実装<br/>../guides/development/usecase.md]
+        D1 --> D2[UseCase実装<br/>../guides/ddd/layers/components/use-cases.md]
     end
 
     style C1 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -561,10 +560,10 @@ graph LR
 ```mermaid
 graph TB
     subgraph "レイヤー理解順序"
-        E1[レイヤー概要<br/>layers/overview.md] --> E2[ドメイン層<br/>layers/domain.md]
-        E2 --> E3[アプリケーション層<br/>layers/application.md]
-        E3 --> E4[インフラ層<br/>layers/infrastructure.md]
-        E4 --> E5[プレゼンテーション層<br/>layers/presentation.md]
+        E1[レイヤー概要<br/>layers/overview.md] --> E2[ドメイン層<br/>../guides/ddd/layers/domain-layer.md]
+        E2 --> E3[アプリケーション層<br/>../guides/ddd/layers/application-layer.md]
+        E3 --> E4[インフラ層<br/>../guides/ddd/layers/infrastructure-layer.md]
+        E4 --> E5[プレゼンテーション層<br/>../guides/ddd/layers/presentation-layer.md]
     end
 ```
 
@@ -574,7 +573,7 @@ graph TB
 graph LR
     subgraph "品質戦略"
         F1[テスト戦略<br/>../testing/strategy.md] --> F2[自動モック<br/>../testing/unit/mocking.md]
-        F2 --> F3[E2Eテスト<br/>../testing/e2e/overview.md]
+        F2 --> F3[E2Eテスト<br/>../guides/e2e-testing-guide.md]
     end
 ```
 
@@ -584,21 +583,21 @@ graph LR
 
 ### 📖 **概念・設計理解**
 
-| ドキュメント                                       | 読了目安 | 前提知識         | 次の推奨                                         |
-| -------------------------------------------------- | -------- | ---------------- | ------------------------------------------------ |
-| **[設計原則](principles.md)**                      | 15分     | このドキュメント | [レイヤー概要](layers/overview.md)               |
-| **[レイヤー構成](layers/overview.md)**             | 20分     | 設計原則         | 各レイヤー詳細                                   |
-| **[依存性注入](patterns/dependency-injection.md)** | 25分     | レイヤー理解     | [UseCase実装](../guides/development/usecase.md)  |
-| **[Result型パターン](patterns/result-pattern.md)** | 15分     | TypeScript基礎   | [エラーハンドリング](patterns/error-handling.md) |
+| ドキュメント                                       | 読了目安 | 前提知識         | 次の推奨                                                        |
+| -------------------------------------------------- | -------- | ---------------- | --------------------------------------------------------------- |
+| **[設計原則](principles.md)**                      | 15分     | このドキュメント | [レイヤー概要](layers/overview.md)                              |
+| **[レイヤー構成](layers/overview.md)**             | 20分     | 設計原則         | 各レイヤー詳細                                                  |
+| **[依存性注入](patterns/dependency-injection.md)** | 25分     | レイヤー理解     | [UseCase実装](../guides/ddd/layers/components/use-cases.md)     |
+| **[エラーハンドリング](../guides/ddd/cross-cutting/error-handling.md)** | 15分     | TypeScript基礎   | [UseCase実装](../guides/ddd/layers/components/use-cases.md) |
 
 ### 🛠️ **実装・開発**
 
-| ドキュメント                                                 | 読了目安 | 前提知識           | 関連実装                                              |
-| ------------------------------------------------------------ | -------- | ------------------ | ----------------------------------------------------- |
-| **[開発フロー](../guides/development/workflow.md)**          | 30分     | アーキテクチャ理解 | [コーディング規約](../guides/standards/coding.md)     |
-| **[最初の機能実装](../guides/development/first-feature.md)** | 45分     | 環境セットアップ   | [UseCase実装](../guides/development/usecase.md)       |
-| **[UseCase実装](../guides/development/usecase.md)**          | 20分     | DI・Result型理解   | [Repository実装](../guides/development/repository.md) |
-| **[Repository実装](../guides/development/repository.md)**    | 25分     | インフラ層理解     | [テスト実装](../testing/unit/overview.md)             |
+| ドキュメント                                                 | 読了目安 | 前提知識           | 関連実装                                                                   |
+| ------------------------------------------------------------ | -------- | ------------------ | -------------------------------------------------------------------------- |
+| **[開発フロー](../guides/development/workflow.md)**          | 30分     | アーキテクチャ理解 | [コーディング規約](../guides/standards/coding.md)                          |
+| **[最初の機能実装](../guides/development/first-feature.md)** | 45分     | 環境セットアップ   | [UseCase実装](../guides/ddd/layers/components/use-cases.md)                |
+| **[UseCase実装](../guides/ddd/layers/components/use-cases.md)**          | 20分     | DI・Result型理解   | [Repository実装](../guides/ddd/layers/components/repository-implementations.md) |
+| **[Repository実装](../guides/ddd/layers/components/repository-implementations.md)**    | 25分     | インフラ層理解     | [テスト実装](../testing/unit/overview.md)             |
 
 ### 🧪 **品質・テスト**
 
@@ -606,23 +605,23 @@ graph LR
 | ------------------------------------------------- | -------- | ------------------ | ---------------------------------------------- |
 | **[テスト戦略](../testing/strategy.md)**          | 30分     | アーキテクチャ理解 | [自動モック](../testing/unit/mocking.md)       |
 | **[ユニットテスト](../testing/unit/overview.md)** | 20分     | テスト戦略         | [モック戦略](../testing/unit/mocking.md)       |
-| **[E2Eテスト](../testing/e2e/overview.md)**       | 25分     | テスト基礎         | [Playwright活用](../testing/e2e/playwright.md) |
+| **[E2Eテスト](../guides/e2e-testing-guide.md)**   | 25分     | テスト基礎         | [テスト戦略](../testing/strategy.md)           |
 
 ### 🔧 **運用・問題解決**
 
-| ドキュメント                                                             | 利用タイミング | 解決内容   | 関連対策                                       |
-| ------------------------------------------------------------------------ | -------------- | ---------- | ---------------------------------------------- |
-| **[よくある問題](../troubleshooting/common-issues.md)**                  | 問題発生時     | 一般的問題 | [分野別詳細](../troubleshooting/)              |
-| **[DI関連問題](../troubleshooting/development/dependency-injection.md)** | DI設定時       | 循環依存等 | [DI設計詳細](patterns/dependency-injection.md) |
-| **[テスト問題](../troubleshooting/testing/)**                            | テスト失敗時   | テスト関連 | [テスト戦略見直し](../testing/strategy.md)     |
+| ドキュメント                                                                        | 利用タイミング | 解決内容   | 関連対策                                          |
+| ----------------------------------------------------------------------------------- | -------------- | ---------- | ------------------------------------------------- |
+| **[よくある問題](../troubleshooting/common-issues.md)**                             | 問題発生時     | 一般的問題 | [開発時の問題](../troubleshooting/development/)   |
+| **[DIコンテナ](../guides/ddd/layers/components/di-container.md)**                   | DI設定時       | 循環依存等 | [DI設計詳細](patterns/dependency-injection.md)    |
+| **[vitest-mock設定](../troubleshooting/development/vitest-mock-extended-setup.md)** | テスト失敗時   | テスト関連 | [テスト戦略見直し](../testing/strategy.md)        |
 
 ### 📚 **参考・詳細情報**
 
-| ドキュメント                                         | 参照タイミング | 詳細レベル | 更新頻度 |
-| ---------------------------------------------------- | -------------- | ---------- | -------- |
-| **[技術スタック](../reference/technologies.md)**     | 技術調査時     | 詳細仕様   | 四半期   |
-| **[コマンドリファレンス](../reference/commands.md)** | 日常開発       | 実行方法   | 月次     |
-| **[設定詳細](../reference/configuration/)**          | 環境構築時     | 設定方法   | 随時     |
+| ドキュメント                                               | 参照タイミング | 詳細レベル | 更新頻度 |
+| ---------------------------------------------------------- | -------------- | ---------- | -------- |
+| **[技術スタック](../reference/technologies.md)**           | 技術調査時     | 詳細仕様   | 四半期   |
+| **[コマンドリファレンス](../reference/commands.md)**       | 日常開発       | 実行方法   | 月次     |
+| **[プロジェクト構造](../guides/standards/project-structure.md)** | 環境構築時     | 設定方法   | 随時     |
 
 ---
 
@@ -644,7 +643,7 @@ graph LR
 
 - **週次**: [開発フロー](../guides/development/workflow.md) の実践
 - **月次**: [設計原則](principles.md) の振り返り
-- **四半期**: [アーキテクチャ拡張](patterns/advanced/) の検討
+- **四半期**: [設計決定記録](../guides/project-architecture-decisions.md) の検討
 
 ---
 

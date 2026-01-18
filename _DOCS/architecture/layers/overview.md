@@ -137,8 +137,7 @@ graph TB
     subgraph "✅ 許可される依存関係"
         P1[Presentation] --> A1[Application]
         A1 --> D1[Domain]
-        A1 --> I1[Infrastructure]
-        I1 --> D1
+        I1[Infrastructure] --> D1
     end
 
     subgraph "❌ 禁止される依存関係"
@@ -236,7 +235,7 @@ graph TB
         RSC[React Server Components<br/>サーバーサイド描画]
         RCC[React Client Components<br/>クライアント側操作]
         SA[Server Actions<br/>フォーム処理]
-        MIDDLEWARE[Middleware<br/>認証・認可]
+        PROXY[Proxy<br/>認証・認可]
     end
 
     subgraph "責務"
@@ -249,7 +248,7 @@ graph TB
     RSC --> UI_RENDER
     RCC --> USER_INPUT
     SA --> STATE_MGMT
-    MIDDLEWARE --> ROUTING
+    PROXY --> ROUTING
 
     style RSC fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
     style UI_RENDER fill:#f0f9ff,stroke:#0369a1,stroke-width:1px,color:#0369a1
@@ -420,7 +419,7 @@ graph TB
 | 指標                 | 測定方法           | 目標値                        | 改善手法           |
 | -------------------- | ------------------ | ----------------------------- | ------------------ |
 | **循環依存**         | 依存関係グラフ解析 | 0件                           | DI Container分離   |
-| **レイヤー違反**     | Import文静的解析   | 0件                           | ESLint rules       |
+| **レイヤー違反**     | Import文静的解析   | 0件                           | Biome rules        |
 | **Interface使用率**  | 具象依存率計測     | 95%以上                       | Repository pattern |
 | **テストカバレッジ** | レイヤー別計測     | Domain 90%+, Application 94%+ | 自動テスト         |
 
@@ -495,22 +494,22 @@ graph TB
 
 ### 各レイヤー詳細
 
-- **[Presentation Layer](presentation.md)** - UI・Server Actions実装詳細
-- **[Application Layer](application.md)** - UseCase・ビジネスフロー詳細
-- **[Domain Layer](domain.md)** - Entity・ドメインロジック詳細
-- **[Infrastructure Layer](infrastructure.md)** - Repository・外部サービス詳細
+- **[Presentation Layer](../../guides/ddd/layers/presentation-layer.md)** - UI・Server Actions実装詳細
+- **[Application Layer](../../guides/ddd/layers/application-layer.md)** - UseCase・ビジネスフロー詳細
+- **[Domain Layer](../../guides/ddd/layers/domain-layer.md)** - Entity・ドメインロジック詳細
+- **[Infrastructure Layer](../../guides/ddd/layers/infrastructure-layer.md)** - Repository・外部サービス詳細
 
 ### 設計パターン
 
 - **[依存性注入](../patterns/dependency-injection.md)** - DI実装詳細
-- **[Result型パターン](../patterns/result-pattern.md)** - エラーハンドリング詳細
-- **[Repository パターン](../patterns/repository-pattern.md)** - データアクセス抽象化
+- **[エラーハンドリング](../../guides/ddd/cross-cutting/error-handling.md)** - Result型パターン詳細
+- **[Repository実装](../../guides/ddd/layers/components/repository-implementations.md)** - データアクセス抽象化
 
 ### 実装ガイド
 
 - **[開発フロー](../../guides/development/workflow.md)** - 実際の開発手順
 - **[テスト戦略](../../testing/strategy.md)** - レイヤー別テスト手法
-- **[トラブルシューティング](../../troubleshooting/)** - よくある問題と解決策
+- **[よくある問題](../../troubleshooting/common-issues.md)** - トラブルシューティング
 
 ---
 

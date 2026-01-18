@@ -1,5 +1,5 @@
 import { isFailure, isSuccess } from '@/layers/application/types/Result';
-import { GetUsersUseCase } from '@/layers/application/usecases/user/GetUsersUseCase';
+import type { GetUsersUseCase } from '@/layers/application/usecases/user/GetUsersUseCase';
 import { User } from '@/layers/domain/entities/User';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
@@ -8,7 +8,7 @@ import { generateUserId } from '@/layers/domain/value-objects/UserId';
 import { container } from '@/di/container';
 import { resolve } from '@/di/resolver';
 import { INJECTION_TOKENS } from '@/di/tokens';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 
 import { setupTestEnvironment } from '@tests/utils/helpers/testHelpers';
 import {
@@ -27,7 +27,7 @@ describe('GetUsersUseCase', () => {
   setupTestEnvironment();
 
   // テスト用のユーザーデータ
-  const createTestUser = (id: string, name: string, email: string) => {
+  const createTestUser = (_id: string, name: string, email: string) => {
     const now = new Date();
     return User.reconstruct(
       generateUserId(),
@@ -80,7 +80,7 @@ describe('GetUsersUseCase', () => {
         expect(result.data.totalPages).toBe(1);
         expect(result.data.hasNextPage).toBe(false);
         expect(result.data.hasPreviousPage).toBe(false);
-        
+
         // ユーザーデータの変換確認
         expect(result.data.users[0]).toEqual({
           id: expect.any(String),
@@ -179,7 +179,9 @@ describe('GetUsersUseCase', () => {
       // Assert
       expect(isFailure(result)).toBe(true);
       if (isFailure(result)) {
-        expect(result.error.message).toBe('ページ番号は1以上である必要があります');
+        expect(result.error.message).toBe(
+          'ページ番号は1以上である必要があります',
+        );
         expect(result.error.code).toBe('INVALID_PAGE');
       }
 
@@ -194,7 +196,9 @@ describe('GetUsersUseCase', () => {
       // Assert
       expect(isFailure(result1)).toBe(true);
       if (isFailure(result1)) {
-        expect(result1.error.message).toBe('取得件数は1から100の間で指定してください');
+        expect(result1.error.message).toBe(
+          '取得件数は1から100の間で指定してください',
+        );
         expect(result1.error.code).toBe('INVALID_LIMIT');
       }
 
@@ -204,7 +208,9 @@ describe('GetUsersUseCase', () => {
       // Assert
       expect(isFailure(result2)).toBe(true);
       if (isFailure(result2)) {
-        expect(result2.error.message).toBe('取得件数は1から100の間で指定してください');
+        expect(result2.error.message).toBe(
+          '取得件数は1から100の間で指定してください',
+        );
         expect(result2.error.code).toBe('INVALID_LIMIT');
       }
     });
@@ -250,10 +256,7 @@ describe('GetUsersUseCase', () => {
 
     it('should handle domain error correctly', async () => {
       // Arrange
-      const domainError = new DomainError(
-        '権限がありません',
-        'ACCESS_DENIED'
-      );
+      const domainError = new DomainError('権限がありません', 'ACCESS_DENIED');
       mockUserRepository.findByCriteria.mockRejectedValue(domainError);
 
       // Act

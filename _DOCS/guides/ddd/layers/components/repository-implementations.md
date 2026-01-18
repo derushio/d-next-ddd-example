@@ -61,98 +61,94 @@ sequenceDiagram
 
 ```typescript
 // ✅ 推薦：Domain Interface の忠実な実装
+import { INJECTION_TOKENS } from '@/di/tokens';
+import { DomainError } from '@/layers/domain/errors/DomainError';
+import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
+import type { ITransaction } from '@/layers/domain/repositories/ITransaction';
+import type { PrismaClient } from '@/layers/infrastructure/persistence/prisma/generated';
+import { inject, injectable } from 'tsyringe';
+
 @injectable()
 export class PrismaUserRepository implements IUserRepository {
  constructor(
-  @inject('IDatabaseFactory') private databaseFactory: IDatabaseFactory,
-  @inject('ILogger') private logger: ILogger,
+  @inject(INJECTION_TOKENS.PrismaClient) private prisma: PrismaClient,
  ) {}
 
  async findById(id: UserId): Promise<User | null> {
   try {
-   this.logger.debug('ユーザー検索開始', { userId: id.toString() });
-
-   const prisma = this.databaseFactory.getPrismaClient();
-   const userData = await prisma.user.findUnique({
-    where: { id: id.toString() },
-    include: {
-     profile: true,
-     sessions: {
-      where: { expiresAt: { gte: new Date() } },
-      take: 1,
-     },
-    },
+   const userData = await this.prisma.user.findUnique({
+    where: { id: id.value },
    });
 
    if (!userData) {
-    this.logger.debug('ユーザーが見つかりません', { userId: id.toString() });
     return null;
    }
 
-   const user = this.mapToDomainEntity(userData);
-   this.logger.debug('ユーザー検索完了', { userId: id.toString() });
-
-   return user;
+   return this.toDomainObject(userData);
   } catch (error) {
-   this.logger.error('ユーザー検索エラー', {
-    userId: id.toString(),
-    error: error.message,
-   });
-   throw new InfrastructureError(
-    'ユーザー検索中にエラーが発生しました',
-    'USER_FIND_ERROR',
-    error,
-   );
+   throw this.convertToDomainError(error, 'USER_FIND_ERROR');
   }
  }
 
  async findByEmail(email: Email): Promise<User | null> {
   try {
-   const prisma = this.databaseFactory.getPrismaClient();
-   const userData = await prisma.user.findUnique({
-    where: { email: email.toString() },
-    include: { profile: true },
+   const userData = await this.prisma.user.findUnique({
+    where: { email: email.value },
    });
 
-   return userData ? this.mapToDomainEntity(userData) : null;
+   return userData ? this.toDomainObject(userData) : null;
   } catch (error) {
-   this.logger.error('メールアドレスによるユーザー検索エラー', {
-    email: email.toString(),
-    error: error.message,
-   });
-   throw new InfrastructureError(
-    'ユーザー検索中にエラーが発生しました',
-    'USER_FIND_BY_EMAIL_ERROR',
-    error,
-   );
+   throw this.convertToDomainError(error, 'USER_FIND_BY_EMAIL_ERROR');
   }
  }
 
- async save(user: User): Promise<void> {
+ async save(user: User, transaction?: ITransaction): Promise<void> {
   try {
-   this.logger.debug('ユーザー保存開始', { userId: user.getId().toString() });
+   const prisma = transaction?.prisma ?? this.prisma;
+   const userData = this.toPersistenceObject(user);
 
-   const prisma = this.databaseFactory.getPrismaClient();
-   const userData = this.mapToPersistenceData(user);
-
-   await prisma.user.upsert({
-    where: { id: user.getId().toString() },
-    create: userData,
-    update: userData,
+   await prisma.user.create({
+    data: userData,
    });
-
-   this.logger.debug('ユーザー保存完了', { userId: user.getId().toString() });
   } catch (error) {
-   this.logger.error('ユーザー保存エラー', {
-    userId: user.getId().toString(),
-    error: error.message,
-   });
-   throw new InfrastructureError(
-    'ユーザー保存中にエラーが発生しました',
-    'USER_SAVE_ERROR',
-    error,
-   );
+   throw this.convertToDomainError(error, 'USER_SAVE_ERROR');
   }
+ }
+
+ async update(user: User, transaction?: ITransaction): Promise<void> {
+  try {
+   const prisma = transaction?.prisma ?? this.prisma;
+   const userData = this.toPersistenceObject(user);
+
+   await prisma.user.update({
+    where: { id: user.id.value },
+    data: userData,
+   });
+  } catch (error) {
+   throw this.convertToDomainError(error, 'USER_UPDATE_ERROR');
+  }
+ }
+
+ async delete(id: UserId, transaction?: ITransaction): Promise<void> {
+  try {
+   const prisma = transaction?.prisma ?? this.prisma;
+
+   await prisma.user.delete({
+    where: { id: id.value },
+   });
+  } catch (error) {
+   throw this.convertToDomainError(error, 'USER_DELETE_ERROR');
+  }
+ }
+
+ // エラー変換ヘルパー
+ private convertToDomainError(error: unknown, code: string): DomainError {
+  if (error instanceof DomainError) {
+   return error;
+  }
+  const message =
+   error instanceof Error ? error.message : '不明なエラーが発生しました';
+  return new DomainError(message, code);
  }
 }
 ```
@@ -160,120 +156,152 @@ export class PrismaUserRepository implements IUserRepository {
 ### 2. **データマッピングの実装** 🔄
 
 ```typescript
-// ✅ 推薦：適切なデータマッピング
+// ✅ 推薦：適切なデータマッピング（toDomainObject / toPersistenceObject）
 export class PrismaUserRepository implements IUserRepository {
- private mapToDomainEntity(userData: any): User {
-  return User.reconstruct(
-   new UserId(userData.id),
-   new Email(userData.email),
-   userData.name,
-   userData.experiencePoints || 0,
-   userData.level || 1,
-   userData.createdAt,
-   userData.lastLoginAt || undefined,
-  );
+ // DB → Domain Entity 変換
+ private toDomainObject(userData: {
+  id: string;
+  email: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+ }): User {
+  return User.reconstruct({
+   id: new UserId(userData.id),
+   email: new Email(userData.email),
+   name: userData.name,
+   createdAt: userData.createdAt,
+   updatedAt: userData.updatedAt,
+  });
  }
 
- private mapToPersistenceData(user: User): any {
+ // Domain Entity → DB 変換
+ private toPersistenceObject(user: User): {
+  id: string;
+  email: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+ } {
   return {
-   id: user.getId().toString(),
-   email: user.getEmail().toString(),
-   name: user.getName(),
-   experiencePoints: user.getExperiencePoints(),
-   level: user.getLevel(),
-   createdAt: user.getCreatedAt(),
-   lastLoginAt: user.getLastLoginAt(),
-   updatedAt: new Date(),
+   id: user.id.value,           // public readonly アクセス
+   email: user.email.value,     // public readonly アクセス
+   name: user.name,             // public readonly アクセス
+   createdAt: user.createdAt,   // public readonly アクセス
+   updatedAt: user.updatedAt,   // public readonly アクセス
   };
  }
-
- // 複雑なマッピングの場合は専用クラスに分離
- private mapToUserWithProfile(userData: any): User {
-  const user = this.mapToDomainEntity(userData);
-
-  // プロフィール情報がある場合の追加マッピング
-  if (userData.profile) {
-   user.updateProfile({
-    displayName: userData.profile.displayName,
-    avatarUrl: userData.profile.avatarUrl,
-    bio: userData.profile.bio,
-   });
-  }
-
-  return user;
- }
 }
+```
+
+**重要：Entity の public readonly パターン**
+
+本プロジェクトでは、Entity は getter メソッドではなく `public readonly` プロパティを使用します：
+
+```typescript
+// ✅ 実際のパターン
+user.id.value       // UserId の value プロパティ
+user.email.value    // Email の value プロパティ
+user.name           // string プロパティ
+
+// ❌ 使用しない
+user.getId()        // getter メソッドは使用しない
+user.getEmail()
 ```
 
 ### 3. **トランザクション制御** 🔄
 
 ```typescript
 // ✅ 推薦：トランザクション対応Repository
+// ITransaction インターフェース
+export interface ITransaction {
+ prisma: PrismaClient;
+ commit(): Promise<void>;
+ rollback(): Promise<void>;
+}
+
+// Repository でのトランザクション使用パターン
 export class PrismaUserRepository implements IUserRepository {
+ constructor(
+  @inject(INJECTION_TOKENS.PrismaClient) private prisma: PrismaClient,
+ ) {}
+
  async save(user: User, transaction?: ITransaction): Promise<void> {
   try {
-   const prisma = transaction
-    ? (transaction as PrismaTransaction).getPrismaClient()
-    : this.databaseFactory.getPrismaClient();
+   // トランザクションがあればそのPrismaを使用、なければデフォルト
+   const prisma = transaction?.prisma ?? this.prisma;
+   const userData = this.toPersistenceObject(user);
 
-   const userData = this.mapToPersistenceData(user);
-
-   await prisma.user.upsert({
-    where: { id: user.getId().toString() },
-    create: userData,
-    update: userData,
+   await prisma.user.create({
+    data: userData,
    });
-
-   // ドメインイベントの永続化
-   await this.persistDomainEvents(user, prisma);
   } catch (error) {
-   throw new InfrastructureError(
-    'ユーザー保存中にエラーが発生しました',
-    'USER_SAVE_ERROR',
-    error,
-   );
+   throw this.convertToDomainError(error, 'USER_SAVE_ERROR');
   }
  }
 
- async findByIdForUpdate(
-  id: UserId,
-  transaction: ITransaction,
- ): Promise<User | null> {
+ async update(user: User, transaction?: ITransaction): Promise<void> {
   try {
-   const prisma = (transaction as PrismaTransaction).getPrismaClient();
+   const prisma = transaction?.prisma ?? this.prisma;
+   const userData = this.toPersistenceObject(user);
 
-   // 悲観的ロック（SELECT FOR UPDATE相当）
-   const userData = await prisma.user.findUnique({
-    where: { id: id.toString() },
-    // Prismaでは自動的にトランザクション内でロックが適用される
+   await prisma.user.update({
+    where: { id: user.id.value },
+    data: userData,
    });
-
-   return userData ? this.mapToDomainEntity(userData) : null;
   } catch (error) {
-   throw new InfrastructureError(
-    'ユーザー排他制御取得エラー',
-    'USER_LOCK_ERROR',
-    error,
-   );
+   throw this.convertToDomainError(error, 'USER_UPDATE_ERROR');
   }
  }
 
- private async persistDomainEvents(user: User, prisma: any): Promise<void> {
-  const events = DomainEvents.getEventsForEntity(user.getId());
+ async delete(id: UserId, transaction?: ITransaction): Promise<void> {
+  try {
+   const prisma = transaction?.prisma ?? this.prisma;
 
-  for (const event of events) {
-   await prisma.domainEvent.create({
-    data: {
-     entityId: user.getId().toString(),
-     entityType: 'User',
-     eventType: event.constructor.name,
-     eventData: JSON.stringify(event),
-     occurredAt: event.occurredAt,
-    },
+   await prisma.user.delete({
+    where: { id: id.value },
    });
+  } catch (error) {
+   throw this.convertToDomainError(error, 'USER_DELETE_ERROR');
   }
+ }
+}
+```
 
-  DomainEvents.clearEventsForEntity(user.getId());
+**トランザクション使用例（UseCase内）:**
+
+```typescript
+// UseCase でのトランザクション管理
+@injectable()
+export class TransferFundsUseCase {
+ constructor(
+  @inject(INJECTION_TOKENS.PrismaClient) private prisma: PrismaClient,
+  @inject(INJECTION_TOKENS.UserRepository) private userRepository: IUserRepository,
+ ) {}
+
+ async execute(request: TransferRequest): Promise<Result<void>> {
+  // Prisma の $transaction を使用
+  try {
+   await this.prisma.$transaction(async (tx) => {
+    const transaction: ITransaction = { prisma: tx } as ITransaction;
+
+    // トランザクション内で Repository 操作
+    const sender = await this.userRepository.findById(request.senderId);
+    const receiver = await this.userRepository.findById(request.receiverId);
+
+    // ビジネスロジック
+    sender.deductBalance(request.amount);
+    receiver.addBalance(request.amount);
+
+    // 同一トランザクションで更新
+    await this.userRepository.update(sender, transaction);
+    await this.userRepository.update(receiver, transaction);
+   });
+
+   return success(undefined);
+  } catch (error) {
+   return failure('送金処理に失敗しました', 'TRANSFER_FAILED');
+  }
  }
 }
 ```
@@ -282,54 +310,63 @@ export class PrismaUserRepository implements IUserRepository {
 
 ```typescript
 // ✅ 推薦：ドメイン要求に応じた検索実装
+@injectable()
 export class PrismaUserRepository implements IUserRepository {
+ constructor(
+  @inject(INJECTION_TOKENS.PrismaClient) private prisma: PrismaClient,
+ ) {}
+
+ async findAll(): Promise<User[]> {
+  try {
+   const userData = await this.prisma.user.findMany({
+    orderBy: { createdAt: 'desc' },
+   });
+
+   return userData.map((data) => this.toDomainObject(data));
+  } catch (error) {
+   throw this.convertToDomainError(error, 'USER_FIND_ALL_ERROR');
+  }
+ }
+
  async findActiveUsers(criteria: ActiveUserSearchCriteria): Promise<User[]> {
   try {
-   const prisma = this.databaseFactory.getPrismaClient();
-
-   const whereClause: any = {
+   const whereClause: Prisma.UserWhereInput = {
     isActive: true,
     lastLoginAt: {
-     gte: criteria.getActiveThreshold(),
+     gte: criteria.activeThreshold,
     },
    };
 
    // 検索条件の動的構築
-   if (criteria.hasLevelRange()) {
+   if (criteria.levelRange) {
     whereClause.level = {
-     gte: criteria.getMinLevel(),
-     lte: criteria.getMaxLevel(),
+     gte: criteria.levelRange.min,
+     lte: criteria.levelRange.max,
     };
    }
 
-   if (criteria.hasEmailDomain()) {
+   if (criteria.emailDomain) {
     whereClause.email = {
-     endsWith: `@${criteria.getEmailDomain()}`,
+     endsWith: `@${criteria.emailDomain}`,
     };
    }
 
-   const userData = await prisma.user.findMany({
+   const userData = await this.prisma.user.findMany({
     where: whereClause,
     orderBy: [{ level: 'desc' }, { lastLoginAt: 'desc' }],
-    take: criteria.getLimit(),
-    skip: criteria.getOffset(),
+    take: criteria.limit,
+    skip: criteria.offset,
    });
 
-   return userData.map((data) => this.mapToDomainEntity(data));
+   return userData.map((data) => this.toDomainObject(data));
   } catch (error) {
-   throw new InfrastructureError(
-    'アクティブユーザー検索エラー',
-    'ACTIVE_USER_SEARCH_ERROR',
-    error,
-   );
+   throw this.convertToDomainError(error, 'ACTIVE_USER_SEARCH_ERROR');
   }
  }
 
  async countByLevelRange(minLevel: number, maxLevel: number): Promise<number> {
   try {
-   const prisma = this.databaseFactory.getPrismaClient();
-
-   return await prisma.user.count({
+   return await this.prisma.user.count({
     where: {
      level: {
       gte: minLevel,
@@ -339,11 +376,7 @@ export class PrismaUserRepository implements IUserRepository {
     },
    });
   } catch (error) {
-   throw new InfrastructureError(
-    'ユーザー数カウントエラー',
-    'USER_COUNT_ERROR',
-    error,
-   );
+   throw this.convertToDomainError(error, 'USER_COUNT_ERROR');
   }
  }
 }
@@ -353,20 +386,43 @@ export class PrismaUserRepository implements IUserRepository {
 
 ```typescript
 // ✅ 推薦：パフォーマンスを考慮した実装
+@injectable()
 export class PrismaUserRepository implements IUserRepository {
- async findByIdsWithProfiles(ids: UserId[]): Promise<User[]> {
+ constructor(
+  @inject(INJECTION_TOKENS.PrismaClient) private prisma: PrismaClient,
+ ) {}
+
+ async findByIds(ids: UserId[]): Promise<User[]> {
   if (ids.length === 0) {
    return [];
   }
 
   try {
-   const prisma = this.databaseFactory.getPrismaClient();
-
    // バッチ取得でN+1問題を回避
-   const userData = await prisma.user.findMany({
+   const userData = await this.prisma.user.findMany({
     where: {
-     id: { in: ids.map((id) => id.toString()) },
+     id: { in: ids.map((id) => id.value) },
     },
+   });
+
+   // 元の順序を保持してマッピング
+   const userMap = new Map(
+    userData.map((data) => [data.id, this.toDomainObject(data)]),
+   );
+
+   return ids
+    .map((id) => userMap.get(id.value))
+    .filter((user): user is User => user !== undefined);
+  } catch (error) {
+   throw this.convertToDomainError(error, 'BATCH_USER_FETCH_ERROR');
+  }
+ }
+
+ // 関連データを含む取得（N+1回避）
+ async findByIdWithRelations(id: UserId): Promise<UserWithRelations | null> {
+  try {
+   const userData = await this.prisma.user.findUnique({
+    where: { id: id.value },
     include: {
      profile: true,
      sessions: {
@@ -377,57 +433,19 @@ export class PrismaUserRepository implements IUserRepository {
     },
    });
 
-   // 元の順序を保持してマッピング
-   const userMap = new Map(
-    userData.map((data) => [data.id, this.mapToUserWithProfile(data)]),
-   );
-
-   return ids
-    .map((id) => userMap.get(id.toString()))
-    .filter((user) => user !== undefined) as User[];
+   return userData ? this.toDomainObjectWithRelations(userData) : null;
   } catch (error) {
-   throw new InfrastructureError(
-    'ユーザー一括取得エラー',
-    'BATCH_USER_FETCH_ERROR',
-    error,
-   );
-  }
- }
-
- // キャッシュ対応（Redis等を使用）
- async findByIdWithCache(id: UserId): Promise<User | null> {
-  const cacheKey = `user:${id.toString()}`;
-
-  try {
-   // キャッシュから取得試行
-   const cachedData = await this.cacheService.get(cacheKey);
-   if (cachedData) {
-    this.logger.debug('キャッシュからユーザー取得', { userId: id.toString() });
-    return this.deserializeUser(cachedData);
-   }
-
-   // キャッシュにない場合はDBから取得
-   const user = await this.findById(id);
-   if (user) {
-    await this.cacheService.set(
-     cacheKey,
-     this.serializeUser(user),
-     300, // 5分間キャッシュ
-    );
-   }
-
-   return user;
-  } catch (error) {
-   // キャッシュエラーは無視してDBから取得
-   this.logger.warn('キャッシュエラー、DBから取得', {
-    userId: id.toString(),
-    error: error.message,
-   });
-   return await this.findById(id);
+   throw this.convertToDomainError(error, 'USER_FIND_WITH_RELATIONS_ERROR');
   }
  }
 }
 ```
+
+**パフォーマンス最適化のポイント:**
+
+- **N+1 問題の回避**: `findMany` + `include` で関連データを一括取得
+- **バッチ処理**: 複数IDの取得は `findByIds` で一括処理
+- **順序の保持**: Map を使用して元の ID 順序を維持
 
 ---
 
@@ -440,12 +458,12 @@ export class PrismaUserRepository implements IUserRepository {
 export class PrismaUserRepository implements IUserRepository {
  async save(user: User): Promise<void> {
   // ビジネスルール検証（Domain Layerの責務）
-  if (user.getLevel() > 10) {
+  if (user.level > 10) {
    throw new Error('レベルが高すぎます'); // 禁止
   }
 
   // 昇格処理（Domain Layerの責務）
-  if (user.getExperiencePoints() >= 1000) {
+  if (user.experiencePoints >= 1000) {
    user.promote(); // 禁止
   }
 
@@ -467,11 +485,11 @@ export class PrismaUserRepository implements IUserRepository {
 
   // メール送信（Application Layerの責務）
   const emailService = new EmailService(); // 禁止
-  await emailService.sendWelcomeEmail(user.getEmail()); // 禁止
+  await emailService.sendWelcomeEmail(user.email); // 禁止
 
   // 分析データ送信（Application Layerの責務）
   const analytics = new AnalyticsService(); // 禁止
-  await analytics.track('user_created', user.getId()); // 禁止
+  await analytics.track('user_created', user.id); // 禁止
 
   return user;
  }
@@ -488,9 +506,9 @@ export class PrismaUserRepository implements IUserRepository {
 
   // 表示用フォーマット（Presentation Layerの責務）
   return users.map((user) => ({
-   displayName: `${user.getName()}様`, // 禁止
-   formattedLevel: `レベル ${user.getLevel()}`, // 禁止
-   statusColor: user.isActive() ? 'green' : 'red', // 禁止
+   displayName: `${user.name}様`, // 禁止
+   formattedLevel: `レベル ${user.level}`, // 禁止
+   statusColor: user.isActive ? 'green' : 'red', // 禁止
   }));
  }
 }
@@ -529,7 +547,7 @@ export class PrismaUserRepository implements IUserRepository {
  async findById(id: UserId): Promise<User | null> {
   try {
    const userData = await this.prisma.user.findUnique({
-    where: { id: id.toString() },
+    where: { id: id.value },
    });
 
    return userData ? this.mapToDomainEntity(userData) : null;
@@ -558,30 +576,25 @@ export class PrismaUserRepository implements IUserRepository {
 ### 1. **データマッパーパターン** 🗺️
 
 ```typescript
-// ✅ 推薦：専用マッパークラスの使用
+// ✅ 推薦：専用マッパークラスの使用（複雑なマッピング向け）
 export class UserDataMapper {
  static toDomain(userData: PrismaUserData): User {
-  return User.reconstruct(
-   new UserId(userData.id),
-   new Email(userData.email),
-   userData.name,
-   userData.experiencePoints,
-   userData.level,
-   userData.createdAt,
-   userData.lastLoginAt,
-  );
+  return User.reconstruct({
+   id: new UserId(userData.id),
+   email: new Email(userData.email),
+   name: userData.name,
+   createdAt: userData.createdAt,
+   updatedAt: userData.updatedAt,
+  });
  }
 
  static toPersistence(user: User): PrismaUserData {
   return {
-   id: user.getId().toString(),
-   email: user.getEmail().toString(),
-   name: user.getName(),
-   experiencePoints: user.getExperiencePoints(),
-   level: user.getLevel(),
-   createdAt: user.getCreatedAt(),
-   lastLoginAt: user.getLastLoginAt(),
-   updatedAt: new Date(),
+   id: user.id.value,        // public readonly アクセス
+   email: user.email.value,  // public readonly アクセス
+   name: user.name,
+   createdAt: user.createdAt,
+   updatedAt: user.updatedAt,
   };
  }
 
@@ -591,51 +604,47 @@ export class UserDataMapper {
 }
 
 // Repository内での使用
+@injectable()
 export class PrismaUserRepository implements IUserRepository {
- private mapToDomainEntity(userData: any): User {
+ private toDomainObject(userData: PrismaUserData): User {
   return UserDataMapper.toDomain(userData);
  }
 
- private mapToPersistenceData(user: User): any {
+ private toPersistenceObject(user: User): PrismaUserData {
   return UserDataMapper.toPersistence(user);
  }
 }
 ```
 
+**注意**: シンプルなマッピングの場合、Repository 内にインラインで実装しても問題ありません。マッパークラスへの分離は、複雑な変換ロジックがある場合に有効です。
+
 ### 2. **Repository Factory パターン** 🏭
 
+本プロジェクトでは、DIコンテナ経由で Repository を直接注入するため、Repository Factory は通常不要です。
+ただし、テスト用のインメモリ実装など、動的に Repository 実装を切り替える必要がある場合に有効です。
+
 ```typescript
-// ✅ 推薦：複数の永続化手段への対応
-export interface IRepositoryFactory {
- createUserRepository(): IUserRepository;
- createSessionRepository(): ISessionRepository;
-}
-
+// ✅ 推薦：DIコンテナ経由の直接注入（標準パターン）
 @injectable()
-export class PrismaRepositoryFactory implements IRepositoryFactory {
+export class CreateUserUseCase {
  constructor(
-  @inject('IDatabaseFactory') private databaseFactory: IDatabaseFactory,
-  @inject('ILogger') private logger: ILogger,
+  @inject(INJECTION_TOKENS.UserRepository) private userRepository: IUserRepository,
  ) {}
-
- createUserRepository(): IUserRepository {
-  return new PrismaUserRepository(this.databaseFactory, this.logger);
- }
-
- createSessionRepository(): ISessionRepository {
-  return new PrismaSessionRepository(this.databaseFactory, this.logger);
- }
 }
 
-// テスト用実装
-export class InMemoryRepositoryFactory implements IRepositoryFactory {
- createUserRepository(): IUserRepository {
-  return new InMemoryUserRepository();
+// テスト用InMemory実装（テストで差し替え）
+export class InMemoryUserRepository implements IUserRepository {
+ private users: Map<string, User> = new Map();
+
+ async findById(id: UserId): Promise<User | null> {
+  return this.users.get(id.value) ?? null;
  }
 
- createSessionRepository(): ISessionRepository {
-  return new InMemorySessionRepository();
+ async save(user: User): Promise<void> {
+  this.users.set(user.id.value, user);
  }
+
+ // ... 他のメソッド
 }
 ```
 
@@ -643,16 +652,18 @@ export class InMemoryRepositoryFactory implements IRepositoryFactory {
 
 ```typescript
 // ✅ 推薦：複雑な検索条件の仕様化
+import type { Prisma } from '@/layers/infrastructure/persistence/prisma/generated';
+
 export class UserSearchSpecification {
  constructor(
-  private isActive?: boolean,
-  private levelRange?: { min: number; max: number },
-  private emailDomain?: string,
-  private lastLoginSince?: Date,
+  public readonly isActive?: boolean,
+  public readonly levelRange?: { min: number; max: number },
+  public readonly emailDomain?: string,
+  public readonly lastLoginSince?: Date,
  ) {}
 
- buildWhereClause(): any {
-  const where: any = {};
+ buildWhereClause(): Prisma.UserWhereInput {
+  const where: Prisma.UserWhereInput = {};
 
   if (this.isActive !== undefined) {
    where.isActive = this.isActive;
@@ -682,15 +693,18 @@ export class UserSearchSpecification {
 }
 
 // Repository内での使用
+@injectable()
 export class PrismaUserRepository implements IUserRepository {
- async findBySpecification(spec: UserSearchSpecification): Promise<User[]> {
-  const prisma = this.databaseFactory.getPrismaClient();
+ constructor(
+  @inject(INJECTION_TOKENS.PrismaClient) private prisma: PrismaClient,
+ ) {}
 
-  const userData = await prisma.user.findMany({
+ async findBySpecification(spec: UserSearchSpecification): Promise<User[]> {
+  const userData = await this.prisma.user.findMany({
    where: spec.buildWhereClause(),
   });
 
-  return userData.map((data) => this.mapToDomainEntity(data));
+  return userData.map((data) => this.toDomainObject(data));
  }
 }
 ```
@@ -699,102 +713,89 @@ export class PrismaUserRepository implements IUserRepository {
 
 ## 🧪 テスト戦略
 
-### Integration Tests（統合テスト）
+本プロジェクトでは **vitest-mock-extended** を使用した単体テストを推奨します。
+Repository の統合テストも重要ですが、開発効率を考慮し、モックを活用した高速なテストを基本とします。
+
+### Unit Tests（単体テスト - 推奨）
 
 ```typescript
-// ✅ Repository 統合テストの例
-describe('PrismaUserRepository Integration Tests', () => {
+import { setupTestEnvironment } from '@tests/utils/helpers/testHelpers';
+import { mock, MockProxy } from 'vitest-mock-extended';
+import { container } from 'tsyringe';
+
+// ✅ Repository 単体テストの例（モック使用）
+describe('PrismaUserRepository', () => {
+ setupTestEnvironment(); // DIコンテナリセット
+
  let repository: PrismaUserRepository;
- let databaseFactory: TestDatabaseFactory;
+ let mockPrisma: MockProxy<PrismaClient>;
 
- beforeEach(async () => {
-  databaseFactory = new TestDatabaseFactory();
-  await databaseFactory.setupTestDatabase();
-
-  repository = new PrismaUserRepository(databaseFactory, new TestLogger());
+ beforeEach(() => {
+  mockPrisma = mock<PrismaClient>();
+  container.registerInstance(INJECTION_TOKENS.PrismaClient, mockPrisma);
+  repository = container.resolve(PrismaUserRepository);
  });
 
- afterEach(async () => {
-  await databaseFactory.cleanupTestDatabase();
- });
-
- describe('save and findById', () => {
-  it('ユーザーを保存して取得できる', async () => {
+ describe('findById', () => {
+  it('ユーザーが見つかった場合、ドメインオブジェクトを返す', async () => {
    // Arrange
-   const user = User.create(
-    new UserId('test-user-123'),
-    new Email('test@example.com'),
-    'テストユーザー',
-   );
+   const userId = new UserId('test-user-123');
+   const prismaUser = {
+    id: 'test-user-123',
+    email: 'test@example.com',
+    name: 'テストユーザー',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+   };
+   mockPrisma.user.findUnique.mockResolvedValue(prismaUser);
 
    // Act
-   await repository.save(user);
-   const foundUser = await repository.findById(user.getId());
+   const result = await repository.findById(userId);
 
    // Assert
-   expect(foundUser).not.toBeNull();
-   expect(foundUser!.getId().equals(user.getId())).toBe(true);
-   expect(foundUser!.getEmail().equals(user.getEmail())).toBe(true);
-   expect(foundUser!.getName()).toBe(user.getName());
+   expect(result).not.toBeNull();
+   expect(result!.id.value).toBe('test-user-123');
+   expect(result!.email.value).toBe('test@example.com');
+   expect(result!.name).toBe('テストユーザー');
+  });
+
+  it('ユーザーが見つからない場合、nullを返す', async () => {
+   // Arrange
+   mockPrisma.user.findUnique.mockResolvedValue(null);
+
+   // Act
+   const result = await repository.findById(new UserId('not-found'));
+
+   // Assert
+   expect(result).toBeNull();
   });
  });
 
- describe('findByEmail', () => {
-  it('メールアドレスでユーザーを検索できる', async () => {
+ describe('save', () => {
+  it('ユーザーを正常に保存できる', async () => {
    // Arrange
-   const user = User.create(
-    new UserId('test-user-123'),
-    new Email('test@example.com'),
-    'テストユーザー',
-   );
-   await repository.save(user);
+   const user = User.create({
+    email: new Email('test@example.com'),
+    name: 'テストユーザー',
+   });
+   mockPrisma.user.create.mockResolvedValue({} as any);
 
-   // Act
-   const foundUser = await repository.findByEmail(user.getEmail());
-
-   // Assert
-   expect(foundUser).not.toBeNull();
-   expect(foundUser!.getId().equals(user.getId())).toBe(true);
-  });
-
-  it('存在しないメールアドレスの場合nullを返す', async () => {
-   // Act
-   const foundUser = await repository.findByEmail(
-    new Email('nonexistent@example.com'),
-   );
-
-   // Assert
-   expect(foundUser).toBeNull();
-  });
- });
-
- describe('transaction support', () => {
-  it('トランザクション内でユーザーを保存できる', async () => {
-   // Arrange
-   const user = User.create(
-    new UserId('test-user-123'),
-    new Email('test@example.com'),
-    'テストユーザー',
-   );
-
-   const transaction = await databaseFactory.beginTransaction();
-
-   try {
-    // Act
-    await repository.save(user, transaction);
-    await transaction.commit();
-
-    // Assert
-    const foundUser = await repository.findById(user.getId());
-    expect(foundUser).not.toBeNull();
-   } catch (error) {
-    await transaction.rollback();
-    throw error;
-   }
+   // Act & Assert
+   await expect(repository.save(user)).resolves.not.toThrow();
+   expect(mockPrisma.user.create).toHaveBeenCalledWith({
+    data: expect.objectContaining({
+     email: 'test@example.com',
+     name: 'テストユーザー',
+    }),
+   });
   });
  });
 });
 ```
+
+### Integration Tests（統合テスト - オプション）
+
+実際のデータベースを使用した統合テストは、E2Eテストまたは特定のシナリオで実施します。
 
 ---
 

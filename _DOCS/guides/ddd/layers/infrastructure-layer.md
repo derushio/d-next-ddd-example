@@ -52,7 +52,7 @@ export class PrismaUserRepository implements IUserRepository {
  ): Promise<User | null> {
   const client = transaction || this.prisma;
   const userData = await client.user.findUnique({
-   where: { id: id.toString() },
+   where: { id: id.value },
   });
 
   return userData ? this.toDomainObject(userData) : null;
@@ -115,7 +115,7 @@ export class PrismaUserRepository implements IUserRepository {
 
  async delete(id: UserId): Promise<void> {
   await this.prisma.user.delete({
-   where: { id: id.toString() },
+   where: { id: id.value },
   });
  }
 
@@ -146,15 +146,17 @@ export class PrismaUserRepository implements IUserRepository {
  }
 
  // 永続化オブジェクト変換（Infrastructure層の責務）
+ // Value Object: .value でアクセス
+ // プリミティブ型: 直接アクセス
  private toPersistenceObject(user: User) {
   return {
-   id: user.getId().toString(),
-   email: user.getEmail().toString(),
-   name: user.getName(),
-   experiencePoints: user.getExperiencePoints(),
-   level: user.getLevel(),
-   createdAt: user.getCreatedAt(),
-   lastLoginAt: user.getLastLoginAt(),
+   id: user.id.value,
+   email: user.email.value,
+   name: user.name,
+   experiencePoints: user.experiencePoints,
+   level: user.level,
+   createdAt: user.createdAt,
+   lastLoginAt: user.lastLoginAt,
   };
  }
 }
@@ -437,32 +439,35 @@ export class ExternalServiceConfig {
 
 ```typescript
 // ✅ 許可：Infrastructure层のDI登録
+// INJECTION_TOKENS (Symbol.for) を使用した型安全な登録
+import { INJECTION_TOKENS } from '@/di/tokens';
+
 export const registerInfrastructureServices = (
  container: DependencyContainer,
 ) => {
  // Database
- container.register('PrismaClient', {
+ container.register(INJECTION_TOKENS.PrismaClient, {
   useFactory: () => DatabaseConfig.createPrismaClient(),
  });
 
  // Repositories
- container.register('IUserRepository', {
-  useFactory: (c) => new PrismaUserRepository(c.resolve('PrismaClient')),
+ container.register(INJECTION_TOKENS.UserRepository, {
+  useFactory: (c) => new PrismaUserRepository(c.resolve(INJECTION_TOKENS.PrismaClient)),
  });
 
- container.register('IOrderRepository', {
-  useFactory: (c) => new PrismaOrderRepository(c.resolve('PrismaClient')),
+ container.register(INJECTION_TOKENS.OrderRepository, {
+  useFactory: (c) => new PrismaOrderRepository(c.resolve(INJECTION_TOKENS.PrismaClient)),
  });
 
  // External Services
- container.register('IEmailService', {
+ container.register(INJECTION_TOKENS.EmailService, {
   useFactory: () => {
    const config = ExternalServiceConfig.getSendGridConfig();
    return new SendGridEmailService(config.apiKey);
   },
  });
 
- container.register('IFileService', {
+ container.register(INJECTION_TOKENS.FileService, {
   useFactory: () => {
    const config = ExternalServiceConfig.getS3Config();
    const s3Client = new S3Client({
@@ -476,7 +481,7 @@ export const registerInfrastructureServices = (
   },
  });
 
- container.register('IAuthService', {
+ container.register(INJECTION_TOKENS.AuthService, {
   useFactory: () => {
    const secret = process.env.JWT_SECRET!;
    return new AuthService(secret);
@@ -484,8 +489,8 @@ export const registerInfrastructureServices = (
  });
 
  // Database Factory
- container.register('IDatabaseFactory', {
-  useFactory: (c) => new PrismaDatabaseFactory(c.resolve('PrismaClient')),
+ container.register(INJECTION_TOKENS.DatabaseFactory, {
+  useFactory: (c) => new PrismaDatabaseFactory(c.resolve(INJECTION_TOKENS.PrismaClient)),
  });
 };
 ```
@@ -501,7 +506,7 @@ export const registerInfrastructureServices = (
 export class PrismaUserRepository implements IUserRepository {
  async save(user: User): Promise<void> {
   // ❌ ビジネスルール判定はDomain Layerの責務
-  if (user.getLevel() >= 5 && user.getExperiencePoints() < 5000) {
+  if (user.level >= 5 && user.experiencePoints < 5000) {
    throw new Error('レベル5以上は5000ポイント必要です');
   }
 
@@ -609,7 +614,7 @@ export class PrismaOrderRepository implements IOrderRepository {
 
 ### システム設計
 
-- **[依存性注入ガイド](../../dependency-injection.md)** - DI Container設定の詳細
+- **[依存性注入ガイド](../../../architecture/patterns/dependency-injection.md)** - DI Container設定の詳細
 
 ---
 

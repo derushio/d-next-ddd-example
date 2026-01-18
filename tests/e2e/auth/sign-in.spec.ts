@@ -182,7 +182,9 @@ test.describe('NextAuth サインイン機能 E2E', () => {
     // これは NextAuth の正常な動作パターン
   });
 
-  test('サインインページにアクセス時にNextエラーが発生しないことを確認', async ({ page }) => {
+  test('サインインページにアクセス時にNextエラーが発生しないことを確認', async ({
+    page,
+  }) => {
     const consoleErrors: string[] = [];
     const networkErrors: string[] = [];
 
@@ -213,19 +215,22 @@ test.describe('NextAuth サインイン機能 E2E', () => {
     await page.goto('/auth/sign-in');
 
     // ページが正常にロードされるまで待機
-    await expect(page.locator('h3.text-xl')).toContainText('アカウントにサインイン');
+    await expect(page.locator('h3.text-xl')).toContainText(
+      'アカウントにサインイン',
+    );
 
     // 少し待ってエラーが発生するか確認
     await page.waitForTimeout(3000);
 
     // Next.jsやNextAuthの特定のエラーがないことを確認
-    const criticalErrors = consoleErrors.filter(error => 
-      error.includes('JWT_SESSION_ERROR') ||
-      error.includes('NEXTAUTH_SECRET') ||
-      error.includes('decryption operation failed') ||
-      error.includes('Error:') ||
-      error.includes('TypeError:') ||
-      error.includes('ReferenceError:')
+    const criticalErrors = consoleErrors.filter(
+      (error) =>
+        error.includes('JWT_SESSION_ERROR') ||
+        error.includes('NEXTAUTH_SECRET') ||
+        error.includes('decryption operation failed') ||
+        error.includes('Error:') ||
+        error.includes('TypeError:') ||
+        error.includes('ReferenceError:'),
     );
 
     // クリティカルなコンソールエラーがないことを確認
@@ -235,7 +240,7 @@ test.describe('NextAuth サインイン機能 E2E', () => {
     expect(pageErrors).toHaveLength(0);
 
     // 5xx系のサーバーエラーがないことを確認
-    const serverErrors = networkErrors.filter(error => error.startsWith('5'));
+    const serverErrors = networkErrors.filter((error) => error.startsWith('5'));
     expect(serverErrors).toHaveLength(0);
 
     // フォーム要素が正常に表示されていることを確認
@@ -244,7 +249,9 @@ test.describe('NextAuth サインイン機能 E2E', () => {
     await expect(page.locator('button[type="submit"]')).toBeVisible();
   });
 
-  test('複数回のページリロードでもNextエラーが発生しないことを確認', async ({ page }) => {
+  test('複数回のページリロードでもNextエラーが発生しないことを確認', async ({
+    page,
+  }) => {
     const consoleErrors: string[] = [];
 
     // コンソールエラーをキャッチ
@@ -257,15 +264,18 @@ test.describe('NextAuth サインイン機能 E2E', () => {
     // 3回連続でページにアクセス
     for (let i = 0; i < 3; i++) {
       await page.goto('/auth/sign-in');
-      await expect(page.locator('h3.text-xl')).toContainText('アカウントにサインイン');
+      await expect(page.locator('h3.text-xl')).toContainText(
+        'アカウントにサインイン',
+      );
       await page.waitForTimeout(1000);
     }
 
     // クリティカルなエラーがないことを確認
-    const criticalErrors = consoleErrors.filter(error => 
-      error.includes('JWT_SESSION_ERROR') ||
-      error.includes('NEXTAUTH_SECRET') ||
-      error.includes('decryption operation failed')
+    const criticalErrors = consoleErrors.filter(
+      (error) =>
+        error.includes('JWT_SESSION_ERROR') ||
+        error.includes('NEXTAUTH_SECRET') ||
+        error.includes('decryption operation failed'),
     );
 
     expect(criticalErrors).toHaveLength(0);

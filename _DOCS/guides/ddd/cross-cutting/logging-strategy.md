@@ -87,8 +87,8 @@ export class UserDomainService {
   if (existingUser) {
    this.logger.warn('ユーザー重複検出', {
     correlationId: this.correlationId,
-    email: email.toString(),
-    existingUserId: existingUser.getId().toString(),
+    email: email.value,
+    existingUserId: existingUser.id.value,
     action: 'user_creation_blocked',
    });
 
@@ -121,9 +121,9 @@ export class CreateUserUseCase {
 
    this.logger.info('ユーザー作成完了', {
     correlationId: this.correlationId,
-    userId: user.getId().toString(),
+    userId: user.id.value,
     email: request.email,
-    level: user.getLevel(),
+    level: user.level,
     createdAt: new Date().toISOString(),
    });
 
@@ -147,10 +147,10 @@ export class UserFactory {
   name: string,
   source: RegistrationSource,
  ): User {
-  const logger = resolve<ILogger>('Logger');
+  const logger = resolve('Logger');
 
   logger.debug('ユーザーファクトリー実行', {
-   email: email.toString(),
+   email: email.value,
    name,
    source,
    timestamp: new Date().toISOString(),
@@ -167,9 +167,9 @@ export class UserFactory {
   );
 
   logger.debug('ユーザーオブジェクト作成完了', {
-   userId: user.getId().toString(),
-   level: user.getLevel(),
-   points: user.getExperiencePoints(),
+   userId: user.id.value,
+   level: user.level,
+   points: user.experiencePoints,
   });
 
   return user;
@@ -190,7 +190,7 @@ export async function createUserAction(
  formData: FormData,
 ): Promise<ActionResult> {
  const correlationId = generateCorrelationId();
- const logger = resolve<ILogger>('Logger');
+ const logger = resolve('Logger');
 
  const userData = {
   name: formData.get('name') as string,
@@ -294,7 +294,7 @@ export class CreateUserUseCase {
    // 永続化
    this.logger.debug('ユーザー永続化開始', {
     correlationId: request.correlationId,
-    userId: user.getId().toString(),
+    userId: user.id.value,
    });
 
    await this.userRepository.save(user);
@@ -302,20 +302,20 @@ export class CreateUserUseCase {
    // 外部システム連携
    this.logger.debug('ウェルカムメール送信開始', {
     correlationId: request.correlationId,
-    userId: user.getId().toString(),
+    userId: user.id.value,
     email: request.email,
    });
 
    await this.emailService.sendWelcomeEmail(
-    user.getEmail().toString(),
-    user.getName(),
+    user.email.value,
+    user.name,
    );
 
    const duration = Date.now() - startTime;
 
    this.logger.info('ユーザー作成ユースケース完了', {
     correlationId: request.correlationId,
-    userId: user.getId().toString(),
+    userId: user.id.value,
     email: request.email,
     duration: `${duration}ms`,
     performance: duration > 1000 ? 'slow' : 'normal',
@@ -361,7 +361,7 @@ export class PrismaUserRepository implements IUserRepository {
 
  async save(user: User): Promise<void> {
   const startTime = Date.now();
-  const userId = user.getId().toString();
+  const userId = user.id.value; // 全レイヤーで .value を使用
 
   this.logger.debug('ユーザー保存開始', {
    userId,
@@ -664,5 +664,5 @@ export class EnhancedLogger implements ILogger {
 - [エラーハンドリング](./error-handling.md) - エラーログの出力戦略
 - [Application Layer ガイド](../layers/application-layer.md) - Use Caseでのロギング実装
 - [Infrastructure Layer ガイド](../layers/infrastructure-layer.md) - Repository層でのロギング
-- [テスト戦略](../../../testing-strategy.md) - ログのテスト方法
-- [依存性注入](../../../dependency-injection.md) - ロガーのDI設定
+- [テスト戦略](../../../testing/strategy.md) - ログのテスト方法
+- [依存性注入](../../../architecture/patterns/dependency-injection.md) - ロガーのDI設定

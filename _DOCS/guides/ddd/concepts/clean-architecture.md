@@ -476,7 +476,7 @@ interface IEmailService {
 
 ## 関連ドキュメント 📚
 
-- [アーキテクチャ比較](../architecture-comparison.md) - 他の設計選択肢との比較
-- [テスト戦略](../testing-with-clean-architecture.md) - クリーンアーキテクチャでのテスト手法
-- [プロジェクト設計判断](../project-architecture-decisions.md) - 本プロジェクトでの実装判断
-- [Next.js統合パターン](../nextjs-integration-patterns.md) - Next.jsとの統合方法
+- [アーキテクチャ比較](./architecture-comparison.md) - 他の設計選択肢との比較
+- [テスト戦略](../../testing-with-clean-architecture.md) - クリーンアーキテクチャでのテスト手法
+- [プロジェクト設計判断](../../project-architecture-decisions.md) - 本プロジェクトでの実装判断
+- [Next.js統合パターン](../../nextjs-integration-patterns.md) - Next.jsとの統合方法

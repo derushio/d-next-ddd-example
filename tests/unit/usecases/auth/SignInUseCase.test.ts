@@ -1,20 +1,22 @@
+import { container } from '@/di/container';
+import { INJECTION_TOKENS } from '@/di/tokens';
+import type { ILoginAttemptService } from '@/layers/application/interfaces/ILoginAttemptService';
+import type { IRateLimitService } from '@/layers/application/interfaces/IRateLimitService';
 import { isFailure, isSuccess } from '@/layers/application/types/Result';
 import { SignInUseCase } from '@/layers/application/usecases/auth/SignInUseCase';
 import { User } from '@/layers/domain/entities/User';
-import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import type { IUserDomainService } from '@/layers/domain/services/UserDomainService';
 import { Email } from '@/layers/domain/value-objects/Email';
-import { UserId } from '@/layers/domain/value-objects/UserId';
-import { container } from '@/di/container';
-import { INJECTION_TOKENS } from '@/di/tokens';
 import type { IHashService } from '@/layers/infrastructure/services/HashService';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 
 import { setupTestEnvironment } from '@tests/utils/helpers/testHelpers';
 import {
   createAutoMockHashService,
   createAutoMockLogger,
+  createAutoMockLoginAttemptService,
+  createAutoMockRateLimitService,
   createAutoMockUserDomainService,
   createAutoMockUserRepository,
 } from '@tests/utils/mocks/autoMocks';
@@ -27,6 +29,8 @@ describe('SignInUseCase', () => {
   let mockUserDomainService: MockProxy<IUserDomainService>;
   let mockHashService: MockProxy<IHashService>;
   let mockLogger: MockProxy<ILogger>;
+  let mockLoginAttemptService: MockProxy<ILoginAttemptService>;
+  let mockRateLimitService: MockProxy<IRateLimitService>;
 
   // テスト環境の自動セットアップ
   setupTestEnvironment();
@@ -37,6 +41,8 @@ describe('SignInUseCase', () => {
     mockUserDomainService = createAutoMockUserDomainService();
     mockHashService = createAutoMockHashService();
     mockLogger = createAutoMockLogger();
+    mockLoginAttemptService = createAutoMockLoginAttemptService();
+    mockRateLimitService = createAutoMockRateLimitService();
 
     // DIコンテナにモックを登録
     container.registerInstance(
@@ -49,6 +55,14 @@ describe('SignInUseCase', () => {
     );
     container.registerInstance(INJECTION_TOKENS.HashService, mockHashService);
     container.registerInstance(INJECTION_TOKENS.Logger, mockLogger);
+    container.registerInstance(
+      INJECTION_TOKENS.LoginAttemptService,
+      mockLoginAttemptService,
+    );
+    container.registerInstance(
+      INJECTION_TOKENS.RateLimitService,
+      mockRateLimitService,
+    );
 
     // UseCaseインスタンスをDIコンテナから取得
     signInUseCase = container.resolve(SignInUseCase);
@@ -80,9 +94,9 @@ describe('SignInUseCase', () => {
       if (isSuccess(result)) {
         expect(result.data).toEqual({
           user: {
-            id: mockUser.id.toString(),
+            id: mockUser.id.value,
             name: mockUser.name,
-            email: mockUser.email.toString(),
+            email: mockUser.email.value,
           },
         });
       }
@@ -99,13 +113,15 @@ describe('SignInUseCase', () => {
         email: validInput.email,
       });
       expect(mockLogger.info).toHaveBeenCalledWith('サインイン成功', {
-        userId: mockUser.id.toString(),
+        userId: mockUser.id.value,
       });
     });
 
     it('should return failure when user not found', async () => {
       // Arrange
       mockUserRepository.findByEmail.mockResolvedValue(null);
+      // タイミング攻撃対策: ユーザーが存在しない場合でもcompareHashが呼ばれる
+      mockHashService.compareHash.mockResolvedValue(false);
 
       // Act
       const result = await signInUseCase.execute(validInput);
@@ -122,7 +138,8 @@ describe('SignInUseCase', () => {
       expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
         expect.any(Email),
       );
-      expect(mockHashService.compareHash).not.toHaveBeenCalled();
+      // タイミング攻撃対策: ダミーハッシュとの比較が行われる
+      expect(mockHashService.compareHash).toHaveBeenCalled();
     });
 
     it('should return failure when password is incorrect', async () => {
@@ -142,7 +159,8 @@ describe('SignInUseCase', () => {
       // Assert
       expect(isFailure(result)).toBe(true);
       if (isFailure(result)) {
-        expect(result.error.message).toBe(
+        // アカウントロックアウト機能により、残り試行回数が表示される
+        expect(result.error.message).toContain(
           'メールアドレスまたはパスワードが正しくありません',
         );
         expect(result.error.code).toBe('INVALID_CREDENTIALS');
@@ -212,7 +230,9 @@ describe('SignInUseCase', () => {
       // Assert
       expect(isFailure(result)).toBe(true);
       if (isFailure(result)) {
-        expect(result.error.message).toBe('サインイン処理中にエラーが発生しました');
+        expect(result.error.message).toBe(
+          'サインイン処理中にエラーが発生しました',
+        );
         expect(result.error.code).toBe('UNEXPECTED_ERROR');
       }
 

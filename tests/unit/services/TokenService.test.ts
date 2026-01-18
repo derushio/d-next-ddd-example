@@ -13,7 +13,7 @@ import { SessionId } from '@/layers/domain/value-objects/SessionId';
 import { UserId } from '@/layers/domain/value-objects/UserId';
 import type { IConfigService } from '@/layers/infrastructure/services/ConfigService';
 import type { IHashService } from '@/layers/infrastructure/services/HashService';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 import {
   createAutoMockConfigService,
   createAutoMockHashService,
@@ -383,7 +383,7 @@ describe('TokenService', () => {
 
       // ログにトークンの生の値が含まれていないことを確認
       const logCalls: LoggerMockCall[] = mockLogger.info.mock.calls;
-      logCalls.forEach(([message, meta]) => {
+      logCalls.forEach(([_message, meta]) => {
         expect(JSON.stringify(meta)).not.toContain(
           '12345678-1234-4567-8901-123456789abc',
         );

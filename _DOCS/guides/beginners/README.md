@@ -50,9 +50,9 @@
 
 初心者向けガイドを完了したら、以下のドキュメントに進みましょう：
 
-1. **[🏗️ アーキテクチャ概要](../architecture/overview.md)** - より詳細な設計思想
-2. **[📋 開発ガイド](../guides/development/workflow.md)** - 実際の開発フロー
-3. **[🧪 テスト戦略](../testing/strategy.md)** - 本格的なテスト実装
+1. **[🏗️ アーキテクチャ概要](../../architecture/overview.md)** - より詳細な設計思想
+2. **[📋 開発ガイド](../development/workflow.md)** - 実際の開発フロー
+3. **[🧪 テスト戦略](../../testing/strategy.md)** - 本格的なテスト実装
 
 ### 実際のプロジェクトで活用
 

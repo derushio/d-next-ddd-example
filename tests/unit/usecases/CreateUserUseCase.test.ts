@@ -1,13 +1,12 @@
 import { isFailure, isSuccess } from '@/layers/application/types/Result';
 import type { IHashService } from '@/layers/infrastructure/services/HashService';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
-import { CreateUserUseCase } from '@/layers/application/usecases/user/CreateUserUseCase';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
+import type { CreateUserUseCase } from '@/layers/application/usecases/user/CreateUserUseCase';
 import { User } from '@/layers/domain/entities/User';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import type { UserDomainService } from '@/layers/domain/services/UserDomainService';
 import { Email } from '@/layers/domain/value-objects/Email';
-import { UserId } from '@/layers/domain/value-objects/UserId';
 import { container } from '@/di/container';
 import { resolve } from '@/di/resolver';
 import { INJECTION_TOKENS } from '@/di/tokens';
@@ -124,7 +123,9 @@ describe('CreateUserUseCase', () => {
       // Assert
       expect(isFailure(result)).toBe(true);
       if (isFailure(result)) {
-        expect(result.error.message).toBe('有効なメールアドレスを入力してください');
+        expect(result.error.message).toBe(
+          '有効なメールアドレスを入力してください',
+        );
         expect(result.error.code).toBe('INVALID_EMAIL_FORMAT');
       }
 
@@ -208,7 +209,9 @@ describe('CreateUserUseCase', () => {
       // Assert - Email Value Objectでエラーが発生
       expect(isFailure(result)).toBe(true);
       if (isFailure(result)) {
-        expect(result.error.message).toBe('メールアドレスの形式が正しくありません');
+        expect(result.error.message).toBe(
+          'メールアドレスの形式が正しくありません',
+        );
         expect(result.error.code).toBe('EMAIL_INVALID_FORMAT');
       }
 

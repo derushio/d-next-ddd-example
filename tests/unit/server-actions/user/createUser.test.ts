@@ -3,10 +3,8 @@ import 'reflect-metadata';
 import { createUser } from '@/app/server-actions/user/createUser';
 import { failure, success } from '@/layers/application/types/Result';
 import type { CreateUserUseCase } from '@/layers/application/usecases/user/CreateUserUseCase';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
-import {
-  createAutoMockLogger,
-} from '@tests/utils/mocks/autoMocks';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
+import { createAutoMockLogger } from '@tests/utils/mocks/autoMocks';
 
 import type { MockProxy } from 'vitest-mock-extended';
 import { mock } from 'vitest-mock-extended';
@@ -63,9 +61,7 @@ describe('createUser Server Action', () => {
         updatedAt: new Date(),
       };
 
-      mockCreateUserUseCase.execute.mockResolvedValue(
-        success(mockUser)
-      );
+      mockCreateUserUseCase.execute.mockResolvedValue(success(mockUser));
 
       // Act
       const result = await createUser(formData);
@@ -125,7 +121,7 @@ describe('createUser Server Action', () => {
           errors: {
             name: ['名前を入力してください'],
           },
-        }
+        },
       );
 
       expect(mockCreateUserUseCase.execute).not.toHaveBeenCalled();
@@ -154,7 +150,7 @@ describe('createUser Server Action', () => {
           errors: {
             email: ['有効なメールアドレスを入力してください'],
           },
-        }
+        },
       );
 
       expect(mockCreateUserUseCase.execute).not.toHaveBeenCalled();
@@ -183,7 +179,7 @@ describe('createUser Server Action', () => {
           errors: {
             password: ['パスワードは8文字以上で入力してください'],
           },
-        }
+        },
       );
 
       expect(mockCreateUserUseCase.execute).not.toHaveBeenCalled();
@@ -244,7 +240,10 @@ describe('createUser Server Action', () => {
       formData.append('password', 'password123');
 
       mockCreateUserUseCase.execute.mockResolvedValue(
-        failure('このメールアドレスは既に登録されています', 'EMAIL_ALREADY_EXISTS')
+        failure(
+          'このメールアドレスは既に登録されています',
+          'EMAIL_ALREADY_EXISTS',
+        ),
       );
 
       // Act
@@ -273,7 +272,7 @@ describe('createUser Server Action', () => {
       formData.append('password', 'password123');
 
       mockCreateUserUseCase.execute.mockResolvedValue(
-        failure('名前が無効です', 'INVALID_NAME')
+        failure('名前が無効です', 'INVALID_NAME'),
       );
 
       // Act
@@ -299,7 +298,7 @@ describe('createUser Server Action', () => {
       formData.append('password', 'password123');
 
       mockCreateUserUseCase.execute.mockResolvedValue(
-        failure('パスワードが無効です', 'INVALID_PASSWORD')
+        failure('パスワードが無効です', 'INVALID_PASSWORD'),
       );
 
       // Act
@@ -321,11 +320,14 @@ describe('createUser Server Action', () => {
       // Arrange
       const formData = new FormData();
       formData.append('name', 'Test User');
-      formData.append('email', 'a'.repeat(300) + '@example.com'); // 長すぎるメール
+      formData.append('email', `${'a'.repeat(300)}@example.com`); // 長すぎるメール
       formData.append('password', 'password123');
 
       mockCreateUserUseCase.execute.mockResolvedValue(
-        failure('メールアドレスが長すぎます（254文字以内である必要があります）', 'EMAIL_TOO_LONG')
+        failure(
+          'メールアドレスが長すぎます（254文字以内である必要があります）',
+          'EMAIL_TOO_LONG',
+        ),
       );
 
       // Act
@@ -369,7 +371,7 @@ describe('createUser Server Action', () => {
         {
           error: 'Database connection failed',
           stack: expect.any(String),
-        }
+        },
       );
 
       const { revalidatePath } = await import('next/cache');
@@ -399,7 +401,7 @@ describe('createUser Server Action', () => {
         {
           error: 'Unknown error',
           stack: undefined,
-        }
+        },
       );
     });
 
@@ -433,7 +435,7 @@ describe('createUser Server Action', () => {
         {
           error: 'Service not found',
           stack: expect.any(String),
-        }
+        },
       );
     });
   });
@@ -524,9 +526,7 @@ describe('createUser Server Action', () => {
         updatedAt: new Date(),
       };
 
-      mockCreateUserUseCase.execute.mockResolvedValue(
-        success(mockUser)
-      );
+      mockCreateUserUseCase.execute.mockResolvedValue(success(mockUser));
 
       // Act
       await createUser(formData);
@@ -545,7 +545,10 @@ describe('createUser Server Action', () => {
       formData.append('password', 'password123');
 
       mockCreateUserUseCase.execute.mockResolvedValue(
-        failure('このメールアドレスは既に登録されています', 'EMAIL_ALREADY_EXISTS')
+        failure(
+          'このメールアドレスは既に登録されています',
+          'EMAIL_ALREADY_EXISTS',
+        ),
       );
 
       // Act
@@ -573,19 +576,21 @@ describe('createUser Server Action', () => {
         updatedAt: new Date(),
       };
 
-      mockCreateUserUseCase.execute.mockResolvedValue(
-        success(mockUser)
-      );
+      mockCreateUserUseCase.execute.mockResolvedValue(success(mockUser));
 
       // Act
       await createUser(formData);
 
       // Assert - ログが適切に出力されることを確認
       expect(mockLogger.info).toHaveBeenCalledTimes(2);
-      expect(mockLogger.info).toHaveBeenNthCalledWith(1, 'ユーザー作成処理開始', {
-        action: 'createUser',
-        timestamp: expect.any(String),
-      });
+      expect(mockLogger.info).toHaveBeenNthCalledWith(
+        1,
+        'ユーザー作成処理開始',
+        {
+          action: 'createUser',
+          timestamp: expect.any(String),
+        },
+      );
       expect(mockLogger.info).toHaveBeenNthCalledWith(2, 'ユーザー作成成功', {
         userId: 'user-123',
         email: 'test@example.com',
@@ -610,16 +615,14 @@ describe('createUser Server Action', () => {
         updatedAt: new Date(),
       };
 
-      mockCreateUserUseCase.execute.mockResolvedValue(
-        success(mockUser)
-      );
+      mockCreateUserUseCase.execute.mockResolvedValue(success(mockUser));
 
       // Act
       await createUser(formData);
 
       // Assert - ログにパスワードが含まれていないことを確認
       const logCalls: LoggerMockCall[] = mockLogger.info.mock.calls;
-      logCalls.forEach(([message, meta]) => {
+      logCalls.forEach(([_message, meta]) => {
         expect(JSON.stringify(meta)).not.toContain('password123');
       });
     });

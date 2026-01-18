@@ -108,12 +108,13 @@ export class InsufficientPointsError extends DomainError {
 }
 
 // ✅ Domain Layerでの使用例（例外型）
+// public readonly プロパティを直接アクセス
 export class User {
  promote(): void {
   if (!this.canPromote()) {
    throw new UserPromotionError(
     '昇格条件を満たしていません',
-    this.id.toString(),
+    this.id.value, // Value Object: .value でプリミティブ値を取得
    );
   }
 
@@ -159,7 +160,7 @@ export class SignInUseCase {
    // パスワード検証
    const isPasswordValid = await this.hashService.compareHash(
     password,
-    user.getPasswordHash(),
+    user.passwordHash, // public readonly プロパティ
    );
 
    if (!isPasswordValid) {
@@ -170,11 +171,12 @@ export class SignInUseCase {
    }
 
    // 成功時のレスポンス
+   // Value Object: .value で型安全にプリミティブ値を取得
    return success({
     user: {
-     id: user.getId().toString(),
-     name: user.getName(),
-     email: user.getEmail().toString(),
+     id: user.id.value,
+     name: user.name,
+     email: user.email.value,
     },
    });
   } catch (error) {
@@ -199,8 +201,11 @@ export class SignInUseCase {
 
 ```typescript
 // ✅ Server Action: Result型のパターンマッチング
+import { resolve } from '@/di/resolver';
+
 export async function signIn(formData: FormData) {
  try {
+  // 型安全な resolve 関数でサービス取得
   const logger = resolve('Logger');
   const signInUseCase = resolve('SignInUseCase');
 
@@ -254,6 +259,7 @@ export async function signIn(formData: FormData) {
 export class PrismaUserRepository implements IUserRepository {
  async save(user: User): Promise<void> {
   try {
+   // public readonly プロパティを直接アクセスして永続化オブジェクト作成
    const data = this.toPersistenceObject(user);
    await this.prisma.user.upsert({
     where: { id: data.id },
@@ -280,24 +286,17 @@ export class PrismaUserRepository implements IUserRepository {
 
 ### 2. Validation Error（バリデーションエラー） 📝
 
-**入力値検証エラー**
+**入力値検証エラー - DomainErrorで表現**
+
+> **注意**: 本プロジェクトでは専用の `ValidationError` クラスは使用せず、`DomainError` でバリデーションエラーを表現します。エラーコードで種別を区別します。
 
 ```typescript
-// ✅ Domain Layerで定義
-export class ValidationError extends Error {
- constructor(
-  message: string,
-  public readonly field: string,
-  public readonly value: any,
-  public readonly code: string = 'VALIDATION_ERROR',
- ) {
-  super(message);
-  this.name = 'ValidationError';
- }
-}
+// ✅ Value Objectでの使用例（DomainErrorを使用）
+import { DomainError } from '@/layers/domain/errors/DomainError';
 
-// ✅ Value Objectでの使用例
 export class Email {
+ public readonly value: string;
+
  constructor(email: string) {
   this.validateEmail(email);
   this.value = email.toLowerCase().trim();
@@ -305,26 +304,29 @@ export class Email {
 
  private validateEmail(email: string): void {
   if (!email || email.trim().length === 0) {
-   throw new ValidationError(
+   throw new DomainError(
     'メールアドレスは必須です',
-    'email',
-    email,
     'EMAIL_REQUIRED',
    );
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
-   throw new ValidationError(
+   throw new DomainError(
     'メールアドレスの形式が正しくありません',
-    'email',
-    email,
-    'INVALID_EMAIL_FORMAT',
+    'EMAIL_INVALID_FORMAT',
    );
   }
  }
 }
 ```
+
+**エラーコードの命名規則:**
+
+- `EMAIL_REQUIRED` - 必須チェック
+- `EMAIL_INVALID_FORMAT` - 形式チェック
+- `EMAIL_TOO_LONG` - 長さチェック
+- `EMAIL_INVALID_CHARACTERS` - 禁止文字チェック
 
 ### 3. Infrastructure Error（インフラエラー） 🔧
 
@@ -382,7 +384,7 @@ export class PrismaUserRepository implements IUserRepository {
    });
   } catch (error) {
    throw new DatabaseError('ユーザー保存', error as Error, {
-    userId: user.getId().toString(),
+    userId: user.id.value, // Value Object: .value でプリミティブ値を取得
    });
   }
  }
@@ -398,6 +400,9 @@ export class PrismaUserRepository implements IUserRepository {
 ```typescript
 // ✅ Server Actionsでのエラーハンドリング
 'use server';
+
+import { resolve } from '@/di/resolver';
+
 export async function createUserAction(
  formData: FormData,
 ): Promise<ActionResult> {
@@ -407,6 +412,7 @@ export async function createUserAction(
    email: formData.get('email') as string,
   };
 
+  // 型安全な resolve 関数でUseCase取得
   const createUserUseCase = resolve('CreateUserUseCase');
   const user = await createUserUseCase.execute(userData);
 
@@ -419,7 +425,6 @@ export async function createUserAction(
     success: false,
     error: error.message,
     code: error.code,
-    field: error instanceof ValidationError ? error.field : undefined,
    };
   }
 
@@ -481,15 +486,16 @@ export class CreateUserUseCase {
    await this.userRepository.save(user);
 
    // 外部システム連携
+   // Value Object: .value で型安全にプリミティブ値を取得
    await this.emailService.sendWelcomeEmail(
-    user.getEmail().toString(),
-    user.getName(),
+    user.email.value,
+    user.name,
    );
 
    return this.mapToResponse(user);
   } catch (error) {
    // ドメインエラーはそのまま再スロー
-   if (error instanceof DomainError || error instanceof ValidationError) {
+   if (error instanceof DomainError) {
     throw error;
    }
 
@@ -527,7 +533,7 @@ export class UserDomainService {
     throw new DomainError(
      'このメールアドレスは既に使用されています',
      'EMAIL_ALREADY_EXISTS',
-     { email: email.toString() },
+     { email: email.value },
     );
    }
   } catch (error) {
@@ -545,7 +551,7 @@ export class UserDomainService {
    throw new DomainError(
     'ユーザー重複チェック中にエラーが発生しました',
     'USER_UNIQUENESS_CHECK_FAILED',
-    { email: email.toString(), originalError: error.message },
+    { email: email.value, originalError: error.message },
    );
   }
  }
@@ -779,7 +785,7 @@ export class CreateUserUseCase {
 
    this.logger.info('ユーザー作成完了', {
     correlationId,
-    userId: user.getId().toString(),
+    userId: user.id.value, // Value Object: .value でプリミティブ値を取得
     email: request.email,
    });
 
@@ -833,18 +839,15 @@ export class CreateUserUseCase {
 
 ```mermaid
 graph TD
-    A[エラー発生] --> B{ビジネスルール違反？}
+    A[エラー発生] --> B{ビジネスルール/バリデーション違反？}
     B -->|Yes| C[DomainError]
-    B -->|No| D{入力値検証エラー？}
-    D -->|Yes| E[ValidationError]
-    D -->|No| F{外部システムエラー？}
-    F -->|Yes| G[InfrastructureError]
-    F -->|No| H[予期しないエラー]
+    B -->|No| D{外部システムエラー？}
+    D -->|Yes| E[InfrastructureError]
+    D -->|No| F[予期しないエラー]
 
     style C fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#ffffff
-    style E fill:#92400e,stroke:#f59e0b,stroke-width:2px,color:#ffffff
-    style G fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
-    style H fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
+    style E fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style F fill:#7c3aed,stroke:#8b5cf6,stroke-width:2px,color:#ffffff
 ```
 
 ---
@@ -855,4 +858,4 @@ graph TD
 - [Application Layer ガイド](../layers/application-layer.md) - Use Caseでのエラーハンドリング
 - [Presentation Layer ガイド](../layers/presentation-layer.md) - UIでのエラー表示
 - [ロギング戦略](./logging-strategy.md) - エラーログの出力戦略
-- [テスト戦略](../../../testing-strategy.md) - エラーケースのテスト方法
+- [テスト戦略](../../../testing/strategy.md) - エラーケースのテスト方法

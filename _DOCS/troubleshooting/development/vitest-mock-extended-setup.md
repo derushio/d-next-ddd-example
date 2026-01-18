@@ -73,7 +73,8 @@ describe('CreateUserUseCase', () => {
   // 型安全なモック設定
   mockUserRepository.save.mockResolvedValue(undefined);
 
-  const useCase = container.resolve(CreateUserUseCase);
+  // 型安全なresolve関数でUseCase取得
+  const useCase = resolve('CreateUserUseCase');
   const result = await useCase.execute(validInput);
 
   // 型安全なアサーション
@@ -317,9 +318,9 @@ const globalMock = mock<IService>();
 
 ## 関連ドキュメント
 
-- [テスト戦略](../testing-strategy.md) - 全体的なテスト方針
-- [開発ガイド](../development-guide.md) - 開発フローでのテスト実装
-- [依存性注入](../dependency-injection.md) - DIコンテナとの連携
+- [テスト戦略](../../testing/strategy.md) - 全体的なテスト方針
+- [自動モック戦略](../../testing/unit/mocking.md) - vitest-mock-extendedの活用パターン
+- [依存性注入](../../architecture/patterns/dependency-injection.md) - DIコンテナとの連携
 
 ---
 

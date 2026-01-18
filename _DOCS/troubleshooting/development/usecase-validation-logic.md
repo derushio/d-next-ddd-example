@@ -42,7 +42,7 @@ export class UpdateUserUseCase {
  async execute(request: UpdateUserRequest): Promise<UpdateUserResponse> {
   const user = await this.userRepository.findById(new UserId(request.userId));
   if (!user) {
-   return { success: false, error: 'ユーザーが見つかりません' };
+   return failure('ユーザーが見つかりません', 'USER_NOT_FOUND');
   }
 
   const updateData: any = {};
@@ -50,10 +50,7 @@ export class UpdateUserUseCase {
   // name が明示的に指定された場合のみ更新（空文字列も含む）
   if (request.name !== undefined) {
    if (request.name.trim().length === 0) {
-    return {
-     success: false,
-     error: '名前は空にできません',
-    };
+    return failure('名前は空にできません', 'EMPTY_NAME');
    }
    updateData.name = request.name.trim();
   }
@@ -65,26 +62,20 @@ export class UpdateUserUseCase {
     if (!(await this.userDomainService.isEmailDuplicate(newEmail))) {
      updateData.email = newEmail;
     } else {
-     return {
-      success: false,
-      error: 'このメールアドレスは既に使用されています',
-     };
+     return failure('このメールアドレスは既に使用されています', 'EMAIL_ALREADY_EXISTS');
     }
    } catch (error) {
-    return {
-     success: false,
-     error: '無効なメールアドレスです',
-    };
+    return failure('無効なメールアドレスです', 'INVALID_EMAIL');
    }
   }
 
   // 更新データがある場合のみ更新実行
   if (Object.keys(updateData).length > 0) {
    user.updateProfile(updateData);
-   await this.userRepository.update(user.getId(), user);
+   await this.userRepository.update(user.id, user);
   }
 
-  return { success: true, data: user };
+  return success(user);
  }
 }
 ```
@@ -139,12 +130,12 @@ export class UpdateUserUseCase {
   // バリデーション
   const nameValidation = UserUpdateValidator.validateName(request.name);
   if (!nameValidation.isValid) {
-   return { success: false, error: nameValidation.error! };
+   return failure(nameValidation.error!, 'VALIDATION_ERROR');
   }
 
   const emailValidation = UserUpdateValidator.validateEmail(request.email);
   if (!emailValidation.isValid) {
-   return { success: false, error: emailValidation.error! };
+   return failure(emailValidation.error!, 'VALIDATION_ERROR');
   }
 
   // 実際の更新処理...
@@ -172,7 +163,7 @@ describe('UpdateUserUseCase', () => {
    const result = await updateUserUseCase.execute(request);
 
    expect(result.success).toBe(false);
-   expect(result.error).toBe('名前は空にできません');
+   expect(result.error.message).toBe('名前は空にできません');
   });
 
   test('空白文字のみの場合はエラー', async () => {
@@ -181,7 +172,7 @@ describe('UpdateUserUseCase', () => {
    const result = await updateUserUseCase.execute(request);
 
    expect(result.success).toBe(false);
-   expect(result.error).toBe('名前は空にできません');
+   expect(result.error.message).toBe('名前は空にできません');
   });
 
   test('有効な名前の場合は更新', async () => {

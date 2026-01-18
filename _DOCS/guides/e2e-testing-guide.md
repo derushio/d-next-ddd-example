@@ -375,6 +375,34 @@ await page.waitForLoadState('networkidle');
 await page.waitForTimeout(5000); // 避ける
 ```
 
+#### waitForTimeout が許容されるケース
+
+基本的には状態ベースの待機を推奨しますが、以下のケースでは `waitForTimeout` の使用が許容されます：
+
+| ケース | 理由 | 推奨時間 |
+| --- | --- | --- |
+| **アニメーション完了待ち** | CSSトランジション等で検知可能な状態変化がない場合 | 300-500ms |
+| **デバウンス処理待ち** | 入力後のデバウンス処理が完了するまでの待機 | デバウンス時間 + 100ms |
+| **外部サービス反映待ち** | APIレスポンス後、UIに反映されるまでの非同期処理 | 100-300ms |
+| **レースコンディション回避** | 複数の非同期処理の競合を避ける最終手段 | 最小限（50-100ms） |
+
+```typescript
+// ✅ 許容: アニメーション完了待ち（状態変化を検知できない場合）
+await page.click('[data-testid="expand-button"]');
+await page.waitForTimeout(300); // CSS transition: 0.3s の完了待ち
+await expect(page.locator('[data-testid="expanded-content"]')).toBeVisible();
+
+// ✅ 許容: デバウンス処理待ち
+await page.fill('[data-testid="search-input"]', 'test query');
+await page.waitForTimeout(350); // 300ms debounce + 50ms buffer
+await expect(page.locator('[data-testid="search-results"]')).toBeVisible();
+
+// ⚠️ 注意: 長時間の固定待機は避ける
+// await page.waitForTimeout(5000); // ❌ 根本原因を調査すべき
+```
+
+**ベストプラクティス**: `waitForTimeout` を使用する場合は、コメントで理由を明記してください。
+
 ### データ準備とクリーンアップ
 
 ```typescript
@@ -512,7 +540,7 @@ await page.route('**/*.{png,jpg,jpeg}', (route) => route.abort());
 
 - [認証フローテスト](../../tests/e2e/auth/sign-in.spec.ts)
 - [Playwright設定](../../playwright.config.ts)
-- [テスト戦略全体](../testing-strategy.md)
+- [テスト戦略全体](../testing/strategy.md)
 
 ---
 

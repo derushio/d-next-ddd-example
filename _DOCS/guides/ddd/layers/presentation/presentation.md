@@ -92,7 +92,7 @@ sequenceDiagram
 - **Next.js App Router** を使用
 - **Server Components** を基本とし、必要時のみ **Client Components** を使用
 - **Server Actions** でApplication Layerと連携
-- **TailwindCSS + Flowbite-React** でスタイリング
+- **TailwindCSS + shadcn/ui** でスタイリング
 
 ---
 
@@ -212,13 +212,15 @@ graph TD
 
 ## 📁 Presentation Layer のコンポーネント
 
-Presentation Layer は以下のコンポーネントで構成されています：
+Presentation Layer は以下のコンポーネントで構成されています。
+詳細な実装パターンは [Presentation Layer 実装ガイド](../presentation-layer.md) を参照してください。
 
-### 🎨 [UI Components（UIコンポーネント）](../components/ui-components.md)
+### 🎨 UI Components（UIコンポーネント）
 
 - **責務**: ユーザーインターフェースの描画と基本的な操作
 - **含まれるもの**: React コンポーネント、レイアウト、スタイリング
-- **技術**: Next.js App Router、React、TailwindCSS、Flowbite-React
+- **技術**: Next.js App Router、React、TailwindCSS、shadcn/ui
+- **詳細**: [フロントエンド ベストプラクティス](../../../frontend-best-practices.md) を参照
 
 ### 🌉 [Server Actions（サーバーアクション）](../components/server-actions.md)
 
@@ -226,23 +228,26 @@ Presentation Layer は以下のコンポーネントで構成されています�
 - **含まれるもの**: `'use server'` 関数、フォームハンドリング、エラー処理
 - **技術**: Next.js Server Actions、TypeScript
 
-### 🎛️ [UI State Management（UI状態管理）](../components/ui-state-management.md)
+### 🎛️ UI State Management（UI状態管理）
 
 - **責務**: ローカルなUI状態の管理（モーダル、タブ、ローディング等）
 - **含まれるもの**: `useState`、`useReducer`、UI固有のロジック
 - **技術**: React Hooks、TypeScript
+- **詳細**: [Presentation Layer 実装ガイド](../presentation-layer.md#ドーナツ構造の採用) を参照
 
-### 🎨 [Display Formatters（表示フォーマッター）](../components/display-formatters.md)
+### 🎨 Display Formatters（表示フォーマッター）
 
 - **責務**: データの表示用変換（日付、数値、文字列等）
 - **含まれるもの**: フォーマット関数、表示用ヘルパー
 - **技術**: TypeScript、Intl API
+- **詳細**: [Presentation Layer 実装ガイド](../presentation-layer.md#適切な責務分離) を参照
 
-### 📱 [Navigation & Routing（ナビゲーション・ルーティング）](../components/navigation-routing.md)
+### 📱 Navigation & Routing（ナビゲーション・ルーティング）
 
 - **責務**: ページ遷移とURL管理
 - **含まれるもの**: ルーター操作、リンク生成、パラメータ処理
-- **技術**: Next.js Router、TypeScript
+- **技術**: Next.js App Router
+- **詳細**: Next.js公式ドキュメント参照
 
 ---
 

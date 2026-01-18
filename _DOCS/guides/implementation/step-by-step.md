@@ -760,7 +760,7 @@ graph LR
 
 1. **E2Eテストシナリオ作成**
    - [ ] ユーザージャーニー全体のテスト設計
-   - [ ] [E2Eテストガイド](../../testing/e2e/overview.md) 参照
+   - [ ] [E2Eテストガイド](../e2e-testing-guide.md) 参照
    - [ ] セキュリティ監視テスト（エラー監視等）実装
 
 **成果確認:**
@@ -847,13 +847,13 @@ graph LR
 
 ### 📚 **実装段階別詳細ガイド**
 
-| Phase                  | 詳細ガイド                                      | 参考パターン                                                      | 品質基準       |
-| ---------------------- | ----------------------------------------------- | ----------------------------------------------------------------- | -------------- |
-| **要件・設計**         | [実装判断ガイド](decision-guide.md)             | [アーキテクチャ概要](../../architecture/overview.md)              | 要件明確化     |
-| **Domain実装**         | [Domain実装](../development/domain.md)          | [パターンガイド](patterns-guide.md)                               | カバレッジ90%+ |
-| **Application実装**    | [UseCase実装](../development/usecase.md)        | [Result型パターン](../../architecture/patterns/result-pattern.md) | カバレッジ94%+ |
-| **Infrastructure実装** | [Repository実装](../development/repository.md)  | [インフラ層](../../architecture/layers/infrastructure.md)         | カバレッジ85%+ |
-| **Presentation実装**   | [Server Actions](../frontend/server-actions.md) | [フロントエンド](../frontend/)                                    | E2Eテスト成功  |
+| Phase                  | 詳細ガイド                                                        | 参考パターン                                             | 品質基準       |
+| ---------------------- | ----------------------------------------------------------------- | -------------------------------------------------------- | -------------- |
+| **要件・設計**         | [実装判断ガイド](decision-guide.md)                               | [アーキテクチャ概要](../../architecture/overview.md)     | 要件明確化     |
+| **Domain実装**         | [Domain層ガイド](../ddd/layers/domain-layer.md)                   | [パターンガイド](patterns-guide.md)                      | カバレッジ90%+ |
+| **Application実装**    | [UseCase実装](../ddd/layers/components/use-cases.md)              | [Result型パターン](../ddd/cross-cutting/error-handling.md) | カバレッジ94%+ |
+| **Infrastructure実装** | [Repository実装](../ddd/layers/components/repository-implementations.md) | [インフラ層](../ddd/layers/infrastructure-layer.md)    | カバレッジ85%+ |
+| **Presentation実装**   | [Server Actions](../ddd/layers/components/server-actions.md)      | [フロントエンド](../frontend-best-practices.md)          | E2Eテスト成功  |
 
 ### 🎯 **継続学習リソース**
 

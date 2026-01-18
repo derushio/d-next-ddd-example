@@ -655,7 +655,7 @@ export class BadFileService implements IFileStorageService {
  async uploadUserAvatar(user: User, file: Buffer): Promise<void> {
   const result = await this.uploadFile(
    'avatars',
-   user.getId().toString(),
+   user.id.value,
    file,
   );
 

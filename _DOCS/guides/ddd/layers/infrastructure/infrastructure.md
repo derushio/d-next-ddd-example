@@ -125,7 +125,7 @@ sequenceDiagram
    export class PrismaUserRepository {
      async save(user: User): Promise<void> {
        // ビジネスロジックは Domain Layer の責務
-       if (user.getLevel() >= 10) {
+       if (user.level >= 10) {
          // 昇格処理... ← これは禁止
        }
        await this.prisma.user.create({...});
@@ -255,7 +255,8 @@ graph TD
 
 ## 📁 Infrastructure Layer のコンポーネント
 
-Infrastructure Layer は以下のコンポーネントで構成されています：
+Infrastructure Layer は以下のコンポーネントで構成されています。
+詳細な実装パターンは [Infrastructure Layer 実装ガイド](../infrastructure-layer.md) を参照してください。
 
 ### 📚 [Repository Implementations（リポジトリ実装）](../components/repository-implementations.md)
 
@@ -269,11 +270,12 @@ Infrastructure Layer は以下のコンポーネントで構成されていま�
 - **含まれるもの**: API呼び出し、メール送信、ファイル操作、キャッシュ管理
 - **技術**: HTTP Client、外部SDK、認証処理
 
-### 🗄️ [Database Factory（データベースファクトリ）](../components/database-factory.md)
+### 🗄️ Database Factory（データベースファクトリ）
 
 - **責務**: データベース接続とトランザクション管理
 - **含まれるもの**: 接続プール、トランザクション制御、設定管理
 - **技術**: Prisma Client、接続管理、エラーハンドリング
+- **詳細**: [Infrastructure Layer 実装ガイド](../infrastructure-layer.md#トランザクション対応) を参照
 
 ### ⚙️ [Configuration Management（設定管理）](../components/configuration-management.md)
 
@@ -281,23 +283,25 @@ Infrastructure Layer は以下のコンポーネントで構成されていま�
 - **含まれるもの**: 環境変数、接続文字列、セキュリティ設定
 - **技術**: 環境変数読み込み、設定バリデーション
 
-### 💉 [Dependency Injection Setup（依存性注入設定）](../components/dependency-injection-setup.md)
+### 💉 [Dependency Injection Setup（依存性注入設定）](../components/di-container.md)
 
 - **責務**: DIコンテナの設定とバインディング
 - **含まれるもの**: インターフェース実装バインディング、ライフサイクル管理
 - **技術**: TSyringe、コンテナ設定、依存関係解決
 
-### 📝 [Type Definitions（型定義）](../components/type-definitions.md)
+### 📝 Type Definitions（型定義）
 
 - **責務**: Infrastructure 固有の型定義
 - **含まれるもの**: データベーススキーマ型、外部API型、設定型
 - **技術**: TypeScript Interface、ジェネリクス、型ガード
+- **詳細**: Prismaが自動生成（`prisma generate` で生成）
 
-### 🔄 [Data Mappers（データマッパー）](../components/data-mappers.md)
+### 🔄 Data Mappers（データマッパー）
 
 - **責務**: Domain オブジェクトと永続化データの変換
 - **含まれるもの**: Domain → Persistence、Persistence → Domain 変換
 - **技術**: TypeScript、オブジェクト変換ロジック
+- **詳細**: Repository実装内に含む（[Repository Implementations](../components/repository-implementations.md) を参照）
 
 ---
 
@@ -312,7 +316,7 @@ export class PrismaUserRepository implements IUserRepository {
 
  async findById(id: UserId): Promise<User | null> {
   const userData = await this.prisma.user.findUnique({
-   where: { id: id.toString() },
+   where: { id: id.value },
   });
 
   return userData ? this.toDomainObject(userData) : null;
@@ -384,7 +388,7 @@ export class PrismaUserRepository implements IUserRepository {
  async delete(id: UserId, transaction?: PrismaTransaction): Promise<void> {
   const client = transaction || this.prisma;
   await client.user.delete({
-   where: { id: id.toString() },
+   where: { id: id.value },
   });
  }
 }
@@ -457,8 +461,8 @@ describe('PrismaUserRepository', () => {
 
   // Assert
   expect(savedUser).not.toBeNull();
-  expect(savedUser!.getName()).toBe('テストユーザー');
-  expect(savedUser!.getEmail().toString()).toBe('test@example.com');
+  expect(savedUser!.name).toBe('テストユーザー');
+  expect(savedUser!.email.value).toBe('test@example.com');
  });
 });
 ```
@@ -520,7 +524,7 @@ const prisma = new PrismaClient({
 async findByEmail(email: Email): Promise<User | null> {
   const userData = await this.prisma.user.findUnique({
     where: {
-      email: email.toString() // email カラムにインデックス設定
+      email: email.value // email カラムにインデックス設定
     },
     select: {
       id: true,

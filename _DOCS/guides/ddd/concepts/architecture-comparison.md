@@ -732,6 +732,6 @@ graph TB
 ## 関連ドキュメント 📚
 
 - [クリーンアーキテクチャ概念](./clean-architecture.md) - 基本概念の理解
-- [テスト戦略](../testing-with-clean-architecture.md) - テスト手法の詳細
-- [プロジェクト設計判断](../project-architecture-decisions.md) - 実装判断の詳細
-- [Next.js統合パターン](../nextjs-integration-patterns.md) - Next.jsとの統合方法
+- [テスト戦略](../../testing-with-clean-architecture.md) - テスト手法の詳細
+- [プロジェクト設計判断](../../project-architecture-decisions.md) - 実装判断の詳細
+- [Next.js統合パターン](../../nextjs-integration-patterns.md) - Next.jsとの統合方法

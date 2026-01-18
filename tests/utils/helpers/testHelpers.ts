@@ -1,11 +1,6 @@
 import { container } from '@/di/container';
-import {
-  INJECTION_TOKENS,
-  type ServiceType,
-  type ServiceTypeMap,
-} from '@/di/tokens';
 
-import { beforeEach, expect, vi } from 'vitest';
+import { beforeEach, expect } from 'vitest';
 
 /**
  * 共通のテストヘルパー関数
@@ -78,7 +73,7 @@ export const clearAllMocks = (...mocks: any[]) => {
  * テストデータファクトリー
  */
 export const createTestUser = (overrides = {}) => ({
-  id: 'test-user-1',
+  id: 'testuser1cuid2abc1234',
   name: 'Test User',
   email: 'test@example.com',
   passwordHash: 'hashed_password_123',
@@ -88,8 +83,8 @@ export const createTestUser = (overrides = {}) => ({
 });
 
 export const createTestSession = (overrides = {}) => ({
-  id: 'test-session-1',
-  userId: 'test-user-1',
+  id: 'testsession1cuid2abc',
+  userId: 'testuser1cuid2abc1234',
   accessTokenHash: 'access_token_hash_123',
   accessTokenExpireAt: new Date('2024-12-31T23:59:59Z'),
   resetTokenHash: 'reset_token_hash_456',

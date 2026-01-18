@@ -281,10 +281,8 @@ export const INJECTION_TOKENS = {
  HashService: Symbol('HashService'),
 } as const;
 
-// 型安全な取得
-const userRepository = resolve<IUserRepository>(
- INJECTION_TOKENS.UserRepository,
-);
+// 型安全な取得（型は自動推論される）
+const userRepository = resolve('UserRepository');
 ```
 
 ### 🔍 実際の使用例
@@ -342,7 +340,7 @@ export class CreateUserUseCase {
 
 // Presentation Layer での使用
 export async function createUserAction(formData: FormData) {
- const useCase = resolve<CreateUserUseCase>(INJECTION_TOKENS.CreateUserUseCase);
+ const useCase = resolve('CreateUserUseCase');
  return await useCase.execute({
   name: formData.get('name'),
   email: formData.get('email'),
@@ -997,6 +995,7 @@ mockHashService.hash.mockResolvedValue('hashed_password');
 
 ## 📚 関連ドキュメント
 
-- [詳細なDI実装ガイド](../../dependency-injection.md)
-- [Clean Architecture](./concepts/clean-architecture.md)
-- [レイヤー構成](./layers/)
+- [依存性注入パターン](../../../architecture/patterns/dependency-injection.md) - 詳細なDI実装ガイド
+- [DIコンテナ設定](../layers/components/di-container.md) - コンテナ設定・登録方法
+- [Clean Architecture](./clean-architecture.md) - クリーンアーキテクチャとの関係
+- [レイヤー構成](../layers/) - 各レイヤーの詳細

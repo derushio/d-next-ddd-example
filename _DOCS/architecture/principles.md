@@ -86,8 +86,7 @@ graph TB
     subgraph "✅ 許可される依存関係"
         P2[Presentation] --> A3[Application]
         A3 --> D2[Domain]
-        A3 --> I2[Infrastructure]
-        I2 --> D2
+        I2[Infrastructure] --> D2[Domain]
     end
 
     subgraph "🔄 依存性逆転の実現"
@@ -148,7 +147,7 @@ graph TB
 **適用ルール**:
 
 - 全UseCase戻り値: `Promise<Result<T>>`
-- エラー分類: ValidationError / DomainError / InfrastructureError
+- エラー分類: DomainError / InfrastructureError（ValidationErrorは使用しない）
 - パターンマッチング: `isSuccess()` / `isFailure()`必須使用
 
 ### 2. 依存性注入パターン
@@ -537,14 +536,14 @@ graph TB
 ### 詳細実装ガイド
 
 - **[レイヤー構成](layers/overview.md)** - 各レイヤーの詳細設計
-- **[設計パターン詳細](patterns/)** - パターン実装方法
+- **[依存性注入パターン](patterns/dependency-injection.md)** - DI実装方法
 - **[開発フロー](../guides/development/workflow.md)** - 実践的開発手順
 
 ### 品質保証
 
 - **[テスト戦略](../testing/strategy.md)** - 包括的テスト手法
 - **[コーディング規約](../guides/standards/coding.md)** - 実装標準
-- **[トラブルシューティング](../troubleshooting/)** - 問題解決
+- **[よくある問題](../troubleshooting/common-issues.md)** - 問題解決
 
 ---
 

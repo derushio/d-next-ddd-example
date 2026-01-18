@@ -200,22 +200,8 @@ export class User {
   return success(undefined);
  }
 
- // アクセサーメソッド
- getId(): UserId {
-  return this.id;
- }
- getName(): UserName {
-  return this.name;
- }
- getEmail(): Email {
-  return this.email;
- }
- getCreatedAt(): Date {
-  return this.createdAt;
- }
- getUpdatedAt(): Date {
-  return this.updatedAt;
- }
+ // public readonlyでプロパティに直接アクセス可能
+ // getter メソッドは不要（user.id, user.name, user.email でアクセス）
 
  // ドメインメソッド
  isNewUser(): boolean {
@@ -282,27 +268,38 @@ export class CreateUserUseCase {
   this.logger.info('ユーザー作成処理開始', { email: request.email });
 
   try {
-   // 2. 入力値検証・Value Object作成
-   const emailResult = Email.create(request.email);
-   if (isFailure(emailResult)) {
-    this.logger.warn('メールアドレス検証失敗', {
-     email: request.email,
-     error: emailResult.error,
-    });
-    return emailResult;
+   // 2. 入力値検証・Value Object作成（コンストラクタ + DomainError パターン）
+   let email: Email;
+   let userName: UserName;
+
+   try {
+    email = new Email(request.email);
+   } catch (error) {
+    if (error instanceof DomainError) {
+     this.logger.warn('メールアドレス検証失敗', {
+      email: request.email,
+      error: error.message,
+     });
+     return failure(error.message, error.code);
+    }
+    return failure('メールアドレスが無効です', 'INVALID_EMAIL');
    }
 
-   const nameResult = UserName.create(request.name);
-   if (isFailure(nameResult)) {
-    this.logger.warn('ユーザー名検証失敗', {
-     name: request.name,
-     error: nameResult.error,
-    });
-    return nameResult;
+   try {
+    userName = new UserName(request.name);
+   } catch (error) {
+    if (error instanceof DomainError) {
+     this.logger.warn('ユーザー名検証失敗', {
+      name: request.name,
+      error: error.message,
+     });
+     return failure(error.message, error.code);
+    }
+    return failure('ユーザー名が無効です', 'INVALID_NAME');
    }
 
    // 3. ビジネスルール検証（重複チェック）
-   const existingUser = await this.userRepository.findByEmail(emailResult.data);
+   const existingUser = await this.userRepository.findByEmail(email);
    if (existingUser) {
     this.logger.warn('メールアドレス重複', { email: request.email });
     return failure(
@@ -314,28 +311,24 @@ export class CreateUserUseCase {
    // 4. パスワードハッシュ化
    const hashedPassword = await this.hashService.hash(request.password);
 
-   // 5. エンティティ作成
-   const userResult = User.create(
-    nameResult.data,
-    emailResult.data,
-    hashedPassword,
-   );
-   if (isFailure(userResult)) {
-    this.logger.error('ユーザーエンティティ作成失敗', {
-     error: userResult.error,
-    });
-    return userResult;
-   }
+   // 5. エンティティ作成（ファクトリメソッドパターン）
+   const user = User.create({
+    name: userName,
+    email: email,
+    password: hashedPassword,
+   });
 
    // 6. 永続化
-   await this.userRepository.save(userResult.data);
+   await this.userRepository.save(user);
 
    // 7. 応答組み立て
+   // Value Object: .value で型安全にプリミティブ値を取得
+   // プリミティブ型: 直接アクセス
    const response: CreateUserResponse = {
-    userId: userResult.data.getId().toString(),
-    name: userResult.data.getName().toString(),
-    email: userResult.data.getEmail().toString(),
-    createdAt: userResult.data.getCreatedAt().toISOString(),
+    userId: user.id.value,
+    name: user.name.value,
+    email: user.email.value,
+    createdAt: user.createdAt.toISOString(),
    };
 
    // 8. ログ出力（処理完了）
@@ -414,15 +407,15 @@ export class PrismaUserRepository implements IUserRepository {
 
  async findById(id: UserId): Promise<User | null> {
   try {
-   this.logger.debug('ユーザー検索開始', { userId: id.toString() });
+   this.logger.debug('ユーザー検索開始', { userId: id.value });
 
    const userData = await this.prisma.user.findUnique({
-    where: { id: id.toString() },
+    where: { id: id.value },
    });
 
    if (!userData) {
     this.logger.debug('ユーザーが見つかりませんでした', {
-     userId: id.toString(),
+     userId: id.value,
     });
     return null;
    }
@@ -430,11 +423,11 @@ export class PrismaUserRepository implements IUserRepository {
    // ドメインオブジェクトへの変換
    const user = this.toDomain(userData);
 
-   this.logger.debug('ユーザー検索完了', { userId: id.toString() });
+   this.logger.debug('ユーザー検索完了', { userId: id.value });
    return user;
   } catch (error) {
    this.logger.error('ユーザー検索中にエラーが発生しました', {
-    userId: id.toString(),
+    userId: id.value,
     error: error instanceof Error ? error.message : 'Unknown error',
    });
    throw new RepositoryError('ユーザー検索に失敗しました', error);
@@ -444,16 +437,16 @@ export class PrismaUserRepository implements IUserRepository {
  async findByEmail(email: Email): Promise<User | null> {
   try {
    this.logger.debug('メールアドレスでユーザー検索開始', {
-    email: email.toString(),
+    email: email.value,
    });
 
    const userData = await this.prisma.user.findUnique({
-    where: { email: email.toString() },
+    where: { email: email.value },
    });
 
    if (!userData) {
     this.logger.debug('該当ユーザーが見つかりませんでした', {
-     email: email.toString(),
+     email: email.value,
     });
     return null;
    }
@@ -461,12 +454,12 @@ export class PrismaUserRepository implements IUserRepository {
    const user = this.toDomain(userData);
 
    this.logger.debug('メールアドレスでユーザー検索完了', {
-    email: email.toString(),
+    email: email.value,
    });
    return user;
   } catch (error) {
    this.logger.error('メールアドレスでのユーザー検索中にエラーが発生しました', {
-    email: email.toString(),
+    email: email.value,
     error: error instanceof Error ? error.message : 'Unknown error',
    });
    throw new RepositoryError('ユーザー検索に失敗しました', error);
@@ -475,7 +468,7 @@ export class PrismaUserRepository implements IUserRepository {
 
  async save(user: User): Promise<void> {
   try {
-   this.logger.debug('ユーザー保存開始', { userId: user.getId().toString() });
+   this.logger.debug('ユーザー保存開始', { userId: user.id.value });
 
    // ドメインオブジェクトからPrismaデータへの変換
    const userData = this.toPersistence(user);
@@ -490,10 +483,10 @@ export class PrismaUserRepository implements IUserRepository {
     create: userData,
    });
 
-   this.logger.info('ユーザー保存完了', { userId: user.getId().toString() });
+   this.logger.info('ユーザー保存完了', { userId: user.id.value });
   } catch (error) {
    this.logger.error('ユーザー保存中にエラーが発生しました', {
-    userId: user.getId().toString(),
+    userId: user.id.value,
     error: error instanceof Error ? error.message : 'Unknown error',
    });
    throw new RepositoryError('ユーザー保存に失敗しました', error);
@@ -502,16 +495,16 @@ export class PrismaUserRepository implements IUserRepository {
 
  async delete(id: UserId): Promise<void> {
   try {
-   this.logger.debug('ユーザー削除開始', { userId: id.toString() });
+   this.logger.debug('ユーザー削除開始', { userId: id.value });
 
    await this.prisma.user.delete({
-    where: { id: id.toString() },
+    where: { id: id.value },
    });
 
-   this.logger.info('ユーザー削除完了', { userId: id.toString() });
+   this.logger.info('ユーザー削除完了', { userId: id.value });
   } catch (error) {
    this.logger.error('ユーザー削除中にエラーが発生しました', {
-    userId: id.toString(),
+    userId: id.value,
     error: error instanceof Error ? error.message : 'Unknown error',
    });
    throw new RepositoryError('ユーザー削除に失敗しました', error);
@@ -534,13 +527,15 @@ export class PrismaUserRepository implements IUserRepository {
  }
 
  // ドメインオブジェクト → Prismaデータ変換
+ // Value Object: .value で文字列変換
+ // プリミティブ型: 直接アクセス
  private toPersistence(user: User): any {
   return {
-   id: user.getId().toString(),
-   name: user.getName().toString(),
-   email: user.getEmail().toString(),
-   createdAt: user.getCreatedAt(),
-   updatedAt: user.getUpdatedAt(),
+   id: user.id.value,
+   name: user.name,
+   email: user.email.value,
+   createdAt: user.createdAt,
+   updatedAt: user.updatedAt,
   };
  }
 }
@@ -591,9 +586,8 @@ graph TB
 // createUser Server Action の標準実装パターン
 'use server';
 
-import { resolve } from '@/diContainer';
+import { resolve } from '@/di/resolver';
 import { isFailure, isSuccess } from '@/layers/application/types/Result';
-import { INJECTION_TOKENS } from '@/di/tokens';
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -646,7 +640,8 @@ export async function createUserAction(
 
  // 3. UseCase実行
  try {
-  const createUserUseCase = resolve(INJECTION_TOKENS.CreateUserUseCase);
+  // 型安全な resolve 関数でUseCase取得
+  const createUserUseCase = resolve('CreateUserUseCase');
 
   const result = await createUserUseCase.execute({
    name: validationResult.data.name,
@@ -694,7 +689,8 @@ export async function createUserWithRedirectAction(
  }
 
  try {
-  const createUserUseCase = resolve(INJECTION_TOKENS.CreateUserUseCase);
+  // 型安全な resolve 関数でUseCase取得
+  const createUserUseCase = resolve('CreateUserUseCase');
 
   const result = await createUserUseCase.execute(formInput);
 
@@ -743,6 +739,9 @@ graph TB
 **UseCase テストテンプレート:**
 
 ```typescript
+import { container } from '@/di/container';
+import { resolve } from '@/di/resolver';
+import { INJECTION_TOKENS } from '@/di/tokens';
 import { isFailure, isSuccess } from '@/layers/application/types/Result';
 
 import { setupTestEnvironment } from '@tests/utils/helpers/testHelpers';
@@ -777,8 +776,8 @@ describe('CreateUserUseCase', () => {
   container.registerInstance(INJECTION_TOKENS.HashService, mockHashService);
   container.registerInstance(INJECTION_TOKENS.Logger, mockLogger);
 
-  // UseCaseインスタンス取得
-  createUserUseCase = container.resolve(CreateUserUseCase);
+  // 型安全な resolve 関数で UseCase 取得
+  createUserUseCase = resolve('CreateUserUseCase');
  });
 
  describe('正常系', () => {
@@ -850,11 +849,11 @@ describe('CreateUserUseCase', () => {
     password: 'password123',
    };
 
-   const existingUser = User.create(
-    UserName.create('既存ユーザー').data!,
-    Email.create('existing@example.com').data!,
-    'hashed_password',
-   ).data!;
+   const existingUser = User.create({
+    name: new UserName('既存ユーザー'),
+    email: new Email('existing@example.com'),
+    password: 'hashed_password',
+   });
 
    mockUserRepository.findByEmail.mockResolvedValue(existingUser);
 
@@ -924,13 +923,13 @@ describe('CreateUserUseCase', () => {
 
 ### 📊 パターン選択マトリックス
 
-| 実装対象           | 適用パターン       | 品質観点           | 参考ドキュメント                                  |
-| ------------------ | ------------------ | ------------------ | ------------------------------------------------- |
-| **Value Object**   | 不変オブジェクト   | バリデーション     | [Domain実装](../development/domain.md)            |
-| **Entity**         | ライフサイクル管理 | 状態整合性         | [Entity詳細](../../architecture/layers/domain.md) |
-| **UseCase**        | Result型統一       | エラーハンドリング | [UseCase実装](../development/usecase.md)          |
-| **Repository**     | データ変換分離     | ドメイン保護       | [Repository実装](../development/repository.md)    |
-| **Server Actions** | フォーム処理       | ユーザビリティ     | [Server Actions](../frontend/server-actions.md)   |
+| 実装対象           | 適用パターン       | 品質観点           | 参考ドキュメント                                                   |
+| ------------------ | ------------------ | ------------------ | ------------------------------------------------------------------ |
+| **Value Object**   | 不変オブジェクト   | バリデーション     | [Value Objects](../ddd/layers/components/value-objects.md)         |
+| **Entity**         | ライフサイクル管理 | 状態整合性         | [Entities](../ddd/layers/components/entities.md)                   |
+| **UseCase**        | Result型統一       | エラーハンドリング | [UseCases](../ddd/layers/components/use-cases.md)                  |
+| **Repository**     | データ変換分離     | ドメイン保護       | [Repository実装](../ddd/layers/components/repository-implementations.md) |
+| **Server Actions** | フォーム処理       | ユーザビリティ     | [Server Actions](../ddd/layers/components/server-actions.md)       |
 
 ### 🎯 品質確保のポイント
 
@@ -961,8 +960,8 @@ graph LR
 
 ### 📚 **深掘り学習リソース**
 
-- **実装詳細**: [実装ガイド](../development/) で具体的な実装方法を学習
-- **アーキテクチャ理解**: [設計パターン](../../architecture/patterns/) で理論を深化
+- **実装詳細**: [DDD実装ガイド](../ddd/layers/) で具体的な実装方法を学習
+- **アーキテクチャ理解**: [依存性注入パターン](../../architecture/patterns/dependency-injection.md) で理論を深化
 - **品質向上**: [テスト戦略](../../testing/strategy.md) で品質保証手法を習得
 
 ---

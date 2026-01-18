@@ -53,7 +53,7 @@ async function handleUserAction(formData: FormData) {
 // ✅ Server Action: ビジネスロジック処理
 'use server';
 
-import { Result } from '@/layers/application/types/Result';
+import { failure, Result, success } from '@/layers/application/types/Result';
 import { resolve } from '@/di/resolver';
 
 export async function handleUserAction(data: {
@@ -65,10 +65,10 @@ export async function handleUserAction(data: {
  try {
   logger.info('ユーザーアクション処理開始', { buttonId: data.buttonId });
   const result = await userService.processUserAction(data);
-  return { success: true, data: result };
+  return success(result);
  } catch (error) {
   logger.error('ユーザーアクション処理エラー', { error });
-  return { success: false, error: '処理に失敗しました' };
+  return failure('処理に失敗しました', 'ACTION_FAILED');
  }
 }
 ```
@@ -143,10 +143,10 @@ export async function processAdvancedSearch(
    duration: Date.now(),
   });
 
-  return { success: true, data: results };
+  return success(results);
  } catch (error) {
   logger.error('高度検索処理エラー', { query, error });
-  return { success: false, error: '検索に失敗しました' };
+  return failure('検索に失敗しました', 'SEARCH_FAILED');
  }
 }
 
@@ -157,10 +157,10 @@ export async function fetchUserData(userId: string): Promise<Result<UserData>> {
  try {
   const userData = await userRepository.findById(userId);
   logger.info('ユーザーデータ取得完了', { userId });
-  return { success: true, data: userData };
+  return success(userData);
  } catch (error) {
   logger.error('ユーザーデータ取得エラー', { userId, error });
-  return { success: false, error: 'データの取得に失敗しました' };
+  return failure('データの取得に失敗しました', 'FETCH_FAILED');
  }
 }
 ```
@@ -190,7 +190,7 @@ export function AdvancedSearchComponent() {
   if (result.success) {
    setResults(result.data);
   } else {
-   setError(result.error);
+   setError(result.error.message);
   }
 
   setIsLoading(false);
@@ -202,7 +202,7 @@ export function AdvancedSearchComponent() {
   if (result.success) {
    console.log('データ取得成功:', result.data);
   } else {
-   console.error('データ取得失敗:', result.error);
+   console.error('データ取得失敗:', result.error.message);
   }
  };
 
@@ -240,7 +240,7 @@ export function AdvancedSearchComponent() {
 // src/layers/application/services/MyBusinessService.ts
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import { INJECTION_TOKENS } from '@/di/tokens';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 
 import { inject, injectable } from 'tsyringe';
 
@@ -264,10 +264,10 @@ export class MyBusinessService implements IMyBusinessService {
    const result = await this.userRepository.performComplexOperation(data);
 
    this.logger.info('ビジネス処理完了', { result });
-   return { success: true, data: result };
+   return success(result);
   } catch (error) {
    this.logger.error('ビジネス処理エラー', { error });
-   return { success: false, error: '処理に失敗しました' };
+   return failure('処理に失敗しました', 'OPERATION_FAILED');
   }
  }
 }
@@ -489,7 +489,7 @@ function Component() {
 
 - [DIコンテナ構成](./di-container.md) - Server側での基本的なDI構成
 - [Server Actions](./server-actions.md) - Server Actions実装パターン
-- [Frontend Best Practices](../../frontend-best-practices.md) - フロントエンド開発指針
+- [Frontend Best Practices](../../../frontend-best-practices.md) - フロントエンド開発指針
 - [Clean Architecture](../../concepts/clean-architecture.md) - アーキテクチャ原則
 
 ## 🎯 まとめ
@@ -499,7 +499,7 @@ Server Actions中心アプローチにより以下を実現：
 - ✅ **シンプル性**: Client ComponentはUIのみ、複雑なDI不要
 - ✅ **Clean Architecture準拠**: 依存関係の方向性を厳密に遵守
 - ✅ **保守性**: 責務分離により各層の責任が明確
-- ✅ **Next.js 15最適化**: Server Actions活用でパフォーマンス向上
+- ✅ **Next.js 16最適化**: Server Actions活用でパフォーマンス向上
 - ✅ **型安全性**: Server ActionsでのResult型パターン使用
 
 Client ComponentではDIを使用せず、Server Actionsに処理を委譲することで、シンプルで保守しやすいアーキテクチャを実現できます。

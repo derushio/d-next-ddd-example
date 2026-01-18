@@ -1,6 +1,10 @@
-import { isFailure, isSuccess, success } from '@/layers/application/types/Result';
+import {
+  isFailure,
+  isSuccess,
+  success,
+} from '@/layers/application/types/Result';
 import type { GetCurrentUserUseCase } from '@/layers/application/usecases/auth/GetCurrentUserUseCase';
-import { DeleteUserUseCase } from '@/layers/application/usecases/user/DeleteUserUseCase';
+import type { DeleteUserUseCase } from '@/layers/application/usecases/user/DeleteUserUseCase';
 import { User } from '@/layers/domain/entities/User';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
@@ -9,7 +13,7 @@ import { UserId } from '@/layers/domain/value-objects/UserId';
 import { container } from '@/di/container';
 import { resolve } from '@/di/resolver';
 import { INJECTION_TOKENS } from '@/di/tokens';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 
 import { setupTestEnvironment } from '@tests/utils/helpers/testHelpers';
 import {
@@ -27,7 +31,7 @@ describe('DeleteUserUseCase', () => {
 
   // テスト用の認証済みユーザー情報
   const authenticatedUser = {
-    id: 'test-user-id',
+    id: 'testuseridcuid2abc12',
     email: 'test@example.com',
     name: 'Test User',
   };
@@ -63,12 +67,12 @@ describe('DeleteUserUseCase', () => {
 
   describe('execute', () => {
     const validInput = {
-      userId: 'test-user-id',
+      userId: 'testuseridcuid2abc12',
     };
 
     const createMockUser = () => {
       return User.reconstruct(
-        new UserId('test-user-id'),
+        new UserId('testuseridcuid2abc12'),
         new Email('test@example.com'),
         'Test User',
         'hashed-password',
@@ -92,7 +96,7 @@ describe('DeleteUserUseCase', () => {
       expect(isSuccess(result)).toBe(true);
       if (isSuccess(result)) {
         expect(result.data).toEqual({
-          deletedUserId: 'test-user-id',
+          deletedUserId: 'testuseridcuid2abc12',
           deletedAt: expect.any(Date),
         });
         expect(result.data.deletedAt).toBeInstanceOf(Date);
@@ -100,24 +104,24 @@ describe('DeleteUserUseCase', () => {
 
       // モック呼び出しの確認
       expect(mockUserRepository.findById).toHaveBeenCalledWith(
-        new UserId('test-user-id'),
+        new UserId('testuseridcuid2abc12'),
       );
       expect(mockUserRepository.delete).toHaveBeenCalledWith(
-        new UserId('test-user-id'),
+        new UserId('testuseridcuid2abc12'),
       );
 
       // ログ出力の確認
       expect(mockLogger.info).toHaveBeenCalledWith('ユーザー削除開始', {
-        userId: 'test-user-id',
+        userId: 'testuseridcuid2abc12',
       });
       expect(mockLogger.info).toHaveBeenCalledWith('ユーザー削除実行前情報', {
-        userId: 'test-user-id',
+        userId: 'testuseridcuid2abc12',
         email: 'test@example.com',
         name: 'Test User',
         createdAt: expect.any(Date),
       });
       expect(mockLogger.info).toHaveBeenCalledWith('ユーザー削除完了', {
-        userId: 'test-user-id',
+        userId: 'testuseridcuid2abc12',
         email: 'test@example.com',
         deletedAt: expect.any(Date),
       });
@@ -132,7 +136,11 @@ describe('DeleteUserUseCase', () => {
 
       // 認証ユーザーを空のIDに変更（認可チェックを通過させる）
       mockGetCurrentUserUseCase.requireAuthentication.mockResolvedValue(
-        success({ id: emptyUserId, email: 'test@example.com', name: 'Test User' }),
+        success({
+          id: emptyUserId,
+          email: 'test@example.com',
+          name: 'Test User',
+        }),
       );
 
       // Act
@@ -159,7 +167,11 @@ describe('DeleteUserUseCase', () => {
 
       // 認証ユーザーを空白のIDに変更（認可チェックを通過させる）
       mockGetCurrentUserUseCase.requireAuthentication.mockResolvedValue(
-        success({ id: whitespaceUserId, email: 'test@example.com', name: 'Test User' }),
+        success({
+          id: whitespaceUserId,
+          email: 'test@example.com',
+          name: 'Test User',
+        }),
       );
 
       // Act
@@ -191,14 +203,14 @@ describe('DeleteUserUseCase', () => {
       }
 
       expect(mockUserRepository.findById).toHaveBeenCalledWith(
-        new UserId('test-user-id'),
+        new UserId('testuseridcuid2abc12'),
       );
       expect(mockUserRepository.delete).not.toHaveBeenCalled();
 
       // 警告ログの確認
       expect(mockLogger.warn).toHaveBeenCalledWith(
         'ユーザー削除失敗: ユーザーが見つかりません',
-        { userId: 'test-user-id' },
+        { userId: 'testuseridcuid2abc12' },
       );
     });
 
@@ -221,15 +233,15 @@ describe('DeleteUserUseCase', () => {
       }
 
       expect(mockUserRepository.findById).toHaveBeenCalledWith(
-        new UserId('test-user-id'),
+        new UserId('testuseridcuid2abc12'),
       );
       expect(mockUserRepository.delete).toHaveBeenCalledWith(
-        new UserId('test-user-id'),
+        new UserId('testuseridcuid2abc12'),
       );
 
       // エラーログの確認
       expect(mockLogger.error).toHaveBeenCalledWith('ユーザー削除失敗', {
-        userId: 'test-user-id',
+        userId: 'testuseridcuid2abc12',
         error: 'Database delete error',
         stack: expect.any(String),
       });
@@ -251,7 +263,7 @@ describe('DeleteUserUseCase', () => {
       }
 
       expect(mockUserRepository.findById).toHaveBeenCalledWith(
-        new UserId('test-user-id'),
+        new UserId('testuseridcuid2abc12'),
       );
       expect(mockUserRepository.delete).not.toHaveBeenCalled();
     });
@@ -278,7 +290,7 @@ describe('DeleteUserUseCase', () => {
       }
 
       expect(mockUserRepository.delete).toHaveBeenCalledWith(
-        new UserId('test-user-id'),
+        new UserId('testuseridcuid2abc12'),
       );
     });
 
@@ -291,7 +303,11 @@ describe('DeleteUserUseCase', () => {
 
       // 認証ユーザーを短いIDに変更（認可チェックを通過させる）
       mockGetCurrentUserUseCase.requireAuthentication.mockResolvedValue(
-        success({ id: invalidUserId, email: 'test@example.com', name: 'Test User' }),
+        success({
+          id: invalidUserId,
+          email: 'test@example.com',
+          name: 'Test User',
+        }),
       );
 
       // Act
@@ -300,10 +316,9 @@ describe('DeleteUserUseCase', () => {
       // Assert
       expect(isFailure(result)).toBe(true);
       if (isFailure(result)) {
-        expect(result.error.message).toBe(
-          'User IDの形式が正しくありません',
-        );
-        expect(result.error.code).toBe('USER_DELETE_FAILED');
+        expect(result.error.message).toBe('User IDの形式が正しくありません');
+        // DomainErrorの元のエラーコードが保持される
+        expect(result.error.code).toBe('INVALID_USER_ID_FORMAT');
       }
 
       // UserIdの作成でエラーが発生するため、リポジトリメソッドは呼ばれない
@@ -331,7 +346,7 @@ describe('DeleteUserUseCase', () => {
 
       // エラーログの確認（stack情報なし）
       expect(mockLogger.error).toHaveBeenCalledWith('ユーザー削除失敗', {
-        userId: 'test-user-id',
+        userId: 'testuseridcuid2abc12',
         error: 'Unknown error',
         stack: undefined,
       });

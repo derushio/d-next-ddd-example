@@ -44,7 +44,7 @@ graph TD
 import { container } from '@/di/container';
 import { resolve } from '@/di/resolver';
 import { INJECTION_TOKENS } from '@/di/tokens';
-import { CreateUserUseCase } from '@/usecases/user/CreateUserUseCase';
+import { CreateUserUseCase } from '@/layers/application/usecases/user/CreateUserUseCase';
 
 import { beforeEach, describe, expect, it } from 'vitest';
 
@@ -1025,4 +1025,4 @@ it('should log user creation info', async () => {
 - [クリーンアーキテクチャ概念](./ddd/concepts/clean-architecture.md) - 基本概念の理解
 - [アーキテクチャ比較](./ddd/concepts/architecture-comparison.md) - 他の設計選択肢との比較
 - [プロジェクト設計判断](./project-architecture-decisions.md) - 実装判断の詳細
-- [開発ガイド](./development-guide.md) - 実装手順とベストプラクティス
+- [開発ワークフロー](./development/workflow.md) - 実装手順とベストプラクティス

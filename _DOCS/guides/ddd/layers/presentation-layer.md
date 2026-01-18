@@ -581,8 +581,8 @@ export function CreateUserFormClient() {
 
     const result = await createUserAction(formData);
 
-    if (result?.error) {
-      setError(result.error);
+    if (!result?.success) {
+      setError(result?.error?.message ?? 'エラーが発生しました');
     }
 
     setIsSubmitting(false);

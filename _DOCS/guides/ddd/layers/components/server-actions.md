@@ -104,9 +104,11 @@ graph LR
 // ✅ 推薦：適切な入力検証を持つServer Action
 'use server';
 
-import { container } from '@/infrastructure/di/container';
-import { CreateUserUseCase } from '@/layers/application/usecases/user/CreateUserUseCase';
+import 'reflect-metadata'; // ⚠️ TSyringe DI使用時は必須
 
+import { resolve } from '@/di/resolver';
+import { isFailure } from '@/layers/application/types/Result';
+import { DomainError } from '@/layers/domain/errors/DomainError';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
@@ -145,30 +147,31 @@ export async function createUserAction(
    };
   }
 
-  // 3. Use Case の実行
-  const createUserUseCase = container.resolve(CreateUserUseCase);
+  // 3. Use Case の実行（resolve関数でDIコンテナから取得）
+  const createUserUseCase = resolve('CreateUserUseCase');
   const result = await createUserUseCase.execute({
    name: validationResult.data.name,
    email: validationResult.data.email,
    password: validationResult.data.password,
   });
 
-  // 4. 成功レスポンス
+  // 4. Result型パターンでの成功/失敗判定
+  if (isFailure(result)) {
+   return {
+    success: false,
+    message: result.error.message,
+   };
+  }
+
+  // 5. 成功レスポンス
   return {
    success: true,
    message: 'ユーザーを作成しました',
-   userId: result.id,
+   userId: result.data.id,
   };
  } catch (error) {
-  // 5. エラーハンドリング
+  // 6. 予期しないエラーハンドリング
   console.error('ユーザー作成エラー:', error);
-
-  if (error instanceof DomainError) {
-   return {
-    success: false,
-    message: error.message,
-   };
-  }
 
   return {
    success: false,
@@ -184,6 +187,10 @@ export async function createUserAction(
 // ✅ 推薦：認証を伴うServer Action
 'use server';
 
+import 'reflect-metadata'; // ⚠️ TSyringe DI使用時は必須
+
+import { resolve } from '@/di/resolver';
+import { isFailure } from '@/layers/application/types/Result';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
@@ -192,13 +199,13 @@ export async function updateUserProfileAction(
 ): Promise<UpdateProfileActionResult> {
  try {
   // 1. 認証チェック
-  const sessionToken = cookies().get('session-token')?.value;
+  const sessionToken = (await cookies()).get('session-token')?.value;
   if (!sessionToken) {
    redirect('/login');
   }
 
   // 2. セッション検証
-  const authService = container.resolve(IAuthenticationService);
+  const authService = resolve('AuthenticationService');
   const currentUser = await authService.getCurrentUser(sessionToken);
   if (!currentUser) {
    redirect('/login');
@@ -220,28 +227,25 @@ export async function updateUserProfileAction(
   }
 
   // 4. Use Case の実行（認証済みユーザーIDを渡す）
-  const updateProfileUseCase = container.resolve(UpdateUserProfileUseCase);
-  await updateProfileUseCase.execute({
+  const updateProfileUseCase = resolve('UpdateUserProfileUseCase');
+  const result = await updateProfileUseCase.execute({
    userId: currentUser.id,
    name: validationResult.data.name,
    bio: validationResult.data.bio,
   });
+
+  if (isFailure(result)) {
+   return {
+    success: false,
+    message: result.error.message,
+   };
+  }
 
   return {
    success: true,
    message: 'プロフィールを更新しました',
   };
  } catch (error) {
-  if (
-   error instanceof ApplicationError &&
-   error.code === 'INSUFFICIENT_PERMISSION'
-  ) {
-   return {
-    success: false,
-    message: '権限がありません',
-   };
-  }
-
   return {
    success: false,
    message: 'プロフィールの更新に失敗しました',
@@ -255,6 +259,12 @@ export async function updateUserProfileAction(
 ```typescript
 // ✅ 推薦：ファイルアップロード対応Server Action
 'use server';
+
+import 'reflect-metadata'; // ⚠️ TSyringe DI使用時は必須
+
+import { resolve } from '@/di/resolver';
+import { isFailure } from '@/layers/application/types/Result';
+import { redirect } from 'next/navigation';
 
 export async function uploadAvatarAction(
  formData: FormData,
@@ -296,7 +306,7 @@ export async function uploadAvatarAction(
   const buffer = Buffer.from(await file.arrayBuffer());
 
   // 4. Use Case の実行
-  const uploadAvatarUseCase = container.resolve(UploadUserAvatarUseCase);
+  const uploadAvatarUseCase = resolve('UploadUserAvatarUseCase');
   const result = await uploadAvatarUseCase.execute({
    userId: currentUser.id,
    fileName: file.name,
@@ -304,10 +314,17 @@ export async function uploadAvatarAction(
    fileBuffer: buffer,
   });
 
+  if (isFailure(result)) {
+   return {
+    success: false,
+    message: result.error.message,
+   };
+  }
+
   return {
    success: true,
    message: 'アバターをアップロードしました',
-   avatarUrl: result.avatarUrl,
+   avatarUrl: result.data.avatarUrl,
   };
  } catch (error) {
   console.error('アバターアップロードエラー:', error);
@@ -338,8 +355,8 @@ export async function deleteUserAction(userId: string): Promise<void> {
   }
 
   // 2. Use Case の実行
-  const deleteUserUseCase = container.resolve(DeleteUserUseCase);
-  await deleteUserUseCase.execute({ targetUserId: userId }, currentUser.id);
+  const deleteUserUseCase = resolve('DeleteUserUseCase');
+  await deleteUserUseCase.execute({ targetUserId: userId, requesterId: currentUser.id });
 
   // 3. キャッシュの再検証
   revalidatePath('/admin/users');
@@ -377,14 +394,22 @@ export async function loginAction(
   }
 
   // サインイン処理
-  const loginUseCase = container.resolve(LoginUseCase);
+  const loginUseCase = resolve('SignInUseCase');
   const result = await loginUseCase.execute({
    email: validationResult.data.email,
    password: validationResult.data.password,
   });
 
+  // Result型パターンでの成功/失敗判定
+  if (isFailure(result)) {
+   return {
+    success: false,
+    message: result.error.message,
+   };
+  }
+
   // セッションCookie設定
-  cookies().set('session-token', result.sessionToken, {
+  (await cookies()).set('session-token', result.data.sessionToken, {
    httpOnly: true,
    secure: process.env.NODE_ENV === 'production',
    sameSite: 'strict',
@@ -394,13 +419,6 @@ export async function loginAction(
   // 成功時のリダイレクト
   redirect(validationResult.data.redirectTo);
  } catch (error) {
-  if (error instanceof DomainError && error.code === 'INVALID_CREDENTIALS') {
-   return {
-    success: false,
-    message: 'メールアドレスまたはパスワードが正しくありません',
-   };
-  }
-
   return {
    success: false,
    message: 'サインインに失敗しました',
@@ -423,7 +441,7 @@ export async function updatePostAction(
 ): Promise<UpdatePostActionResult> {
  try {
   // 投稿更新処理
-  const updatePostUseCase = container.resolve(UpdatePostUseCase);
+  const updatePostUseCase = resolve('UpdatePostUseCase');
   await updatePostUseCase.execute({
    postId,
    title: formData.get('title') as string,
@@ -451,7 +469,7 @@ export async function updatePostAction(
 // 複数のパスの同時無効化
 export async function publishPostAction(postId: string): Promise<void> {
  try {
-  const publishPostUseCase = container.resolve(PublishPostUseCase);
+  const publishPostUseCase = resolve('PublishPostUseCase');
   await publishPostUseCase.execute({ postId });
 
   // 複数のパスを同時に無効化
@@ -690,9 +708,16 @@ export async function updateUserAction(
   };
  }
 
- // Use Case実行
- const updateUserUseCase = container.resolve(UpdateUserUseCase);
- await updateUserUseCase.execute(validation.data);
+ // Use Case実行（resolve関数でDI取得）
+ const updateUserUseCase = resolve('UpdateUserUseCase');
+ const result = await updateUserUseCase.execute(validation.data);
+
+ if (isFailure(result)) {
+  return {
+   success: false,
+   message: result.error.message,
+  };
+ }
 
  return {
   success: true,
@@ -705,14 +730,18 @@ export async function updateUserAction(
 
 ```typescript
 // ✅ 推薦：認証ヘルパー関数
+import { resolve } from '@/di/resolver';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+
 export async function requireAuthentication(): Promise<AuthenticatedUser> {
- const sessionToken = cookies().get('session-token')?.value;
+ const sessionToken = (await cookies()).get('session-token')?.value;
 
  if (!sessionToken) {
   redirect('/login');
  }
 
- const authService = container.resolve(IAuthenticationService);
+ const authService = resolve('AuthenticationService');
  const user = await authService.getCurrentUser(sessionToken);
 
  if (!user) {
@@ -727,7 +756,7 @@ export async function requirePermission(
 ): Promise<AuthenticatedUser> {
  const user = await requireAuthentication();
 
- const authService = container.resolve(IAuthorizationService);
+ const authService = resolve('AuthorizationService');
  const hasPermission = await authService.hasPermission(user.id, permission);
 
  if (!hasPermission) {
@@ -742,8 +771,18 @@ export async function deleteUserAction(userId: string): Promise<ActionResult> {
  try {
   const currentUser = await requirePermission('DELETE_USER');
 
-  const deleteUserUseCase = container.resolve(DeleteUserUseCase);
-  await deleteUserUseCase.execute({ targetUserId: userId }, currentUser.id);
+  const deleteUserUseCase = resolve('DeleteUserUseCase');
+  const result = await deleteUserUseCase.execute({
+   targetUserId: userId,
+   requesterId: currentUser.id,
+  });
+
+  if (isFailure(result)) {
+   return {
+    success: false,
+    message: result.error.message,
+   };
+  }
 
   return {
    success: true,
@@ -762,22 +801,26 @@ export async function deleteUserAction(userId: string): Promise<ActionResult> {
 ### Unit Tests（単体テスト）
 
 ```typescript
-// ✅ Server Action テストの例
+// ✅ Server Action テストの例（vitest-mock-extended使用）
+import { container } from 'tsyringe';
+import { mock, type MockProxy } from 'vitest-mock-extended';
+import { success, failure } from '@/layers/application/types/Result';
+import { setupTestEnvironment } from '@tests/utils/helpers/testHelpers';
+import { INJECTION_TOKENS } from '@/di/tokens';
+
 describe('createUserAction', () => {
- let mockCreateUserUseCase: jest.Mocked<CreateUserUseCase>;
+ setupTestEnvironment(); // DIコンテナリセット
+
+ let mockCreateUserUseCase: MockProxy<CreateUserUseCase>;
 
  beforeEach(() => {
-  mockCreateUserUseCase = {
-   execute: jest.fn(),
-  } as any;
+  mockCreateUserUseCase = mock<CreateUserUseCase>();
 
-  // DI コンテナのモック設定
-  jest.spyOn(container, 'resolve').mockImplementation((token) => {
-   if (token === CreateUserUseCase) {
-    return mockCreateUserUseCase;
-   }
-   return {} as any;
-  });
+  // DI コンテナにモックを登録
+  container.registerInstance(
+   INJECTION_TOKENS.CreateUserUseCase,
+   mockCreateUserUseCase,
+  );
  });
 
  it('正常なデータでユーザーを作成できる', async () => {
@@ -787,11 +830,14 @@ describe('createUserAction', () => {
   formData.append('email', 'test@example.com');
   formData.append('password', 'password123');
 
-  mockCreateUserUseCase.execute.mockResolvedValue({
-   id: 'user-123',
-   name: 'テストユーザー',
-   email: 'test@example.com',
-  });
+  // Result型でモック設定
+  mockCreateUserUseCase.execute.mockResolvedValue(
+   success({
+    id: 'user-123',
+    name: 'テストユーザー',
+    email: 'test@example.com',
+   }),
+  );
 
   // Act
   const result = await createUserAction(formData);
@@ -806,6 +852,25 @@ describe('createUserAction', () => {
    email: 'test@example.com',
    password: 'password123',
   });
+ });
+
+ it('UseCase失敗時にエラーメッセージを返す', async () => {
+  // Arrange
+  const formData = new FormData();
+  formData.append('name', 'テストユーザー');
+  formData.append('email', 'existing@example.com');
+  formData.append('password', 'password123');
+
+  mockCreateUserUseCase.execute.mockResolvedValue(
+   failure('このメールアドレスは既に登録されています', 'EMAIL_ALREADY_EXISTS'),
+  );
+
+  // Act
+  const result = await createUserAction(formData);
+
+  // Assert
+  expect(result.success).toBe(false);
+  expect(result.message).toBe('このメールアドレスは既に登録されています');
  });
 
  it('不正なデータでバリデーションエラーが発生する', async () => {

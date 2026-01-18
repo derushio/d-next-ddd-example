@@ -24,9 +24,9 @@
 
 ### フレームワーク・ライブラリ
 
-#### **Next.js 15** 🌟
+#### **Next.js 16** 🌟
 
-- **バージョン**: 15.x
+- **バージョン**: 16.x
 - **選択理由**: React Server Components、Turbopack、最新機能
 - **主要機能**: SSR/SSG、App Router、Server Actions
 - **公式**: <https://nextjs.org/>
@@ -73,17 +73,18 @@
 
 ## 🗃️ データベース・ORM
 
-#### **SQLite** 💾
+#### **PostgreSQL** 🐘
 
-- **用途**: 開発・テスト環境のデータベース
-- **選択理由**: セットアップ簡単、軽量、十分な機能
-- **本番**: PostgreSQL等への移行容易
+- **用途**: アプリケーションのメインデータベース
+- **選択理由**: 本番環境対応、高機能、信頼性
+- **主要機能**: ACID準拠、JSON型サポート、拡張性
+- **公式**: <https://www.postgresql.org/>
 
-#### **Prisma 5.x** 🔧
+#### **Prisma 7.x** 🔧
 
-- **バージョン**: 5.x
+- **バージョン**: 7.x
 - **選択理由**: 型安全、マイグレーション、優秀なDX
-- **主要機能**: Schema定義、Client生成、Studio
+- **主要機能**: Schema定義、Client生成、Studio、Driver Adapter
 - **公式**: <https://www.prisma.io/>
 
 ---
@@ -157,17 +158,14 @@
 
 ### 品質管理
 
-#### **ESLint** 📏
+#### **Biome** 🔧
 
-- **用途**: コード品質チェック
-- **設定**: Next.js推奨設定、カスタムルール
+- **バージョン**: 2.x
+- **用途**: Lint + Format 統合ツール（ESLint/Prettier代替）
+- **選択理由**: 高速、単一ツールでの統合、Rust製
+- **主要機能**: コード品質チェック、フォーマット、インポート整理
 - **統合**: IDE、pre-commit hook
-
-#### **Prettier** ✨
-
-- **用途**: コードフォーマット
-- **設定**: プロジェクト標準、統一ルール
-- **統合**: ESLint、IDE、自動保存
+- **公式**: <https://biomejs.dev/>
 
 ---
 

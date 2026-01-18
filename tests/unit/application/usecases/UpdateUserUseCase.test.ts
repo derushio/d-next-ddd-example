@@ -1,16 +1,19 @@
 import {
-  UpdateUserRequest,
+  type UpdateUserRequest,
   UpdateUserUseCase,
 } from '@/layers/application/usecases/UpdateUserUseCase';
-import { isFailure, isSuccess, success } from '@/layers/application/types/Result';
+import {
+  isFailure,
+  isSuccess,
+  success,
+} from '@/layers/application/types/Result';
 import type { GetCurrentUserUseCase } from '@/layers/application/usecases/auth/GetCurrentUserUseCase';
 import { User } from '@/layers/domain/entities/User';
-import { DomainError } from '@/layers/domain/errors/DomainError';
-import { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
-import { UserDomainService } from '@/layers/domain/services/UserDomainService';
+import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
+import type { UserDomainService } from '@/layers/domain/services/UserDomainService';
 import { Email } from '@/layers/domain/value-objects/Email';
 import { UserId } from '@/layers/domain/value-objects/UserId';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 
 import {
   createAutoMockLogger,
@@ -29,7 +32,7 @@ describe('UpdateUserUseCase', () => {
 
   // テスト用の認証済みユーザー情報
   const authenticatedUser = {
-    id: 'existing-user-id',
+    id: 'existinguseridcuid12',
     email: 'test@example.com',
     name: 'Test User',
   };
@@ -58,7 +61,7 @@ describe('UpdateUserUseCase', () => {
     it('ユーザープロフィールを正常に更新できる', async () => {
       // Arrange
       const existingUser = User.reconstruct(
-        new UserId('existing-user-id'),
+        new UserId('existinguseridcuid12'),
         new Email('old@example.com'),
         'Old Name',
         'hashed-password',
@@ -67,11 +70,10 @@ describe('UpdateUserUseCase', () => {
       );
 
       const request: UpdateUserRequest = {
-        userId: 'existing-user-id',
+        userId: 'existinguseridcuid12',
         email: 'new@example.com',
         name: 'New Name',
       };
-
 
       mockUserRepository.findById.mockResolvedValue(existingUser);
       mockUserDomainService.isEmailDuplicate.mockResolvedValue(false);
@@ -85,10 +87,10 @@ describe('UpdateUserUseCase', () => {
       if (isSuccess(result)) {
         expect(result.data.email).toBe('new@example.com');
         expect(result.data.name).toBe('New Name');
-        expect(result.data.id).toBe('existing-user-id');
+        expect(result.data.id).toBe('existinguseridcuid12');
       }
       expect(mockUserRepository.findById).toHaveBeenCalledWith(
-        new UserId('existing-user-id'),
+        new UserId('existinguseridcuid12'),
       );
       expect(mockUserDomainService.isEmailDuplicate).toHaveBeenCalledWith(
         new Email('new@example.com'),
@@ -96,7 +98,7 @@ describe('UpdateUserUseCase', () => {
       // 更新されたユーザーが渡されていることを確認（時間の具体的な値は除外）
       expect(mockUserRepository.update).toHaveBeenCalledTimes(1);
       const calledUser = mockUserRepository.update.mock.calls[0][0];
-      expect(calledUser.id.value).toBe('existing-user-id');
+      expect(calledUser.id.value).toBe('existinguseridcuid12');
       expect(calledUser.email.value).toBe('new@example.com');
       expect(calledUser.name).toBe('New Name');
       expect(calledUser.passwordHash).toBe('hashed-password');
@@ -107,7 +109,7 @@ describe('UpdateUserUseCase', () => {
     it('名前のみ更新できる', async () => {
       // Arrange
       const existingUser = User.reconstruct(
-        new UserId('existing-user-id'),
+        new UserId('existinguseridcuid12'),
         new Email('test@example.com'),
         'Old Name',
         'hashed-password',
@@ -116,7 +118,7 @@ describe('UpdateUserUseCase', () => {
       );
 
       const request: UpdateUserRequest = {
-        userId: 'existing-user-id',
+        userId: 'existinguseridcuid12',
         name: 'New Name',
       };
 
@@ -138,7 +140,7 @@ describe('UpdateUserUseCase', () => {
     it('メールアドレスのみ更新できる', async () => {
       // Arrange
       const existingUser = User.reconstruct(
-        new UserId('existing-user-id'),
+        new UserId('existinguseridcuid12'),
         new Email('old@example.com'),
         'Test Name',
         'hashed-password',
@@ -147,7 +149,7 @@ describe('UpdateUserUseCase', () => {
       );
 
       const request: UpdateUserRequest = {
-        userId: 'existing-user-id',
+        userId: 'existinguseridcuid12',
         email: 'new@example.com',
       };
 
@@ -168,7 +170,7 @@ describe('UpdateUserUseCase', () => {
 
     it('存在しないユーザーIDでエラーを返す', async () => {
       // Arrange
-      const nonExistentUserId = 'non-existent-id';
+      const nonExistentUserId = 'nonexistentidcuid12';
       const request: UpdateUserRequest = {
         userId: nonExistentUserId,
         name: 'New Name',
@@ -176,7 +178,11 @@ describe('UpdateUserUseCase', () => {
 
       // 認証ユーザーを存在しないIDに変更（認可チェックを通過させる）
       mockGetCurrentUserUseCase.requireAuthentication.mockResolvedValue(
-        success({ id: nonExistentUserId, email: 'test@example.com', name: 'Test User' }),
+        success({
+          id: nonExistentUserId,
+          email: 'test@example.com',
+          name: 'Test User',
+        }),
       );
       mockUserRepository.findById.mockResolvedValue(null);
 
@@ -194,7 +200,7 @@ describe('UpdateUserUseCase', () => {
     it('重複するメールアドレスでエラーを返す', async () => {
       // Arrange
       const existingUser = User.reconstruct(
-        new UserId('existing-user-id'),
+        new UserId('existinguseridcuid12'),
         new Email('old@example.com'),
         'Test Name',
         'hashed-password',
@@ -203,7 +209,7 @@ describe('UpdateUserUseCase', () => {
       );
 
       const request: UpdateUserRequest = {
-        userId: 'existing-user-id',
+        userId: 'existinguseridcuid12',
         email: 'duplicate@example.com',
       };
 
@@ -227,7 +233,7 @@ describe('UpdateUserUseCase', () => {
     it('無効な名前でドメインエラーを適切に処理する', async () => {
       // Arrange
       const existingUser = User.reconstruct(
-        new UserId('existing-user-id'),
+        new UserId('existinguseridcuid12'),
         new Email('test@example.com'),
         'Valid Name',
         'hashed-password',
@@ -236,7 +242,7 @@ describe('UpdateUserUseCase', () => {
       );
 
       const request: UpdateUserRequest = {
-        userId: 'existing-user-id',
+        userId: 'existinguseridcuid12',
         name: '', // 無効な名前
       };
 
@@ -257,7 +263,7 @@ describe('UpdateUserUseCase', () => {
     it('無効なメールアドレスでドメインエラーを適切に処理する', async () => {
       // Arrange
       const existingUser = User.reconstruct(
-        new UserId('existing-user-id'),
+        new UserId('existinguseridcuid12'),
         new Email('test@example.com'),
         'Test Name',
         'hashed-password',
@@ -266,7 +272,7 @@ describe('UpdateUserUseCase', () => {
       );
 
       const request: UpdateUserRequest = {
-        userId: 'existing-user-id',
+        userId: 'existinguseridcuid12',
         email: 'invalid-email', // 無効なメールアドレス
       };
 
@@ -278,7 +284,9 @@ describe('UpdateUserUseCase', () => {
       // Assert
       expect(isFailure(result)).toBe(true);
       if (isFailure(result)) {
-        expect(result.error.message).toBe('メールアドレスの形式が正しくありません');
+        expect(result.error.message).toBe(
+          'メールアドレスの形式が正しくありません',
+        );
         expect(result.error.code).toBe('EMAIL_INVALID_FORMAT');
       }
       expect(mockUserRepository.update).not.toHaveBeenCalled();
@@ -287,7 +295,7 @@ describe('UpdateUserUseCase', () => {
     it('リポジトリエラーを適切に処理する', async () => {
       // Arrange
       const existingUser = User.reconstruct(
-        new UserId('existing-user-id'),
+        new UserId('existinguseridcuid12'),
         new Email('test@example.com'),
         'Test Name',
         'hashed-password',
@@ -296,7 +304,7 @@ describe('UpdateUserUseCase', () => {
       );
 
       const request: UpdateUserRequest = {
-        userId: 'existing-user-id',
+        userId: 'existinguseridcuid12',
         name: 'New Name',
       };
 

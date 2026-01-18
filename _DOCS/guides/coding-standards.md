@@ -16,7 +16,7 @@
 🐛: サインイン時のバリデーションエラーを修正
 📝: READMEにセットアップ手順を追加
 🎨: UserComponentのスタイルを改善
-🔧: ESLintの設定を更新
+🔧: Biomeの設定を更新
 
 # ❌ 避けるべき例
 Add user registration feature  # 英語
@@ -428,27 +428,36 @@ pnpm test
 pnpm format --check
 ```
 
-### ESLint・Prettier 設定
+### Biome 設定
 
 **プロジェクトルートの設定ファイル**
 
-- `eslint.config.mjs` - ESLint設定
-- `.prettierrc.mjs` - Prettier設定
+- `biome.json` - Biome設定（Lint + Format 統合）
 
-**カスタムルールの例**
+**設定例**
 
-```javascript
-// eslint.config.mjs
-export default [
- {
-  rules: {
-   '@typescript-eslint/no-unused-vars': 'error',
-   '@typescript-eslint/explicit-function-return-type': 'warn',
-   'react-hooks/exhaustive-deps': 'error',
-   'prefer-const': 'error',
+```json
+// biome.json
+{
+  "$schema": "https://biomejs.dev/schemas/2.0.0/schema.json",
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "suspicious": {
+        "noExplicitAny": "error"
+      },
+      "correctness": {
+        "useExhaustiveDependencies": "error"
+      }
+    }
   },
- },
-];
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2
+  }
+}
 ```
 
 ---
@@ -484,6 +493,6 @@ graph LR
 
 ## 関連ドキュメント 📚
 
-- [開発ガイド](../development-guide.md) - 実装手順全般
-- [テスト戦略](../testing-strategy.md) - テスト実装方針
+- [開発ワークフロー](./development/workflow.md) - 実装手順全般
+- [テスト戦略](../testing/strategy.md) - テスト実装方針
 - [フロントエンド ベストプラクティス](./frontend-best-practices.md) - UI開発規約

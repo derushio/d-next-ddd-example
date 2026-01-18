@@ -21,8 +21,7 @@ vitest-mock-extended を活用した効率的・型安全なモックテスト�
 ### 🔗 このドキュメント後の推奨学習
 
 1. **実践**: [実装パターンガイド](../../guides/implementation/patterns-guide.md) → 包括的テスト実装
-2. **統合**: [統合テスト](../integration/overview.md) → Repository層テスト
-3. **品質**: [テストパターン](patterns.md) → 高品質テスト手法
+2. **E2E**: [E2Eテスト](../../guides/e2e-testing-guide.md) → エンドツーエンドの検証
 
 ---
 
@@ -63,6 +62,52 @@ graph LR
 
 ---
 
+## 🔄 手動モックと自動モックの使い分け
+
+### 現在のモック移行状況
+
+プロジェクトでは **vitest-mock-extended による自動モック** を推奨していますが、一部のケースでは手動モックが必要です。
+
+```
+tests/utils/mocks/
+├── autoMocks.ts      # ✅ 推奨: 自動モック（vitest-mock-extended）
+└── commonMocks.ts    # ⚠️ 手動モック（段階的削除予定）
+```
+
+### 手動モックが必要なケース
+
+以下のケースでは自動モック化が困難なため、`commonMocks.ts` で手動実装を維持しています：
+
+| 対象                         | 理由                                         | 対応方針             |
+| ---------------------------- | -------------------------------------------- | -------------------- |
+| **PrismaClient**             | 型構造が非常に複雑でジェネリクス解決が困難   | 手動モック維持       |
+| **関数モック（getAuth等）**  | インターフェースではなく関数のため           | モジュールモック使用 |
+
+### 使い分けガイド
+
+```typescript
+// ✅ 推奨: インターフェースを持つサービスは自動モック
+import { createAutoMockUserRepository } from '@tests/utils/mocks/autoMocks';
+const mockRepo = createAutoMockUserRepository();
+
+// ⚠️ 例外: PrismaClientは手動モック
+import { createMockPrismaClient } from '@tests/utils/mocks/commonMocks';
+const mockPrisma = createMockPrismaClient();
+
+// ⚠️ 例外: 関数はモジュールモック
+vi.mock('@/layers/infrastructure/persistence/nextAuth', () => ({
+  getAuth: vi.fn(),
+}));
+```
+
+### 移行ロードマップ
+
+1. **完了済み**: Repository、DomainService、HashService、Logger → `autoMocks.ts`
+2. **維持**: PrismaClient → 型複雑性のため `commonMocks.ts` で継続
+3. **維持**: 関数モック → Vitestモジュールモックで対応
+
+---
+
 ## 🛠️ vitest-mock-extended セットアップ
 
 ### 📦 インストール・設定
@@ -77,7 +122,7 @@ pnpm add -D vitest-mock-extended
 ```typescript
 // tests/utils/mocks/autoMocks.ts
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
-import type { ILogger } from '@/layers/infrastructure/logging/ILogger';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 import type { IHashService } from '@/layers/infrastructure/services/IHashService';
 
 import { mock, MockProxy } from 'vitest-mock-extended';
@@ -108,10 +153,13 @@ export function createAutoMockUserDomainService(): MockProxy<IUserDomainService>
 ### 📋 UseCase テストの標準パターン
 
 ```typescript
-import { container } from '@/diContainer';
-import { isFailure, isSuccess } from '@/layers/application/types/Result';
-import { CreateUserUseCase } from '@/layers/application/usecases/CreateUserUseCase';
+import { container } from '@/di/container';
+import { resolve } from '@/di/resolver';
 import { INJECTION_TOKENS } from '@/di/tokens';
+import { isFailure, isSuccess } from '@/layers/application/types/Result';
+import type { CreateUserUseCase } from '@/layers/application/usecases/user/CreateUserUseCase';
+import { User } from '@/layers/domain/entities/User';
+import { Email } from '@/layers/domain/value-objects/Email';
 
 import { setupTestEnvironment } from '@tests/utils/helpers/testHelpers';
 import {
@@ -120,7 +168,7 @@ import {
  createAutoMockUserRepository,
 } from '@tests/utils/mocks/autoMocks';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { MockProxy } from 'vitest-mock-extended';
+import type { MockProxy } from 'vitest-mock-extended';
 
 describe('CreateUserUseCase', () => {
  // 🔄 テスト環境自動セットアップ
@@ -145,8 +193,8 @@ describe('CreateUserUseCase', () => {
   container.registerInstance(INJECTION_TOKENS.HashService, mockHashService);
   container.registerInstance(INJECTION_TOKENS.Logger, mockLogger);
 
-  // 🎯 UseCaseインスタンス取得
-  createUserUseCase = container.resolve(CreateUserUseCase);
+  // 🎯 UseCaseインスタンス取得（型安全なresolve関数）
+  createUserUseCase = resolve('CreateUserUseCase');
  });
 
  describe('🟢 正常系', () => {
@@ -199,12 +247,12 @@ describe('CreateUserUseCase', () => {
     password: 'password123',
    };
 
-   // 🎭 既存ユーザーのモック
+   // 🎭 既存ユーザーのモック（コンストラクタ + ファクトリーメソッドパターン）
    const existingUser = User.create(
-    UserName.create('既存ユーザー').data!,
-    Email.create('existing@example.com').data!,
+    new Email('existing@example.com'),
+    '既存ユーザー',
     'hashed_password',
-   ).data!;
+   );
 
    mockUserRepository.findByEmail.mockResolvedValue(existingUser);
 
@@ -287,7 +335,7 @@ describe('Advanced Mocking Techniques', () => {
  it('条件付きモック動作', async () => {
   // 🎯 引数に応じた動作分岐
   mockUserRepository.findByEmail.mockImplementation(async (email) => {
-   if (email.toString() === 'admin@example.com') {
+   if (email.value === 'admin@example.com') {
     return adminUser;
    }
    return null;
@@ -403,8 +451,7 @@ graph TB
 ### 🚀 実践・応用
 
 1. **[実装パターンガイド](../../guides/implementation/patterns-guide.md)** - 包括的テスト実装
-2. **[統合テスト](../integration/overview.md)** - Repository層統合テスト
-3. **[E2Eテスト](../e2e/overview.md)** - エンドツーエンド検証
+2. **[E2Eテスト](../../guides/e2e-testing-guide.md)** - エンドツーエンド検証
 
 ### 📚 深掘り学習
 

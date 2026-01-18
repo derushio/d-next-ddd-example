@@ -7,7 +7,7 @@ import type { IUserDomainService } from '@/layers/domain/services/UserDomainServ
 import { Email } from '@/layers/domain/value-objects/Email';
 import { container } from '@/di/container';
 import { INJECTION_TOKENS } from '@/di/tokens';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 
 import { setupTestEnvironment } from '@tests/utils/helpers/testHelpers';
 import {
@@ -93,7 +93,7 @@ describe('ResetPasswordUseCase', () => {
         'パスワードリセット処理完了',
         {
           email: validInput.email,
-          userId: mockUser.id.toString(),
+          userId: mockUser.id.value,
         },
       );
     });

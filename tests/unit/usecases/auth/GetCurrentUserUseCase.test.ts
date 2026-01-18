@@ -3,13 +3,10 @@ import { GetCurrentUserUseCase } from '@/layers/application/usecases/auth/GetCur
 import { container } from '@/di/container';
 import { INJECTION_TOKENS } from '@/di/tokens';
 import { getAuth } from '@/layers/infrastructure/persistence/nextAuth';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 
 import { createAutoMockLogger } from '@tests/utils/mocks/autoMocks';
-import {
-  createGetAuthMockHelpers,
-  setupGetAuthMock,
-} from '@tests/utils/mocks/commonMocks';
+import { createGetAuthMockHelpers } from '@tests/utils/mocks/commonMocks';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MockProxy } from 'vitest-mock-extended';
 

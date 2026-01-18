@@ -44,8 +44,7 @@ graph LR
 
 ### 🔗 関連ドキュメントとの関係
 
-- **前提**: [最初の機能実装](first-feature.md) - 基本的な実装体験
-- **詳細**: [UseCase実装](usecase.md) | [Domain実装](domain.md) | [Repository実装](repository.md)
+- **詳細**: [UseCase実装](../ddd/layers/components/use-cases.md) | [Domain実装](../ddd/layers/domain-layer.md) | [Repository実装](../ddd/layers/components/repository-implementations.md)
 - **品質**: [テスト戦略](../../testing/strategy.md) | [コーディング規約](../standards/coding.md)
 - **問題解決**: [よくある問題](../../troubleshooting/common-issues.md)
 
@@ -352,9 +351,9 @@ sequenceDiagram
 ```mermaid
 graph TB
     subgraph "📊 自動品質チェック"
-        LINT[ESLint Check]
+        LINT[Biome Lint]
         TYPE[TypeScript Check]
-        FORMAT[Prettier Format]
+        FORMAT[Biome Format]
         TEST[Test Execution]
     end
 
@@ -675,10 +674,9 @@ graph TB
 
 | ツール        | 目的               | 設定                     | 効果               |
 | ------------- | ------------------ | ------------------------ | ------------------ |
-| **Turbopack** | 高速ビルド         | Next.js 15統合           | 開発速度向上       |
+| **Turbopack** | 高速ビルド         | Next.js 16統合           | 開発速度向上       |
 | **Vitest**    | 高速テスト         | 並列実行、ウォッチモード | 即座フィードバック |
-| **ESLint**    | コード品質         | 厳格ルール、自動修正     | 一貫性確保         |
-| **Prettier**  | コードフォーマット | 自動整形                 | 可読性向上         |
+| **Biome**     | Lint + Format      | 厳格ルール、自動修正     | 一貫性・可読性向上 |
 
 ---
 
@@ -760,10 +758,10 @@ graph TB
     end
 
     subgraph "実装Phase"
-        A3 --> B1[UseCase実装<br/>usecase.md]
-        B1 --> B2[Domain実装<br/>domain.md]
-        B2 --> B3[Repository実装<br/>repository.md]
-        B3 --> B4[UI実装<br/>../frontend/components.md]
+        A3 --> B1[UseCase実装<br/>../ddd/layers/components/use-cases.md]
+        B1 --> B2[Domain実装<br/>../ddd/layers/domain-layer.md]
+        B2 --> B3[Repository実装<br/>../ddd/layers/components/repository-implementations.md]
+        B3 --> B4[UI実装<br/>../ddd/layers/presentation-layer.md]
     end
 
     style A1 fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#ffffff
@@ -776,12 +774,12 @@ graph TB
 graph LR
     subgraph "テスト充実"
         C1[ユニットテスト<br/>../../testing/unit/overview.md] --> C2[自動モック<br/>../../testing/unit/mocking.md]
-        C2 --> C3[E2Eテスト<br/>../../testing/e2e/overview.md]
+        C2 --> C3[E2Eテスト<br/>../e2e-testing-guide.md]
     end
 
     subgraph "継続改善"
         C3 --> D1[コード品質<br/>../standards/coding.md]
-        D1 --> D2[パフォーマンス<br/>../advanced/performance.md]
+        D1 --> D2[コーディング規約<br/>../standards/coding.md]
     end
 
     style C1 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff
@@ -811,14 +809,14 @@ graph LR
 
 ### 📋 **開発Phase別必読ドキュメント**
 
-| Phase              | 主要ドキュメント                                     | 関連実装                                                  | 品質確認                                                      | トラブル対応                                                        |
-| ------------------ | ---------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------- |
-| **計画・設計**     | [アーキテクチャ概要](../../architecture/overview.md) | [設計原則](../../architecture/principles.md)              | [設計判断記録](../../architecture/decisions/)                 | [設計相談](../../troubleshooting/development/)                      |
-| **Domain実装**     | [Domain実装](domain.md)                              | [エンティティ](../../architecture/layers/domain.md)       | [Value Object](../../architecture/patterns/value-objects.md)  | [Domain問題](../../troubleshooting/development/domain.md)           |
-| **UseCase実装**    | [UseCase実装](usecase.md)                            | [Result型](../../architecture/patterns/result-pattern.md) | [DI設定](../../architecture/patterns/dependency-injection.md) | [DI問題](../../troubleshooting/development/dependency-injection.md) |
-| **Repository実装** | [Repository実装](repository.md)                      | [インフラ層](../../architecture/layers/infrastructure.md) | [統合テスト](../../testing/integration/)                      | [DB問題](../../troubleshooting/development/database.md)             |
-| **UI実装**         | [コンポーネント開発](../frontend/components.md)      | [Server Actions](../frontend/server-actions.md)           | [E2Eテスト](../../testing/e2e/overview.md)                    | [UI問題](../../troubleshooting/frontend/)                           |
-| **テスト実装**     | [テスト戦略](../../testing/strategy.md)              | [自動モック](../../testing/unit/mocking.md)               | [カバレッジ確認](../../testing/unit/coverage.md)              | [テスト問題](../../troubleshooting/testing/)                        |
+| Phase | 主要ドキュメント | 関連実装 | 品質確認 | トラブル対応 |
+| --- | --- | --- | --- | --- |
+| **計画・設計** | [アーキテクチャ概要](../../architecture/overview.md) | [設計原則](../../architecture/principles.md) | - | [よくある問題](../../troubleshooting/common-issues.md) |
+| **Domain実装** | [Domain層](../ddd/layers/domain-layer.md) | [Entity](../ddd/layers/components/entities.md) | [Value Object](../ddd/layers/components/value-objects.md) | [よくある問題](../../troubleshooting/common-issues.md) |
+| **UseCase実装** | [UseCase](../ddd/layers/components/use-cases.md) | [Application層](../ddd/layers/application-layer.md) | [DI設定](../../architecture/patterns/dependency-injection.md) | [よくある問題](../../troubleshooting/common-issues.md) |
+| **Repository実装** | [Repository実装](../ddd/layers/components/repository-implementations.md) | [Infrastructure層](../ddd/layers/infrastructure-layer.md) | - | [Prisma問題](../../troubleshooting/development/prisma-mock-setup.md) |
+| **UI実装** | [Presentation層](../ddd/layers/presentation-layer.md) | [Server Actions](../ddd/layers/components/server-actions.md) | [E2Eテスト](../e2e-testing-guide.md) | - |
+| **テスト実装** | [テスト戦略](../../testing/strategy.md) | [自動モック](../../testing/unit/mocking.md) | - | [vitest-mock設定](../../troubleshooting/development/vitest-mock-extended-setup.md) |
 
 ### 🛠️ **実装詳細ガイド**
 
@@ -826,7 +824,7 @@ graph LR
 
 ```
 前提: [アーキテクチャ理解](../../architecture/overview.md) → [DI理解](../../architecture/patterns/dependency-injection.md)
-実装: [UseCase詳細](usecase.md) → [Result型活用](../../architecture/patterns/result-pattern.md)
+実装: [UseCase詳細](../ddd/layers/components/use-cases.md) → [エラーハンドリング](../ddd/cross-cutting/error-handling.md)
 テスト: [ユニットテスト](../../testing/unit/overview.md) → [モック活用](../../testing/unit/mocking.md)
 問題解決: [DI問題](../../troubleshooting/development/dependency-injection.md)
 ```
@@ -834,38 +832,38 @@ graph LR
 #### **Repository開発**
 
 ```
-前提: [インフラ層理解](../../architecture/layers/infrastructure.md) → [Repository概念](../../architecture/patterns/repository-pattern.md)
-実装: [Repository詳細](repository.md) → [Prisma統合](../../reference/configuration/database.md)
-テスト: [統合テスト](../../testing/integration/) → [DB テスト](../../testing/integration/database.md)
-問題解決: [DB関連問題](../../troubleshooting/development/database.md)
+前提: [インフラ層理解](../ddd/layers/infrastructure-layer.md) → [Repository Interface](../ddd/layers/components/repository-interfaces.md)
+実装: [Repository詳細](../ddd/layers/components/repository-implementations.md)
+テスト: [ユニットテスト](../../testing/unit/overview.md)
+問題解決: [Prisma問題](../../troubleshooting/development/prisma-mock-setup.md)
 ```
 
 #### **UI開発**
 
 ```
-前提: [プレゼンテーション層](../../architecture/layers/presentation.md) → [UI システム](../frontend/ui-system.md)
-実装: [コンポーネント開発](../frontend/components.md) → [Server Actions](../frontend/server-actions.md)
-テスト: [E2Eテスト](../../testing/e2e/overview.md) → [UI テスト](../../testing/e2e/ui-testing.md)
-問題解決: [フロントエンド問題](../../troubleshooting/frontend/)
+前提: [プレゼンテーション層](../ddd/layers/presentation-layer.md)
+実装: [Server Actions](../ddd/layers/components/server-actions.md)
+テスト: [E2Eテスト](../e2e-testing-guide.md)
+問題解決: [よくある問題](../../troubleshooting/common-issues.md)
 ```
 
 ### 🔧 **ツール・コマンド活用**
 
-| 開発段階       | 主要コマンド         | 詳細ガイド                                           | 最適化                                             |
+| 開発段階       | 主要コマンド         | 詳細ガイド                                           | 関連ドキュメント                                   |
 | -------------- | -------------------- | ---------------------------------------------------- | -------------------------------------------------- |
-| **開発開始**   | `pnpm dev`           | [環境セットアップ](../setup.md)                      | [開発効率化](../advanced/productivity.md)          |
-| **実装中**     | `pnpm test:watch`    | [テスト実行](../../testing/unit/overview.md)         | [ウォッチモード](../../testing/unit/watch-mode.md) |
-| **品質確認**   | `pnpm test:coverage` | [カバレッジ分析](../../testing/unit/coverage.md)     | [品質指標](../standards/quality.md)                |
-| **統合確認**   | `pnpm test:e2e:ui`   | [E2E テスト](../../testing/e2e/overview.md)          | [UI Mode活用](../../testing/e2e/ui-mode.md)        |
-| **デプロイ前** | `pnpm build`         | [ビルド設定](../../reference/configuration/build.md) | [最適化設定](../advanced/build-optimization.md)    |
+| **開発開始**   | `pnpm dev`           | [環境セットアップ](../setup.md)                      | [コマンドリファレンス](../../reference/commands.md)  |
+| **実装中**     | `pnpm test:watch`    | [テスト実行](../../testing/unit/overview.md)         | [自動モック](../../testing/unit/mocking.md)         |
+| **品質確認**   | `pnpm test:coverage` | [テスト戦略](../../testing/strategy.md)              | [コーディング規約](../standards/coding.md)          |
+| **統合確認**   | `pnpm test:e2e:ui`   | [E2E テスト](../e2e-testing-guide.md)                | [テスト戦略](../../testing/strategy.md)             |
+| **デプロイ前** | `pnpm build`         | [コマンドリファレンス](../../reference/commands.md)  | [トラブルシューティング](../../troubleshooting/common-issues.md) |
 
 ### 📚 **学習リソース**
 
 #### **レベル別推奨学習パス**
 
-- **初心者**: [最初の機能実装](first-feature.md) → [基本パターン習得](../../architecture/patterns/basic/)
-- **中級者**: このドキュメント → [高度な実装](../advanced/) → [最適化手法](../advanced/optimization/)
-- **上級者**: [アーキテクチャ拡張](../../architecture/advanced/) → [チーム開発](../team/)
+- **初心者**: [アーキテクチャ概要](../../architecture/overview.md) → [DDD概念](../ddd/concepts/domain-driven-design.md)
+- **中級者**: このドキュメント → [UseCase実装](../ddd/layers/components/use-cases.md) → [テスト戦略](../../testing/strategy.md)
+- **上級者**: [設計原則](../../architecture/principles.md) → [DI設定](../../architecture/patterns/dependency-injection.md)
 
 #### **継続的スキル向上**
 
@@ -879,21 +877,21 @@ graph LR
 
 ### 🚀 **開発速度向上**
 
-1. **テンプレート活用** - [コードテンプレート](../templates/) で定型作業削減
-2. **自動化推進** - [開発ツール](../../reference/tools.md) でルーチン作業自動化
-3. **品質向上** - [Lint・フォーマット](../standards/formatting.md) で修正時間削減
+1. **テンプレート活用** - 実装パターンの再利用で定型作業削減
+2. **自動化推進** - [コマンドリファレンス](../../reference/commands.md) でルーチン作業自動化
+3. **品質向上** - [コーディング規約](../standards/coding.md) で修正時間削減
 
 ### 🎯 **品質安定化**
 
-1. **TDD実践** - [テスト駆動開発](../../testing/tdd.md) で設計品質向上
-2. **継続リファクタリング** - [リファクタリング手法](../advanced/refactoring.md) で保守性向上
-3. **定期レビュー** - [コードレビュー](../team/code-review.md) で知識共有
+1. **TDD実践** - [テスト戦略](../../testing/strategy.md) で設計品質向上
+2. **継続リファクタリング** - クリーンコード原則で保守性向上
+3. **定期レビュー** - コードレビューで知識共有
 
 ### 🔄 **継続改善**
 
 1. **振り返り実施** - 開発プロセスの定期見直し
-2. **メトリクス活用** - [品質指標](../standards/quality.md) による客観的評価
-3. **チーム学習** - [知識共有](../team/knowledge-sharing.md) で全体底上げ
+2. **メトリクス活用** - カバレッジ確認による客観的評価
+3. **チーム学習** - ドキュメント更新で知識共有
 
 ---
 

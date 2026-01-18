@@ -606,8 +606,8 @@ export class UserDomainService {
   }
 
   // 新しいビジネスルール追加
-  if (user.getLevel() >= 5) {
-   const membership = await membershipService.getMembership(user.getId());
+  if (user.level >= 5) {
+   const membership = await membershipService.getMembership(user.id);
    return membership.isVip();
   }
 
@@ -669,6 +669,6 @@ graph TD
 ## 関連ドキュメント 📚
 
 - [クリーンアーキテクチャ詳細解説](./clean-architecture.md) - アーキテクチャとの関係
-- [アーキテクチャ概要](../architecture-overview.md) - 全体設計との連携
-- [開発ガイド](../development-guide.md) - 実装手順
-- [テスト戦略](../testing-strategy.md) - ドメインロジックのテスト手法
+- [アーキテクチャ概要](../../../architecture/overview.md) - 全体設計との連携
+- [開発ワークフロー](../../development/workflow.md) - 実装手順
+- [テスト戦略](../../../testing/strategy.md) - ドメインロジックのテスト手法

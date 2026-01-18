@@ -200,7 +200,7 @@ graph TB
 - UI状態の管理（モーダル開閉、タブ選択等）
 - Server Actions経由でのApplication Layer呼び出し
 
-**技術スタック：** Next.js App Router、React、TailwindCSS、Flowbite-React
+**技術スタック：** Next.js App Router、React、TailwindCSS、shadcn/ui
 
 ### 📋 Application Layer（アプリケーション層）
 
@@ -400,7 +400,9 @@ export class OrderService {
 // ✅ インターフェース経由（DIP準拠）
 @injectable()
 export class OrderService {
- constructor(@inject('IEmailService') private emailService: IEmailService) {}
+ constructor(
+  @inject(INJECTION_TOKENS.EmailService) private emailService: IEmailService,
+ ) {}
 }
 ```
 
@@ -428,7 +430,7 @@ export class CreateUserUseCase {
  async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
   const user = User.create(request.name, new Email(request.email)); // Domain Object
   await this.userRepository.save(user); // Repository経由で保存
-  return { id: user.getId().toString() }; // DTO形式でレスポンス
+  return { id: user.id.value }; // DTO形式でレスポンス
  }
 }
 ```

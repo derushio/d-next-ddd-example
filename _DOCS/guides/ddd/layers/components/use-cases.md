@@ -78,13 +78,15 @@ sequenceDiagram
 
 ```typescript
 // ✅ 推薦：Use Case でのフロー制御（Result型パターン）
+import { INJECTION_TOKENS } from '@/di/tokens';
+
 @injectable()
 export class CreateUserUseCase {
  constructor(
-  @inject('IUserRepository') private userRepository: IUserRepository,
-  @inject('IUserDomainService') private userDomainService: IUserDomainService,
-  @inject('IHashService') private hashService: IHashService,
-  @inject('ILogger') private logger: ILogger,
+  @inject(INJECTION_TOKENS.UserRepository) private userRepository: IUserRepository,
+  @inject(INJECTION_TOKENS.UserDomainService) private userDomainService: IUserDomainService,
+  @inject(INJECTION_TOKENS.HashService) private hashService: IHashService,
+  @inject(INJECTION_TOKENS.Logger) private logger: ILogger,
  ) {}
 
  async execute(
@@ -109,17 +111,19 @@ export class CreateUserUseCase {
    await this.userRepository.save(user);
 
    this.logger.info('ユーザー作成完了', {
-    userId: user.getId().toString(),
+    userId: user.id.value,
     email: request.email,
    });
 
    // 6. 成功レスポンス
+   // Value Object: .value で型安全にプリミティブ値を取得
+   // プリミティブ型: 直接アクセス
    return success({
-    id: user.getId().toString(),
-    name: user.getName(),
-    email: user.getEmail().toString(),
-    createdAt: user.getCreatedAt(),
-    updatedAt: user.getUpdatedAt(),
+    id: user.id.value,
+    name: user.name,
+    email: user.email.value,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
    });
   } catch (error) {
    this.logger.error('ユーザー作成失敗', {
@@ -143,14 +147,16 @@ export class CreateUserUseCase {
 
 ```typescript
 // ✅ 推薦：Use Case レベルでのトランザクション制御
+import { INJECTION_TOKENS } from '@/di/tokens';
+
 @injectable()
 export class TransferUserPointsUseCase {
  constructor(
-  @inject('IUserRepository') private userRepository: IUserRepository,
-  @inject('IPointTransactionRepository')
+  @inject(INJECTION_TOKENS.UserRepository) private userRepository: IUserRepository,
+  @inject(INJECTION_TOKENS.PointTransactionRepository)
   private pointTransactionRepository: IPointTransactionRepository,
-  @inject('IUserDomainService') private userDomainService: IUserDomainService,
-  @inject('IDatabaseFactory') private databaseFactory: IDatabaseFactory,
+  @inject(INJECTION_TOKENS.UserDomainService) private userDomainService: UserDomainService,
+  @inject(INJECTION_TOKENS.PrismaClient) private prisma: PrismaClient,
  ) {}
 
  async execute(request: TransferPointsRequest): Promise<void> {
@@ -211,12 +217,14 @@ export class TransferUserPointsUseCase {
 
 ```typescript
 // ✅ 推薦：Use Case での認可処理（Result型パターン）
+import { INJECTION_TOKENS } from '@/di/tokens';
+
 @injectable()
 export class DeleteUserUseCase {
  constructor(
-  @inject('IUserRepository') private userRepository: IUserRepository,
-  @inject('IAuthorizationService') private authService: IAuthorizationService,
-  @inject('ILogger') private logger: ILogger,
+  @inject(INJECTION_TOKENS.UserRepository) private userRepository: IUserRepository,
+  @inject(INJECTION_TOKENS.AuthorizationService) private authService: IAuthorizationService,
+  @inject(INJECTION_TOKENS.Logger) private logger: ILogger,
  ) {}
 
  async execute(
@@ -297,14 +305,16 @@ export class DeleteUserUseCase {
 
 ```typescript
 // ✅ 推薦：複数のドメインサービス・外部サービスの組み合わせ
+import { INJECTION_TOKENS } from '@/di/tokens';
+
 @injectable()
 export class CompleteUserRegistrationUseCase {
  constructor(
-  @inject('IUserRepository') private userRepository: IUserRepository,
-  @inject('IUserDomainService') private userDomainService: IUserDomainService,
-  @inject('IEmailService') private emailService: IEmailService,
-  @inject('IFileService') private fileService: IFileService,
-  @inject('IAnalyticsService') private analyticsService: IAnalyticsService,
+  @inject(INJECTION_TOKENS.UserRepository) private userRepository: IUserRepository,
+  @inject(INJECTION_TOKENS.UserDomainService) private userDomainService: UserDomainService,
+  @inject(INJECTION_TOKENS.EmailService) private emailService: IEmailService,
+  @inject(INJECTION_TOKENS.FileService) private fileService: IFileService,
+  @inject(INJECTION_TOKENS.AnalyticsService) private analyticsService: IAnalyticsService,
  ) {}
 
  async execute(request: CompleteRegistrationRequest): Promise<void> {
@@ -322,7 +332,7 @@ export class CompleteUserRegistrationUseCase {
   if (request.avatarFile) {
    avatarUrl = await this.fileService.uploadFile(
     request.avatarFile,
-    `avatars/${user.getId().toString()}`,
+    `avatars/${user.id.value}`,
     'image/jpeg',
    );
   }
@@ -341,13 +351,13 @@ export class CompleteUserRegistrationUseCase {
 
   // 6. ウェルカムメール送信（外部サービス）
   await this.emailService.sendRegistrationCompleteEmail(
-   user.getEmail().toString(),
-   user.getName(),
+   user.email.value,
+   user.name,
   );
 
   // 7. 分析データ送信（外部サービス）
   await this.analyticsService.trackEvent('user_registration_completed', {
-   userId: user.getId().toString(),
+   userId: user.id.value,
    registrationDate: new Date(),
    hasAvatar: !!avatarUrl,
   });
@@ -359,12 +369,14 @@ export class CompleteUserRegistrationUseCase {
 
 ```typescript
 // ✅ 推薦：適切なエラーハンドリング（Result型パターン）
+import { INJECTION_TOKENS } from '@/di/tokens';
+
 @injectable()
 export class UpdateUserProfileUseCase {
  constructor(
-  @inject('IUserRepository') private userRepository: IUserRepository,
-  @inject('IUserDomainService') private userDomainService: IUserDomainService,
-  @inject('ILogger') private logger: ILogger,
+  @inject(INJECTION_TOKENS.UserRepository) private userRepository: IUserRepository,
+  @inject(INJECTION_TOKENS.UserDomainService) private userDomainService: UserDomainService,
+  @inject(INJECTION_TOKENS.Logger) private logger: ILogger,
  ) {}
 
  async execute(
@@ -415,10 +427,10 @@ export class UpdateUserProfileUseCase {
    });
 
    return success({
-    id: user.getId().toString(),
-    name: user.getName(),
-    email: user.getEmail().toString(),
-    updatedAt: user.getUpdatedAt(),
+    id: user.id.value,
+    name: user.name,
+    email: user.email.value,
+    updatedAt: user.updatedAt,
    });
   } catch (error) {
    const duration = Date.now() - startTime;
@@ -473,9 +485,9 @@ export class GetUserUseCase {
 
   return {
    // 表示フォーマットは Presentation Layer の責務
-   displayName: `${user.getName()}様`, // 禁止
-   formattedLevel: `レベル ${user.getLevel()}`, // 禁止
-   colorCode: user.getLevel() >= 10 ? '#gold' : '#silver', // 禁止
+   displayName: `${user.name}様`, // 禁止
+   formattedLevel: `レベル ${user.level}`, // 禁止
+   colorCode: user.level >= 10 ? '#gold' : '#silver', // 禁止
   };
  }
 }
@@ -533,9 +545,9 @@ export class GetUserListUseCase {
 
   // 複雑な変換ロジック（別クラスに分離すべき）
   const userSummaries = users.map((user) => ({
-   id: user.getId().toString(),
-   name: user.getName(),
-   email: user.getEmail().toString(),
+   id: user.id.value,
+   name: user.name,
+   email: user.email.value,
    // 複雑な計算ロジック
    score: this.calculateUserScore(user), // 禁止
    recommendations: this.generateRecommendations(user), // 禁止
@@ -619,12 +631,14 @@ export interface CreateUserResponse {
 // DTOマッパーで変換ロジックを分離
 export class UserDTOMapper {
  static toCreateUserResponse(user: User): CreateUserResponse {
+  // Value Object: .value で型安全にプリミティブ値を取得
+  // プリミティブ型: 直接アクセス
   return {
-   id: user.getId().toString(),
-   name: user.getName(),
-   email: user.getEmail().toString(),
-   level: user.getLevel(),
-   createdAt: user.getCreatedAt(),
+   id: user.id.value,
+   name: user.name,
+   email: user.email.value,
+   level: user.level,
+   createdAt: user.createdAt,
   };
  }
 }
@@ -634,16 +648,18 @@ export class UserDTOMapper {
 
 ```typescript
 // ✅ 推薦：コンストラクタインジェクション
+import { INJECTION_TOKENS } from '@/di/tokens';
+
 @injectable()
 export class CreateUserUseCase {
  constructor(
-  @inject('IUserRepository') private userRepository: IUserRepository,
-  @inject('IUserDomainService') private userDomainService: IUserDomainService,
-  @inject('IEmailService') private emailService: IEmailService,
-  @inject('ILogger') private logger: ILogger,
+  @inject(INJECTION_TOKENS.UserRepository) private userRepository: IUserRepository,
+  @inject(INJECTION_TOKENS.UserDomainService) private userDomainService: UserDomainService,
+  @inject(INJECTION_TOKENS.EmailService) private emailService: IEmailService,
+  @inject(INJECTION_TOKENS.Logger) private logger: ILogger,
  ) {}
 
- async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
+ async execute(request: CreateUserRequest): Promise<Result<CreateUserResponse>> {
   // 注入された依存関係を使用
  }
 }

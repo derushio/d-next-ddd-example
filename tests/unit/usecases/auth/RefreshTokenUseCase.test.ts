@@ -3,7 +3,7 @@ import { RefreshTokenUseCase } from '@/layers/application/usecases/auth/RefreshT
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import { container } from '@/di/container';
 import { INJECTION_TOKENS } from '@/di/tokens';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 
 import { setupTestEnvironment } from '@tests/utils/helpers/testHelpers';
 import {
@@ -141,13 +141,13 @@ describe('RefreshTokenUseCase', () => {
         // トークンが異なることを確認
         expect(result1.data.accessToken).not.toBe(result2.data.accessToken);
         expect(result1.data.refreshToken).not.toBe(result2.data.refreshToken);
-        
+
         // トークンのフォーマットを確認
         expect(result1.data.accessToken).toMatch(/^access_\d+_\d+/);
         expect(result1.data.refreshToken).toMatch(/^refresh_\d+_\d+/);
         expect(result2.data.accessToken).toMatch(/^access_\d+_\d+/);
         expect(result2.data.refreshToken).toMatch(/^refresh_\d+_\d+/);
-        
+
         // expiresInは固定値
         expect(result1.data.expiresIn).toBe(3600);
         expect(result2.data.expiresIn).toBe(3600);
@@ -197,7 +197,7 @@ describe('RefreshTokenUseCase', () => {
         'リフレッシュトークン処理開始',
         { refreshToken: '***' },
       );
-      
+
       // 実際のトークン値がログに出力されていないことを確認
       expect(mockLogger.info).not.toHaveBeenCalledWith(
         'リフレッシュトークン処理開始',

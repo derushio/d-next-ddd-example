@@ -48,12 +48,13 @@ graph LR
 ```typescript
 // src/layers/domain/entities/Product.ts
 export class Product {
+ // ✅ public readonly でプロパティに直接アクセス可能
  constructor(
-  private readonly id: string,
-  private readonly name: string,
-  private readonly price: number,
-  private readonly description: string,
-  private readonly createdAt: Date = new Date(),
+  public readonly id: string,
+  public readonly name: string,
+  public readonly price: number,
+  public readonly description: string,
+  public readonly createdAt: Date = new Date(),
  ) {
   this.validatePrice(price);
   this.validateName(name);
@@ -73,25 +74,10 @@ export class Product {
   }
  }
 
- // Getter メソッド
- getId(): string {
-  return this.id;
- }
- getName(): string {
-  return this.name;
- }
- getPrice(): number {
-  return this.price;
- }
- getDescription(): string {
-  return this.description;
- }
- getCreatedAt(): Date {
-  return this.createdAt;
- }
+ // getter メソッドは不要（product.id, product.name でアクセス）
 
- // 表示用の価格フォーマット
- getFormattedPrice(): string {
+ // 表示用の価格フォーマット（ドメインロジック）
+ get formattedPrice(): string {
   return `¥${this.price.toLocaleString()}`;
  }
 }
@@ -121,9 +107,9 @@ export interface IProductRepository {
 // src/layers/infrastructure/repositories/ProductRepository.ts
 import { injectable } from 'tsyringe';
 
-import { Product } from '../../domain/entities/Product';
-import { IProductRepository } from '../../domain/repositories/IProductRepository';
-import { prisma } from '../database/client';
+import { Product } from '@/layers/domain/entities/Product';
+import { IProductRepository } from '@/layers/domain/repositories/IProductRepository';
+import { prisma } from '@/layers/infrastructure/database/client';
 
 @injectable()
 export class ProductRepository implements IProductRepository {
@@ -174,18 +160,19 @@ export class ProductRepository implements IProductRepository {
 
  async save(product: Product): Promise<void> {
   try {
+   // public readonly プロパティに直接アクセス
    await prisma.product.upsert({
-    where: { id: product.getId() },
+    where: { id: product.id },
     update: {
-     name: product.getName(),
-     price: product.getPrice(),
-     description: product.getDescription(),
+     name: product.name,
+     price: product.price,
+     description: product.description,
     },
     create: {
-     id: product.getId(),
-     name: product.getName(),
-     price: product.getPrice(),
-     description: product.getDescription(),
+     id: product.id,
+     name: product.name,
+     price: product.price,
+     description: product.description,
     },
    });
   } catch (error) {
@@ -208,22 +195,31 @@ export class ProductRepository implements IProductRepository {
 ### 2-2. DI Container に登録
 
 ```typescript
-// src/layers/infrastructure/di/container.ts に追加
-import { container } from 'tsyringe';
+// src/di/tokens.ts に追加
+export const INJECTION_TOKENS = {
+ // 既存のトークン...
+ // Symbol.for() でグローバルに一意なトークンを作成
+ ProductRepository: Symbol.for('ProductRepository'),
+} as const;
 
-import { ProductRepository } from '../repositories/ProductRepository';
-import { INJECTION_TOKENS } from './tokens';
-
-// 既存の登録に追加
-container.register(INJECTION_TOKENS.ProductRepository, ProductRepository);
+// 型マッピング（ServiceTypeMap）にも追加
+export type ServiceTypeMap = {
+ // 既存のマッピング...
+ GetProductsUseCase: GetProductsUseCase;
+};
 ```
 
 ```typescript
-// src/layers/infrastructure/di/tokens.ts に追加
-export const INJECTION_TOKENS = {
- // 既存のトークン...
- ProductRepository: 'ProductRepository',
-} as const;
+// src/di/infrastructureContainer.ts に追加
+import { container } from '@/di/container';
+import { INJECTION_TOKENS } from '@/di/tokens';
+
+import { ProductRepository } from '@/layers/infrastructure/repositories/ProductRepository';
+
+// Repositoryの登録
+container.register(INJECTION_TOKENS.ProductRepository, {
+ useClass: ProductRepository,
+});
 ```
 
 ---
@@ -252,11 +248,11 @@ export interface GetProductsResponse {
 // src/layers/application/usecases/GetProductsUseCase.ts
 import { inject, injectable } from 'tsyringe';
 
-import { IProductRepository } from '../../domain/repositories/IProductRepository';
-import { ILogger } from '../../domain/services/ILogger';
-import { INJECTION_TOKENS } from '../../infrastructure/di/tokens';
-import { GetProductsResponse } from '../dtos/GetProductsResponse';
-import { failure, Result, success } from '../types/Result';
+import { INJECTION_TOKENS } from '@/di/tokens';
+import { GetProductsResponse } from '@/layers/application/dtos/GetProductsResponse';
+import { failure, Result, success } from '@/layers/application/types/Result';
+import { IProductRepository } from '@/layers/domain/repositories/IProductRepository';
+import { ILogger } from '@/layers/domain/services/ILogger';
 
 @injectable()
 export class GetProductsUseCase {
@@ -276,14 +272,15 @@ export class GetProductsUseCase {
    const products = await this.productRepository.findAll();
 
    // DTOに変換（Presentation Layer向けの形式）
+   // public readonly プロパティに直接アクセス
    const response: GetProductsResponse = {
     products: products.map((product) => ({
-     id: product.getId(),
-     name: product.getName(),
-     price: product.getPrice(),
-     formattedPrice: product.getFormattedPrice(),
-     description: product.getDescription(),
-     createdAt: product.getCreatedAt(),
+     id: product.id,
+     name: product.name,
+     price: product.price,
+     formattedPrice: product.formattedPrice,
+     description: product.description,
+     createdAt: product.createdAt,
     })),
    };
 
@@ -300,10 +297,15 @@ export class GetProductsUseCase {
 ### 3-3. UseCase を DI Container に登録
 
 ```typescript
-// src/layers/application/di/container.ts に追加
-import { GetProductsUseCase } from '../usecases/GetProductsUseCase';
+// src/di/applicationContainer.ts に追加
+import { container } from '@/di/container';
 
-container.register('GetProductsUseCase', GetProductsUseCase);
+import { GetProductsUseCase } from '@/layers/application/usecases/GetProductsUseCase';
+
+// UseCase の登録（文字列キーで ServiceTypeMap と紐付け）
+container.register('GetProductsUseCase', {
+ useClass: GetProductsUseCase,
+});
 ```
 
 ---
@@ -435,9 +437,10 @@ describe('Product Entity', () => {
  it('正常な商品を作成できる', () => {
   const product = new Product('1', 'テスト商品', 1000, 'テスト商品の説明');
 
-  expect(product.getName()).toBe('テスト商品');
-  expect(product.getPrice()).toBe(1000);
-  expect(product.getFormattedPrice()).toBe('¥1,000');
+  // public readonly プロパティに直接アクセス
+  expect(product.name).toBe('テスト商品');
+  expect(product.price).toBe(1000);
+  expect(product.formattedPrice).toBe('¥1,000');
  });
 
  it('価格が負の値の場合エラーが発生する', () => {
@@ -461,11 +464,11 @@ describe('Product Entity', () => {
 import { beforeEach, describe, expect, it } from 'vitest';
 import { mock, MockProxy } from 'vitest-mock-extended';
 
-import { Product } from '../../domain/entities/Product';
-import { IProductRepository } from '../../domain/repositories/IProductRepository';
-import { ILogger } from '../../domain/services/ILogger';
-import { isFailure, isSuccess } from '../types/Result';
-import { GetProductsUseCase } from './GetProductsUseCase';
+import { isFailure, isSuccess } from '@/layers/application/types/Result';
+import { GetProductsUseCase } from '@/layers/application/usecases/GetProductsUseCase';
+import { Product } from '@/layers/domain/entities/Product';
+import { IProductRepository } from '@/layers/domain/repositories/IProductRepository';
+import { ILogger } from '@/layers/domain/services/ILogger';
 
 describe('GetProductsUseCase', () => {
  let mockProductRepository: MockProxy<IProductRepository>;

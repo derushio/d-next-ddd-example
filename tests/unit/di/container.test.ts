@@ -9,6 +9,8 @@ import { GetCurrentUserUseCase } from '@/layers/application/usecases/auth/GetCur
 import { SignInUseCase } from '@/layers/application/usecases/auth/SignInUseCase';
 import { CreateUserUseCase } from '@/layers/application/usecases/user/CreateUserUseCase';
 import { AuthSessionService } from '@/layers/infrastructure/services/AuthSessionService';
+import { LoginAttemptService } from '@/layers/infrastructure/services/LoginAttemptService';
+import { RateLimitService } from '@/layers/infrastructure/services/RateLimitService';
 import { UserDomainService } from '@/layers/domain/services/UserDomainService';
 import { DatabaseFactory } from '@/layers/infrastructure/persistence/DatabaseFactory';
 // DIコンテナの初期化のために、明示的にcontainerモジュールをインポート
@@ -22,15 +24,12 @@ import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // テスト用のresolve関数（型安全）
-function testResolve<
-  K extends
-    keyof import('@/di/tokens').ServiceTypeMap,
->(
+function testResolve<K extends keyof import('@/di/tokens').ServiceTypeMap>(
   serviceName: K,
 ): import('@/di/tokens').ServiceType<K> {
-  return container.resolve<
-    import('@/di/tokens').ServiceType<K>
-  >(INJECTION_TOKENS[serviceName] as InjectionToken<K>);
+  return container.resolve<import('@/di/tokens').ServiceType<K>>(
+    INJECTION_TOKENS[serviceName] as InjectionToken<K>,
+  );
 }
 
 describe('DIコンテナテスト', () => {
@@ -44,6 +43,12 @@ describe('DIコンテナテスト', () => {
     const mockPrisma = {
       user: { create: vi.fn(), findUnique: vi.fn() },
       userSession: { create: vi.fn(), findFirst: vi.fn() },
+      loginAttempt: {
+        create: vi.fn(),
+        findFirst: vi.fn(),
+        count: vi.fn(),
+        deleteMany: vi.fn(),
+      },
       $connect: vi.fn(),
       $disconnect: vi.fn(),
     } as unknown as PrismaClient;
@@ -73,6 +78,14 @@ describe('DIコンテナテスト', () => {
     container.registerSingleton(
       INJECTION_TOKENS.AuthSessionService,
       AuthSessionService,
+    );
+    container.registerSingleton(
+      INJECTION_TOKENS.LoginAttemptService,
+      LoginAttemptService,
+    );
+    container.registerSingleton(
+      INJECTION_TOKENS.RateLimitService,
+      RateLimitService,
     );
     container.registerSingleton(
       INJECTION_TOKENS.GetCurrentUserUseCase,

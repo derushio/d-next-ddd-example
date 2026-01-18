@@ -1,5 +1,3 @@
-import type { PrismaClient } from '@/layers/infrastructure/persistence/prisma/generated';
-
 import { vi } from 'vitest';
 
 /**

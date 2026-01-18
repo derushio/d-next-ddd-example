@@ -2,12 +2,11 @@ import 'reflect-metadata';
 
 import { UserService } from '@/layers/application/services/UserService';
 import { isFailure, isSuccess } from '@/layers/application/types/Result';
-import { DomainError } from '@/layers/domain/errors/DomainError';
 import { User } from '@/layers/domain/entities/User';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import { Email } from '@/layers/domain/value-objects/Email';
 import type { IHashService } from '@/layers/infrastructure/services/HashService';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 import {
   createAutoMockHashService,
   createAutoMockLogger,
@@ -55,7 +54,7 @@ describe('UserService', () => {
       mockUserRepository.findByEmail.mockResolvedValue(null); // 重複チェック: 存在しない
       mockHashService.generateHash.mockResolvedValue('hashed-password');
       mockUserRepository.save.mockResolvedValue(undefined);
-      
+
       // User.createのモック
       const mockUserCreate = vi.spyOn(User, 'create').mockReturnValue(mockUser);
 
@@ -322,14 +321,16 @@ describe('UserService', () => {
       // Act - 実際に無効なメールアドレスを使用してDomainErrorを発生させる
       const result = await userService.createUser(
         validUserData.name,
-        'a'.repeat(300) + '@example.com', // 254文字を超える長いメールアドレス
+        `${'a'.repeat(300)}@example.com`, // 254文字を超える長いメールアドレス
         validUserData.password,
       );
 
       // Assert
       expect(isFailure(result)).toBe(true);
       if (isFailure(result)) {
-        expect(result.error.message).toBe('メールアドレスが長すぎます（254文字以内である必要があります）');
+        expect(result.error.message).toBe(
+          'メールアドレスが長すぎます（254文字以内である必要があります）',
+        );
         expect(result.error.code).toBe('EMAIL_TOO_LONG');
       }
     });
@@ -350,7 +351,7 @@ describe('UserService', () => {
 
       // Assert - ログにパスワードが含まれていないことを確認
       const logCalls: LoggerMockCall[] = mockLogger.info.mock.calls;
-      logCalls.forEach(([message, meta]) => {
+      logCalls.forEach(([_message, meta]) => {
         expect(JSON.stringify(meta)).not.toContain('password123');
       });
 

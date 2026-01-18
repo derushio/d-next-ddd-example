@@ -2,12 +2,10 @@ import 'reflect-metadata';
 
 import { AuthService } from '@/layers/application/services/AuthService';
 import { isFailure, isSuccess } from '@/layers/application/types/Result';
-import { DomainError } from '@/layers/domain/errors/DomainError';
-import { User } from '@/layers/domain/entities/User';
+import type { User } from '@/layers/domain/entities/User';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
-import { Email } from '@/layers/domain/value-objects/Email';
 import type { IHashService } from '@/layers/infrastructure/services/HashService';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 import {
   createAutoMockHashService,
   createAutoMockLogger,
@@ -176,9 +174,7 @@ describe('AuthService', () => {
       // Assert
       expect(isFailure(result)).toBe(true);
       if (isFailure(result)) {
-        expect(result.error.message).toBe(
-          '認証処理中にエラーが発生しました',
-        );
+        expect(result.error.message).toBe('認証処理中にエラーが発生しました');
         expect(result.error.code).toBe('AUTHENTICATION_ERROR');
       }
 
@@ -203,9 +199,7 @@ describe('AuthService', () => {
       // Assert
       expect(isFailure(result)).toBe(true);
       if (isFailure(result)) {
-        expect(result.error.message).toBe(
-          '認証処理中にエラーが発生しました',
-        );
+        expect(result.error.message).toBe('認証処理中にエラーが発生しました');
         expect(result.error.code).toBe('AUTHENTICATION_ERROR');
       }
 
@@ -221,14 +215,16 @@ describe('AuthService', () => {
     it('should handle domain error from Email value object', async () => {
       // Act - 実際に無効なメールアドレスを使用してDomainErrorを発生させる
       const result = await authService.signIn({
-        email: 'a'.repeat(300) + '@example.com', // 254文字を超える長いメールアドレス
+        email: `${'a'.repeat(300)}@example.com`, // 254文字を超える長いメールアドレス
         password: 'password123',
       });
 
       // Assert
       expect(isFailure(result)).toBe(true);
       if (isFailure(result)) {
-        expect(result.error.message).toBe('メールアドレスが長すぎます（254文字以内である必要があります）');
+        expect(result.error.message).toBe(
+          'メールアドレスが長すぎます（254文字以内である必要があります）',
+        );
         expect(result.error.code).toBe('EMAIL_TOO_LONG');
       }
     });

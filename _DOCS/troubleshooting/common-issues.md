@@ -318,11 +318,11 @@ graph TB
 
    ```typescript
    // ❌ 悪い例
-   user.getName().toLowerCase();
+   user.name.toLowerCase(); // userがundefinedの可能性
 
-   // ✅ 良い例
+   // ✅ 良い例（public readonlyで直接アクセス）
    if (user) {
-    user.getName().toLowerCase();
+    user.name.toLowerCase();
    }
    ```
 
@@ -694,14 +694,15 @@ graph TB
 
 ### 問題別詳細ガイド
 
-- **[DI関連問題](development/dependency-injection.md)** - 依存性注入のトラブルシューティング
-- **[テスト問題](testing/)** - テスト関連問題の解決
-- **[TypeScript問題](development/typescript.md)** - 型関連問題の解決
+- **[Prismaモック設定](development/prisma-mock-setup.md)** - Prismaテストのトラブルシューティング
+- **[vitest-mock-extended設定](development/vitest-mock-extended-setup.md)** - 自動モックのセットアップ
+- **[Emailバリデーション](development/email-validation-issues.md)** - Email検証問題の解決
+- **[Entity比較問題](development/entity-timestamp-comparison.md)** - タイムスタンプ比較問題
 
 ### 開発・設定
 
 - **[開発フロー](../guides/development/workflow.md)** - 正しい開発手順
-- **[環境設定](../reference/configuration/)** - 設定方法詳細
+- **[依存性注入](../architecture/patterns/dependency-injection.md)** - DI設定ガイド
 - **[コマンドリファレンス](../reference/commands.md)** - 実行コマンド一覧
 
 ### 品質保証

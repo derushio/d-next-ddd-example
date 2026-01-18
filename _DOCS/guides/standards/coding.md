@@ -74,7 +74,7 @@ graph TB
 
 // ✅ 推奨: 適切な依存関係
 // Presentation → Application
-import { resolve } from '@/diContainer';
+import { resolve } from '@/di/resolver';
 // ❌ 禁止: Domain → Application
 import { CreateUserUseCase } from '@/layers/application'; // NG
 
@@ -101,21 +101,28 @@ export class CreateUserUseCase {
   request: CreateUserRequest,
  ): Promise<Result<CreateUserResponse>> {
   try {
-   // 1. 入力検証
-   const emailResult = Email.create(request.email);
-   if (isFailure(emailResult)) {
-    return emailResult; // そのまま失敗を返す
+   // 1. 入力検証（Value Objectはコンストラクタ+DomainErrorパターン）
+   let email: Email;
+   try {
+    email = new Email(request.email);
+   } catch (error) {
+    if (error instanceof DomainError) {
+     return failure(error.message, error.code);
+    }
+    return failure('メールアドレスが無効です', 'INVALID_EMAIL');
    }
 
    // 2. ビジネスロジック実行
-   const user = await this.createUser(emailResult.data);
+   const user = await this.createUser(email);
 
    // 3. 成功レスポンス組み立て
+   // Value Object: .value で型安全にプリミティブ値を取得
+   // プリミティブ型: 直接アクセス
    return success({
-    userId: user.getId().toString(),
-    name: user.getName().toString(),
-    email: user.getEmail().toString(),
-    createdAt: user.getCreatedAt().toISOString(),
+    userId: user.id.value,
+    name: user.name,
+    email: user.email.value,
+    createdAt: user.createdAt.toISOString(),
    });
   } catch (error) {
    // 4. インフラエラーの統一処理
@@ -127,7 +134,7 @@ export class CreateUserUseCase {
 
 // ✅ Server ActionsでのResult型処理
 export async function createUserAction(formData: FormData) {
- const useCase = resolve(INJECTION_TOKENS.CreateUserUseCase);
+ const useCase = resolve('CreateUserUseCase');
  const result = await useCase.execute(request);
 
  if (isFailure(result)) {
@@ -173,9 +180,11 @@ export class CreateUserUseCase {
 // ✅ 推奨: Server Actions/Components
 'use server';
 
+import { resolve } from '@/di/resolver';
+
 export async function createUserAction(formData: FormData) {
- // 動的解決パターン
- const useCase = resolve(INJECTION_TOKENS.CreateUserUseCase);
+ // 動的解決パターン（型安全な文字列キーで解決）
+ const useCase = resolve('CreateUserUseCase');
  const result = await useCase.execute(request);
  // 処理...
 }
@@ -205,12 +214,12 @@ import { Card } from '@/components/ui/card';
 ```typescript
 // ✅ プロジェクト標準のalias使用
 import { UserService } from '@/layers/application/services/UserService';
-import { Email } from '@/layers/domain/valueObjects/Email';
+import { Email } from '@/layers/domain/value-objects/Email';
 import { setupTestEnvironment } from '@tests/utils/helpers/testHelpers';
 
 // ❌ 禁止: 相対パス
 import { UserService } from '../../application/services/UserService';
-import { Email } from '../../../domain/valueObjects/Email';
+import { Email } from '../../../domain/value-objects/Email';
 ```
 
 ---
@@ -245,9 +254,9 @@ export function InteractiveUserForm() {
 // ✅ 推奨: Server Actionsパターン
 'use server';
 
-import { resolve } from '@/diContainer';
-
 import { redirect } from 'next/navigation';
+
+import { resolve } from '@/di/resolver';
 
 export async function updateUserAction(formData: FormData) {
  // バリデーション
@@ -256,12 +265,12 @@ export async function updateUserAction(formData: FormData) {
   email: formData.get('email') as string,
  };
 
- // UseCase実行
- const useCase = resolve(INJECTION_TOKENS.UpdateUserUseCase);
+ // UseCase実行（型安全な文字列キーで解決）
+ const useCase = resolve('UpdateUserUseCase');
  const result = await useCase.execute(input);
 
  if (isFailure(result)) {
-  return { success: false, message: result.error.message };
+  return failure(result.error.message, result.error.code);
  }
 
  redirect('/users');
@@ -276,6 +285,9 @@ export async function updateUserAction(formData: FormData) {
 
 ```typescript
 // ✅ 推奨: 自動モック使用
+import { container } from '@/di/container';
+import { resolve } from '@/di/resolver';
+import { INJECTION_TOKENS } from '@/di/tokens';
 import { setupTestEnvironment } from '@tests/utils/helpers/testHelpers';
 import { createAutoMockUserRepository } from '@tests/utils/mocks/autoMocks';
 
@@ -290,7 +302,8 @@ describe('CreateUserUseCase', () => {
   mockRepository = createAutoMockUserRepository();
   container.registerInstance(INJECTION_TOKENS.UserRepository, mockRepository);
 
-  useCase = container.resolve(CreateUserUseCase);
+  // 型安全な resolve 関数でUseCase取得
+  useCase = resolve('CreateUserUseCase');
  });
 
  // Result型対応テスト
@@ -314,25 +327,28 @@ describe('CreateUserUseCase', () => {
 ```typescript
 // ✅ 推奨: なぜその実装なのかを説明
 export class User {
- changeName(newName: UserName): Result<void> {
+ // Entityはイミュータブル設計：更新時は新しいインスタンスを返す
+ changeName(newName: UserName): User {
   // ビジネスルール: アカウント作成から24時間以内は名前変更不可
   // 理由: スパム防止・セキュリティ確保のため
   if (this.createdAt.getTime() > Date.now() - 24 * 60 * 60 * 1000) {
-   return failure(
+   throw new DomainError(
     'アカウント作成から24時間以内は名前変更できません',
     'NAME_CHANGE_TOO_SOON',
    );
   }
 
-  this.name = newName;
-  this.updatedAt = new Date();
-  return success(undefined);
+  return new User({
+   ...this.toProps(),
+   name: newName,
+   updatedAt: new Date(),
+  });
  }
 
  // ❌ 避ける: 何をしているかの説明
- // changeName(newName: UserName): Result<void> {
+ // changeName(newName: UserName): User {
  //   // 名前を変更する
- //   this.name = newName;
+ //   return new User({ ...this.toProps(), name: newName });
  // }
 }
 ```
@@ -363,7 +379,7 @@ export class User {
 ```mermaid
 graph LR
     subgraph "📏 品質メトリクス"
-        A[ESLint Score: 0 errors] --> E[品質合格]
+        A[Biome Lint: 0 errors] --> E[品質合格]
         B[TypeScript: 0 errors] --> E
         C[Test Coverage: 90%+] --> E
         D[Complexity: <10] --> E
@@ -389,10 +405,10 @@ graph LR
 
 ```bash
 # 品質チェックコマンド
-pnpm lint        # ESLint実行
+pnpm lint        # Biome Lint実行
 pnpm type-check  # TypeScript型チェック
 pnpm test:unit   # ユニットテスト実行
-pnpm format      # Prettier実行
+pnpm format      # Biome Format実行
 ```
 
 ---
@@ -410,7 +426,7 @@ pnpm format      # Prettier実行
 
 #### **コード品質**
 
-- [ ] ESLint・TypeScriptエラーなし
+- [ ] Biome Lint・TypeScriptエラーなし
 - [ ] テストカバレッジ基準達成
 - [ ] 適切なコメント記述
 - [ ] 命名規則遵守

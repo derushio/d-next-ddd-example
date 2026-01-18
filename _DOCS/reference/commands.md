@@ -25,8 +25,11 @@
 ### 基本開発
 
 ```bash
-# 開発サーバー起動（Turbopack + DB監視 + Prisma Studio）
+# 開発サーバー起動（ポート解放 → Turbopack + DB監視 + Prisma Studio）
 pnpm dev
+
+# ポート解放のみ（必要時のみ）
+pnpm stop-dev
 
 # 本番ビルド
 pnpm build
@@ -42,6 +45,9 @@ pnpm lint
 
 # コードフォーマット
 pnpm format
+
+# 全品質チェック（format + type-check + lint + test:unit）
+pnpm check
 ```
 
 ### プロジェクト管理
@@ -116,9 +122,6 @@ pnpm db:migrate:dev
 # Prisma Studio起動
 pnpm db:studio
 
-# データベースリセット
-pnpm db:reset
-
 # シードデータ投入
 pnpm db:seed
 ```
@@ -144,17 +147,67 @@ pnpx shadcn@latest add form
 
 ---
 
+## 🏗️ コード生成コマンド (Hygen)
+
+Clean Architectureパターンに沿ったコード自動生成
+
+```bash
+# UseCase + テスト + DI登録
+pnpm gen:usecase
+
+# Entity + EntityId + テスト
+pnpm gen:entity
+
+# Repository Interface + Prisma実装 + テスト + DI登録
+pnpm gen:repo
+
+# Server Action + テスト
+pnpm gen:action
+
+# Value Object + テスト
+pnpm gen:vo
+```
+
+**詳細**: [コード生成ガイド](../guides/code-generator.md)
+
+---
+
+## 🐳 Make コマンド (Docker + DB)
+
+Docker環境とデータベースのセットアップ
+
+```bash
+# 初期セットアップ（.env生成、依存インストール、hooks設定）
+make setup
+
+# PostgreSQL起動 + マイグレーション + シード
+make up
+
+# make up + pnpm dev（一括起動）
+make dev
+
+# Docker停止
+make down
+
+# 完全クリーンアップ（Docker volumes含む）
+make clean
+
+# マイグレーション + シード再実行
+make seed
+
+# Git hooks 設定（環境自動判定）
+make setup-git-hooks
+```
+
+---
+
 ## 🔧 メンテナンス・ツール
 
-### 品質管理
+### ユーティリティ
 
 ```bash
 # ハッシュ生成ツール
 pnpm hash:generate
-
-# Mermaid図検証
-pnpm mermaid:validate
-pnpm mermaid:validate-all
 ```
 
 ---
@@ -185,7 +238,7 @@ pnpm test:unit --reporter=verbose
 
 ### 🔥 毎日使用
 
-- `pnpm dev` - 開発サーバー起動
+- `pnpm dev` - 開発サーバー起動（ポート解放含む）
 - `pnpm test:unit` - ユニットテスト実行
 - `pnpm lint` - コード品質チェック
 - `pnpm type-check` - 型チェック

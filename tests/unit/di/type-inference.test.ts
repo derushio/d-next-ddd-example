@@ -2,7 +2,7 @@ import { resolve } from '@/di/resolver';
 import type { IConfigService } from '@/layers/infrastructure/services/ConfigService';
 import type { IErrorHandler } from '@/layers/infrastructure/services/ErrorHandler';
 import type { IHashService } from '@/layers/infrastructure/services/HashService';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 
 import { describe, expect, expectTypeOf, it } from 'vitest';
 

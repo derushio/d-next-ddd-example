@@ -48,16 +48,17 @@ graph TD
 **ビジネス上の重要な概念を表現**
 
 ```typescript
-// ✅ 許可：Entity実装
+// ✅ 許可：Entity実装（public readonly パターン）
 export class User {
  private constructor(
-  private readonly id: UserId,
-  private email: Email,
-  private name: string,
-  private experiencePoints: number,
-  private level: number,
-  private readonly createdAt: Date,
-  private lastLoginAt?: Date,
+  // public readonly でプロパティに直接アクセス可能
+  public readonly id: UserId,
+  public readonly email: Email,
+  public readonly name: string,
+  public readonly experiencePoints: number,
+  public readonly level: number,
+  public readonly createdAt: Date,
+  public readonly lastLoginAt?: Date,
  ) {
   // 不変条件の検証
   this.validateInvariants();
@@ -124,28 +125,8 @@ export class User {
   }
  }
 
- // ゲッター（読み取り専用）
- getId(): UserId {
-  return this.id;
- }
- getEmail(): Email {
-  return this.email;
- }
- getName(): string {
-  return this.name;
- }
- getLevel(): number {
-  return this.level;
- }
- getExperiencePoints(): number {
-  return this.experiencePoints;
- }
- getCreatedAt(): Date {
-  return this.createdAt;
- }
- getLastLoginAt(): Date | undefined {
-  return this.lastLoginAt;
- }
+ // ※ ゲッターは不要 - public readonly でプロパティに直接アクセス
+ // user.id, user.email, user.name, user.level などで取得可能
 
  // プライベートメソッド：不変条件検証
  private validateInvariants(): void {
@@ -313,12 +294,8 @@ export class Money {
   return this.amount === other.amount && this.currency === other.currency;
  }
 
- getAmount(): number {
-  return this.amount;
- }
- getCurrency(): string {
-  return this.currency;
- }
+ // ※ public readonly の場合はゲッターは不要
+ // money.amount, money.currency で直接アクセス可能
 
  private validateAmount(amount: number): void {
   if (amount < 0) {
@@ -399,13 +376,13 @@ export class UserDomainService {
   }
  }
 
- // ビジネスルール：昇格可能性判定
+ // ビジネスルール：昇格可能性判定（public readonly プロパティを直接アクセス）
  canPromoteUser(user: User): boolean {
   // 複数条件の組み合わせによるビジネスルール
   return (
-   user.getExperiencePoints() >=
-    this.getRequiredExperienceForNextLevel(user.getLevel()) &&
-   user.getLevel() < 10 &&
+   user.experiencePoints >=
+    this.getRequiredExperienceForNextLevel(user.level) &&
+   user.level < 10 &&
    this.isUserActive(user) &&
    !this.hasRecentViolations(user)
   );
@@ -420,11 +397,11 @@ export class UserDomainService {
    );
   }
 
-  if (sender.getExperiencePoints() < points) {
+  if (sender.experiencePoints < points) {
    throw new DomainError('転送ポイントが不足しています', 'INSUFFICIENT_POINTS');
   }
 
-  if (sender.getId().equals(receiver.getId())) {
+  if (sender.id.equals(receiver.id)) {
    throw new DomainError(
     '自分自身にはポイントを転送できません',
     'SELF_TRANSFER_NOT_ALLOWED',
@@ -432,7 +409,7 @@ export class UserDomainService {
   }
 
   // 1日の転送制限チェック
-  const dailyLimit = this.getDailyTransferLimit(sender.getLevel());
+  const dailyLimit = this.getDailyTransferLimit(sender.level);
   if (points > dailyLimit) {
    throw new DomainError(
     `1日の転送制限(${dailyLimit}ポイント)を超えています`,
@@ -449,8 +426,7 @@ export class UserDomainService {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const lastLogin = user.getLastLoginAt();
-  return lastLogin ? lastLogin > thirtyDaysAgo : false;
+  return user.lastLoginAt ? user.lastLoginAt > thirtyDaysAgo : false;
  }
 
  private hasRecentViolations(user: User): boolean {
@@ -873,14 +849,14 @@ export class Order {
   }
 
   const existingItem = this.items.find((item) =>
-   item.getProductId().equals(product.getId()),
+   item.productId.equals(product.id),
   );
 
   if (existingItem) {
    existingItem.increaseQuantity(quantity);
   } else {
    this.items.push(
-    new OrderItem(product.getId(), quantity, product.getPrice()),
+    new OrderItem(product.id, quantity, product.price),
    );
   }
 
@@ -1071,8 +1047,8 @@ describe('User', () => {
    // Act
    user.addExperiencePoints(50);
 
-   // Assert
-   expect(user.getExperiencePoints()).toBe(150);
+   // Assert（public readonly プロパティを直接アクセス）
+   expect(user.experiencePoints).toBe(150);
   });
 
   it('負の経験値を追加しようとするとエラーが発生する', () => {
@@ -1099,8 +1075,8 @@ describe('User', () => {
    user.addExperiencePoints(100);
 
    // Assert
-   expect(user.getLevel()).toBe(2);
-   expect(user.getExperiencePoints()).toBe(1050);
+   expect(user.level).toBe(2);
+   expect(user.experiencePoints).toBe(1050);
   });
  });
 
@@ -1117,7 +1093,7 @@ describe('User', () => {
    user.promote();
 
    // Assert
-   expect(user.getLevel()).toBe(3);
+   expect(user.level).toBe(3);
   });
 
   it('昇格条件を満たしていない場合はエラーが発生する', () => {

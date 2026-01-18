@@ -1,6 +1,10 @@
-import { isFailure, isSuccess, success } from '@/layers/application/types/Result';
+import {
+  isFailure,
+  isSuccess,
+  success,
+} from '@/layers/application/types/Result';
 import type { GetCurrentUserUseCase } from '@/layers/application/usecases/auth/GetCurrentUserUseCase';
-import { GetUserByIdUseCase } from '@/layers/application/usecases/user/GetUserByIdUseCase';
+import type { GetUserByIdUseCase } from '@/layers/application/usecases/user/GetUserByIdUseCase';
 import { User } from '@/layers/domain/entities/User';
 import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
@@ -9,7 +13,7 @@ import { UserId } from '@/layers/domain/value-objects/UserId';
 import { container } from '@/di/container';
 import { resolve } from '@/di/resolver';
 import { INJECTION_TOKENS } from '@/di/tokens';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 
 import { setupTestEnvironment } from '@tests/utils/helpers/testHelpers';
 import {
@@ -27,7 +31,7 @@ describe('GetUserByIdUseCase', () => {
 
   // テスト用の認証済みユーザー情報
   const authenticatedUser = {
-    id: 'test-user-id',
+    id: 'testuseridcuid2abc12',
     email: 'test@example.com',
     name: 'Test User',
   };
@@ -63,12 +67,12 @@ describe('GetUserByIdUseCase', () => {
 
   describe('execute', () => {
     const validInput = {
-      userId: 'test-user-id',
+      userId: 'testuseridcuid2abc12',
     };
 
     const createMockUser = () => {
       return User.reconstruct(
-        new UserId('test-user-id'),
+        new UserId('testuseridcuid2abc12'),
         new Email('test@example.com'),
         'Test User',
         'hashed-password',
@@ -89,7 +93,7 @@ describe('GetUserByIdUseCase', () => {
       expect(isSuccess(result)).toBe(true);
       if (isSuccess(result)) {
         expect(result.data).toEqual({
-          id: 'test-user-id',
+          id: 'testuseridcuid2abc12',
           name: 'Test User',
           email: 'test@example.com',
           createdAt: new Date('2023-01-01T00:00:00Z'),
@@ -99,15 +103,15 @@ describe('GetUserByIdUseCase', () => {
 
       // モック呼び出しの確認
       expect(mockUserRepository.findById).toHaveBeenCalledWith(
-        new UserId('test-user-id'),
+        new UserId('testuseridcuid2abc12'),
       );
 
       // ログ出力の確認
       expect(mockLogger.info).toHaveBeenCalledWith('ユーザー個別取得開始', {
-        userId: 'test-user-id',
+        userId: 'testuseridcuid2abc12',
       });
       expect(mockLogger.info).toHaveBeenCalledWith('ユーザー個別取得完了', {
-        userId: 'test-user-id',
+        userId: 'testuseridcuid2abc12',
         email: 'test@example.com',
         name: 'Test User',
       });
@@ -122,7 +126,11 @@ describe('GetUserByIdUseCase', () => {
 
       // 認証ユーザーを空のIDに変更（認可チェックを通過させる）
       mockGetCurrentUserUseCase.requireAuthentication.mockResolvedValue(
-        success({ id: emptyUserId, email: 'test@example.com', name: 'Test User' }),
+        success({
+          id: emptyUserId,
+          email: 'test@example.com',
+          name: 'Test User',
+        }),
       );
 
       // Act
@@ -148,7 +156,11 @@ describe('GetUserByIdUseCase', () => {
 
       // 認証ユーザーを空白のIDに変更（認可チェックを通過させる）
       mockGetCurrentUserUseCase.requireAuthentication.mockResolvedValue(
-        success({ id: whitespaceUserId, email: 'test@example.com', name: 'Test User' }),
+        success({
+          id: whitespaceUserId,
+          email: 'test@example.com',
+          name: 'Test User',
+        }),
       );
 
       // Act
@@ -179,13 +191,13 @@ describe('GetUserByIdUseCase', () => {
       }
 
       expect(mockUserRepository.findById).toHaveBeenCalledWith(
-        new UserId('test-user-id'),
+        new UserId('testuseridcuid2abc12'),
       );
 
       // 警告ログの確認
       expect(mockLogger.warn).toHaveBeenCalledWith(
         'ユーザー個別取得失敗: ユーザーが見つかりません',
-        { userId: 'test-user-id' },
+        { userId: 'testuseridcuid2abc12' },
       );
     });
 
@@ -205,12 +217,12 @@ describe('GetUserByIdUseCase', () => {
       }
 
       expect(mockUserRepository.findById).toHaveBeenCalledWith(
-        new UserId('test-user-id'),
+        new UserId('testuseridcuid2abc12'),
       );
 
       // エラーログの確認
       expect(mockLogger.error).toHaveBeenCalledWith('ユーザー個別取得失敗', {
-        userId: 'test-user-id',
+        userId: 'testuseridcuid2abc12',
         error: 'Database connection error',
         stack: expect.any(String),
       });
@@ -235,7 +247,7 @@ describe('GetUserByIdUseCase', () => {
       }
 
       expect(mockUserRepository.findById).toHaveBeenCalledWith(
-        new UserId('test-user-id'),
+        new UserId('testuseridcuid2abc12'),
       );
     });
 
@@ -248,7 +260,11 @@ describe('GetUserByIdUseCase', () => {
 
       // 認証ユーザーを短いIDに変更（認可チェックを通過させる）
       mockGetCurrentUserUseCase.requireAuthentication.mockResolvedValue(
-        success({ id: invalidUserId, email: 'test@example.com', name: 'Test User' }),
+        success({
+          id: invalidUserId,
+          email: 'test@example.com',
+          name: 'Test User',
+        }),
       );
 
       // Act
@@ -257,10 +273,9 @@ describe('GetUserByIdUseCase', () => {
       // Assert
       expect(isFailure(result)).toBe(true);
       if (isFailure(result)) {
-        expect(result.error.message).toBe(
-          'User IDの形式が正しくありません',
-        );
-        expect(result.error.code).toBe('USER_FETCH_FAILED');
+        expect(result.error.message).toBe('User IDの形式が正しくありません');
+        // DomainErrorの元のエラーコードが保持される
+        expect(result.error.code).toBe('INVALID_USER_ID_FORMAT');
       }
 
       // UserIdの作成でエラーが発生するため、リポジトリメソッドは呼ばれない
@@ -285,7 +300,7 @@ describe('GetUserByIdUseCase', () => {
 
     it('should correctly convert User entity to response format', async () => {
       // Arrange - 異なる日時で詳細なテスト
-      const specificUserId = 'specific-user-id';
+      const specificUserId = 'specificuseridcuid12';
       const specificUser = User.reconstruct(
         new UserId(specificUserId),
         new Email('specific@example.com'),
@@ -301,7 +316,11 @@ describe('GetUserByIdUseCase', () => {
 
       // 認証ユーザーを変更
       mockGetCurrentUserUseCase.requireAuthentication.mockResolvedValue(
-        success({ id: specificUserId, email: 'specific@example.com', name: 'Specific User' }),
+        success({
+          id: specificUserId,
+          email: 'specific@example.com',
+          name: 'Specific User',
+        }),
       );
       mockUserRepository.findById.mockResolvedValue(specificUser);
 
@@ -323,7 +342,7 @@ describe('GetUserByIdUseCase', () => {
 
     it('should handle user with different email domain', async () => {
       // Arrange - 別のドメインのメールアドレスでのテスト
-      const domainTestUserId = 'domain-test-id';
+      const domainTestUserId = 'domaintestidcuid1234';
       const userWithDifferentDomain = User.reconstruct(
         new UserId(domainTestUserId),
         new Email('user@company.org'),
@@ -339,7 +358,11 @@ describe('GetUserByIdUseCase', () => {
 
       // 認証ユーザーを変更
       mockGetCurrentUserUseCase.requireAuthentication.mockResolvedValue(
-        success({ id: domainTestUserId, email: 'user@company.org', name: 'Company User' }),
+        success({
+          id: domainTestUserId,
+          email: 'user@company.org',
+          name: 'Company User',
+        }),
       );
       mockUserRepository.findById.mockResolvedValue(userWithDifferentDomain);
 

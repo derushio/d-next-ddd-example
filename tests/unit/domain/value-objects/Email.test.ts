@@ -10,7 +10,7 @@ describe('Email Value Object', () => {
       const email = new Email('test@example.com');
 
       // Assert
-      expect(email.toString()).toBe('test@example.com');
+      expect(email.value).toBe('test@example.com');
     });
 
     it('各種有効なメールアドレス形式で作成できる', () => {
@@ -31,7 +31,7 @@ describe('Email Value Object', () => {
     it('空のメールアドレスでDomainError（EMAIL_REQUIRED）が発生する', () => {
       expect(() => new Email('')).toThrow(DomainError);
       expect(() => new Email('')).toThrow('メールアドレスは必須です');
-      
+
       try {
         new Email('');
       } catch (error) {
@@ -69,7 +69,7 @@ describe('Email Value Object', () => {
     });
 
     it('長すぎるメールアドレスでDomainError（EMAIL_TOO_LONG）が発生する', () => {
-      const longEmail = 'a'.repeat(250) + '@example.com'; // 254文字を超える
+      const longEmail = `${'a'.repeat(250)}@example.com`; // 254文字を超える
 
       try {
         new Email(longEmail);

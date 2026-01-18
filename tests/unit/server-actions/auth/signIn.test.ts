@@ -1,13 +1,10 @@
 import 'reflect-metadata';
 
 import { signIn } from '@/app/server-actions/auth/signIn';
-import { isFailure, isSuccess } from '@/layers/application/types/Result';
 import { failure, success } from '@/layers/application/types/Result';
 import type { SignInUseCase } from '@/layers/application/usecases/auth/SignInUseCase';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
-import {
-  createAutoMockLogger,
-} from '@tests/utils/mocks/autoMocks';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
+import { createAutoMockLogger } from '@tests/utils/mocks/autoMocks';
 
 import type { MockProxy } from 'vitest-mock-extended';
 import { mock } from 'vitest-mock-extended';
@@ -56,9 +53,7 @@ describe('signIn Server Action', () => {
         name: 'Test User',
       };
 
-      mockSignInUseCase.execute.mockResolvedValue(
-        success({ user: mockUser })
-      );
+      mockSignInUseCase.execute.mockResolvedValue(success({ user: mockUser }));
 
       // Act
       const result = await signIn(formData);
@@ -109,7 +104,7 @@ describe('signIn Server Action', () => {
           errors: {
             email: ['有効なメールアドレスを入力してください'],
           },
-        }
+        },
       );
 
       expect(mockSignInUseCase.execute).not.toHaveBeenCalled();
@@ -137,7 +132,7 @@ describe('signIn Server Action', () => {
           errors: {
             password: ['パスワードは8文字以上で入力してください'],
           },
-        }
+        },
       );
 
       expect(mockSignInUseCase.execute).not.toHaveBeenCalled();
@@ -192,7 +187,10 @@ describe('signIn Server Action', () => {
       formData.append('password', 'wrongpassword');
 
       mockSignInUseCase.execute.mockResolvedValue(
-        failure('メールアドレスまたはパスワードが正しくありません', 'AUTHENTICATION_FAILED')
+        failure(
+          'メールアドレスまたはパスワードが正しくありません',
+          'AUTHENTICATION_FAILED',
+        ),
       );
 
       // Act
@@ -217,7 +215,7 @@ describe('signIn Server Action', () => {
       formData.append('password', 'password123');
 
       mockSignInUseCase.execute.mockResolvedValue(
-        failure('ユーザーが見つかりません', 'USER_NOT_FOUND')
+        failure('ユーザーが見つかりません', 'USER_NOT_FOUND'),
       );
 
       // Act
@@ -238,11 +236,14 @@ describe('signIn Server Action', () => {
     it('should handle email validation error from UseCase', async () => {
       // Arrange
       const formData = new FormData();
-      formData.append('email', 'a'.repeat(300) + '@example.com'); // 長すぎるメール
+      formData.append('email', `${'a'.repeat(300)}@example.com`); // 長すぎるメール
       formData.append('password', 'password123');
 
       mockSignInUseCase.execute.mockResolvedValue(
-        failure('メールアドレスが長すぎます（254文字以内である必要があります）', 'EMAIL_TOO_LONG')
+        failure(
+          'メールアドレスが長すぎます（254文字以内である必要があります）',
+          'EMAIL_TOO_LONG',
+        ),
       );
 
       // Act
@@ -285,7 +286,7 @@ describe('signIn Server Action', () => {
         {
           error: 'Database connection failed',
           stack: expect.any(String),
-        }
+        },
       );
     });
 
@@ -311,7 +312,7 @@ describe('signIn Server Action', () => {
         {
           error: 'Unknown error',
           stack: undefined,
-        }
+        },
       );
     });
 
@@ -344,7 +345,7 @@ describe('signIn Server Action', () => {
         {
           error: 'Service not found',
           stack: expect.any(String),
-        }
+        },
       );
     });
   });
@@ -424,9 +425,7 @@ describe('signIn Server Action', () => {
         name: 'Test User',
       };
 
-      mockSignInUseCase.execute.mockResolvedValue(
-        success({ user: mockUser })
-      );
+      mockSignInUseCase.execute.mockResolvedValue(success({ user: mockUser }));
 
       // Act
       await signIn(formData);
@@ -458,16 +457,14 @@ describe('signIn Server Action', () => {
         name: 'Test User',
       };
 
-      mockSignInUseCase.execute.mockResolvedValue(
-        success({ user: mockUser })
-      );
+      mockSignInUseCase.execute.mockResolvedValue(success({ user: mockUser }));
 
       // Act
       await signIn(formData);
 
       // Assert - ログにパスワードが含まれていないことを確認
       const logCalls: LoggerMockCall[] = mockLogger.info.mock.calls;
-      logCalls.forEach(([message, meta]) => {
+      logCalls.forEach(([_message, meta]) => {
         expect(JSON.stringify(meta)).not.toContain('password123');
       });
     });

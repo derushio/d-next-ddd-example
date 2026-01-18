@@ -236,7 +236,8 @@ graph TD
 
 ## 📁 Application Layer のコンポーネント
 
-Application Layer は以下のコンポーネントで構成されています：
+Application Layer は以下のコンポーネントで構成されています。
+詳細な実装パターンは [Application Layer 実装ガイド](../application-layer.md) を参照してください。
 
 ### 🎬 [Use Cases（ユースケース）](../components/use-cases.md)
 
@@ -244,29 +245,33 @@ Application Layer は以下のコンポーネントで構成されています�
 - **含まれるもの**: 具体的なビジネスシナリオの実装、トランザクション管理
 - **技術**: TypeScript、TSyringe、Domain/Infrastructure Layer 連携
 
-### 📦 [DTOs（データ転送オブジェクト）](../components/dtos.md)
+### 📦 DTOs（データ転送オブジェクト）
 
 - **責務**: レイヤー間のデータ変換と型安全性の確保
 - **含まれるもの**: Request/Response インターフェース、データ変換ロジック
 - **技術**: TypeScript Interface、型定義
+- **詳細**: [Application Layer 実装ガイド](../application-layer.md#dtoの適切な設計) を参照
 
-### 🔐 [Authorization Services（認可サービス）](../components/authorization-services.md)
+### 🔐 Authorization Services（認可サービス）
 
 - **責務**: ユーザー権限の検証とアクセス制御
 - **含まれるもの**: 権限チェック、ロールベースアクセス制御
 - **技術**: TypeScript、セキュリティライブラリ
+- **詳細**: [セキュリティ](../../cross-cutting/security.md) を参照
 
-### 🔄 [Transaction Management（トランザクション管理）](../components/transaction-management.md)
+### 🔄 Transaction Management（トランザクション管理）
 
 - **責務**: データ整合性の確保と複数操作の原子性保証
 - **含まれるもの**: トランザクション境界定義、ロールバック処理
 - **技術**: Database Factory パターン、Repository パターン
+- **詳細**: [Application Layer 実装ガイド](../application-layer.md#適切なトランザクション境界) を参照
 
-### 📬 [Application Services（アプリケーションサービス）](../components/application-services.md)
+### 📬 Application Services（アプリケーションサービス）
 
 - **責務**: 複雑なビジネスフローの調整と外部システム連携
 - **含まれるもの**: 複数Use Caseの組み合わせ、バッチ処理制御
 - **技術**: TypeScript、外部API連携、スケジューリング
+- **詳細**: Use Caseパターンを拡張して実装（[Use Cases](../components/use-cases.md) を参照）
 
 ---
 
@@ -334,7 +339,7 @@ export class CreateUserUseCase {
 
    // インフラストラクチャ処理
    await this.userRepository.save(user);
-   await this.emailService.sendWelcomeEmail(user.getEmail());
+   await this.emailService.sendWelcomeEmail(user.email);
   } catch (error) {
    if (error instanceof DomainError) {
     // ドメインエラーはそのまま上位に
@@ -382,11 +387,11 @@ export class UserDTOMapper {
 
  static toCreateUserResponse(user: User): CreateUserResponse {
   return {
-   id: user.getId().toString(),
-   name: user.getName(),
-   email: user.getEmail().toString(),
-   level: user.getLevel(),
-   createdAt: user.getCreatedAt(),
+   id: user.id.value,
+   name: user.name,
+   email: user.email.value,
+   level: user.level,
+   createdAt: user.createdAt,
   };
  }
 }
@@ -417,10 +422,11 @@ export class UserDTOMapper {
 @injectable()
 export class CreateUserUseCase {
  constructor(
-  @inject('IUserRepository') private userRepository: IUserRepository,
-  @inject('IUserDomainService') private userDomainService: IUserDomainService,
-  @inject('IEmailService') private emailService: IEmailService,
-  @inject('ILogger') private logger: ILogger,
+  @inject(INJECTION_TOKENS.UserRepository) private userRepository: IUserRepository,
+  @inject(INJECTION_TOKENS.UserDomainService)
+  private userDomainService: IUserDomainService,
+  @inject(INJECTION_TOKENS.EmailService) private emailService: IEmailService,
+  @inject(INJECTION_TOKENS.Logger) private logger: ILogger,
  ) {}
 
  async execute(request: CreateUserRequest): Promise<CreateUserResponse> {

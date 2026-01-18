@@ -1,20 +1,13 @@
 import { User } from '@/layers/domain/entities/User';
-import { DomainError } from '@/layers/domain/errors/DomainError';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import { UserDomainService } from '@/layers/domain/services/UserDomainService';
 import { Email } from '@/layers/domain/value-objects/Email';
-import { UserId } from '@/layers/domain/value-objects/UserId';
-import { container } from '@/di/container';
-import { resolve } from '@/di/resolver';
-import { INJECTION_TOKENS } from '@/di/tokens';
 import type { IHashService } from '@/layers/infrastructure/services/HashService';
 
 import {
-  expectMockCalledWith,
-  setupMockReturnValues,
-  setupTestEnvironment,
-} from '@tests/utils/helpers/testHelpers';
-import { createAutoMockHashService, createAutoMockUserRepository } from '@tests/utils/mocks/autoMocks';
+  createAutoMockHashService,
+  createAutoMockUserRepository,
+} from '@tests/utils/mocks/autoMocks';
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { MockProxy } from 'vitest-mock-extended';
 
@@ -29,7 +22,10 @@ describe('UserDomainService', () => {
     mockHashService = createAutoMockHashService();
 
     // UserDomainServiceを直接インスタンス化してテストする
-    userDomainService = new UserDomainService(mockUserRepository, mockHashService);
+    userDomainService = new UserDomainService(
+      mockUserRepository,
+      mockHashService,
+    );
   });
 
   describe('validateUserData', () => {

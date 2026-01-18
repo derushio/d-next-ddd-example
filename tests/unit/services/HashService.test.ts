@@ -1,4 +1,3 @@
-import type { IConfigService } from '@/layers/infrastructure/services/ConfigService';
 import { HashService } from '@/layers/infrastructure/services/HashService';
 import { container } from '@/di/container';
 import { resolve } from '@/di/resolver';

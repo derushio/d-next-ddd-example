@@ -2,7 +2,7 @@ import { isSuccess } from '@/layers/application/types/Result';
 import { SignOutUseCase } from '@/layers/application/usecases/auth/SignOutUseCase';
 import { container } from '@/di/container';
 import { INJECTION_TOKENS } from '@/di/tokens';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 
 import { setupTestEnvironment } from '@tests/utils/helpers/testHelpers';
 import { createAutoMockLogger } from '@tests/utils/mocks/autoMocks';

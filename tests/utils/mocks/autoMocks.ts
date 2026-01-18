@@ -1,13 +1,14 @@
+import type { ILoginAttemptService } from '@/layers/application/interfaces/ILoginAttemptService';
+import type { IRateLimitService } from '@/layers/application/interfaces/IRateLimitService';
 import type { ISessionRepository } from '@/layers/domain/repositories/ISessionRepository';
 import type { IUserRepository } from '@/layers/domain/repositories/IUserRepository';
 import type { UserDomainService } from '@/layers/domain/services/UserDomainService';
-import type { PrismaClient } from '@/layers/infrastructure/persistence/prisma/generated';
 import type { IConfigService } from '@/layers/infrastructure/services/ConfigService';
 import type { IHashService } from '@/layers/infrastructure/services/HashService';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 
 import { vi } from 'vitest';
-import { MockProxy, mock } from 'vitest-mock-extended';
+import { type MockProxy, mock } from 'vitest-mock-extended';
 
 // 🚀 自動モック生成関数（vitest-mock-extended）
 
@@ -15,8 +16,8 @@ import { MockProxy, mock } from 'vitest-mock-extended';
 export const createAutoMockUserRepository = (): MockProxy<IUserRepository> =>
   mock<IUserRepository>();
 
-export const createAutoMockSessionRepository = (): MockProxy<ISessionRepository> =>
-  mock<ISessionRepository>();
+export const createAutoMockSessionRepository =
+  (): MockProxy<ISessionRepository> => mock<ISessionRepository>();
 
 // Domain Service層
 export const createAutoMockUserDomainService =
@@ -30,6 +31,36 @@ export const createAutoMockLogger = (): MockProxy<ILogger> => mock<ILogger>();
 
 export const createAutoMockConfigService = (): MockProxy<IConfigService> =>
   mock<IConfigService>();
+
+// Security Service層
+export const createAutoMockLoginAttemptService =
+  (): MockProxy<ILoginAttemptService> => {
+    const mockService = mock<ILoginAttemptService>();
+    // デフォルトでロックアウト無し、Rate Limit無しの状態を返す
+    mockService.checkLockout.mockResolvedValue({
+      isLocked: false,
+      failedAttempts: 0,
+      remainingAttempts: 5,
+    });
+    mockService.recordAttempt.mockResolvedValue(undefined);
+    mockService.resetAttempts.mockResolvedValue(undefined);
+    return mockService;
+  };
+
+export const createAutoMockRateLimitService =
+  (): MockProxy<IRateLimitService> => {
+    const mockService = mock<IRateLimitService>();
+    // デフォルトでRate Limitを許可する状態を返す
+    mockService.checkLimit.mockResolvedValue({
+      allowed: true,
+      current: 0,
+      limit: 5,
+      remaining: 5,
+    });
+    mockService.resetLimit.mockResolvedValue(undefined);
+    mockService.cleanup.mockResolvedValue(undefined);
+    return mockService;
+  };
 
 // Database層
 // 注意: PrismaClientは型が複雑すぎるため、自動モック化は困難

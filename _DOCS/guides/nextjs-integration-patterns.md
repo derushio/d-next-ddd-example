@@ -58,8 +58,10 @@ graph TD
 // ✅ Server Actions での Use Case 活用
 'use server';
 
-import { resolve } from '@/lib/di-container';
-import { CreateUserUseCase } from '@/usecases/user/CreateUserUseCase';
+import 'reflect-metadata';
+
+import { resolve } from '@/di/resolver';
+import { isSuccess } from '@/layers/application/types/Result';
 
 import { redirect, revalidatePath } from 'next/navigation';
 import { z } from 'zod';
@@ -95,7 +97,7 @@ export async function createUserAction(
   }
 
   // 2. Use Case 実行
-  const createUserUseCase = resolve<CreateUserUseCase>('CreateUserUseCase');
+  const createUserUseCase = resolve('CreateUserUseCase');
   const user = await createUserUseCase.execute(parsed.data);
 
   // 3. Next.js 最適化
@@ -131,19 +133,26 @@ function handleDomainError(error: unknown): ActionState {
 // ✅ 複数 Use Case を組み合わせた Server Action
 'use server';
 
+import 'reflect-metadata';
+
+import { resolve } from '@/di/resolver';
+import { isSuccess } from '@/layers/application/types/Result';
+
+import { revalidatePath } from 'next/cache';
+
 export async function userRegistrationWorkflowAction(
  formData: FormData,
 ): Promise<ActionState> {
  try {
   // 1. ユーザー作成
-  const createUserUseCase = resolve<CreateUserUseCase>('CreateUserUseCase');
+  const createUserUseCase = resolve('CreateUserUseCase');
   const user = await createUserUseCase.execute({
    name: formData.get('name') as string,
    email: formData.get('email') as string,
   });
 
   // 2. プロフィール作成
-  const createProfileUseCase = resolve<CreateProfileUseCase>(
+  const createProfileUseCase = resolve(
    'CreateProfileUseCase',
   );
   await createProfileUseCase.execute({
@@ -152,7 +161,7 @@ export async function userRegistrationWorkflowAction(
   });
 
   // 3. ウェルカムメール送信
-  const sendWelcomeEmailUseCase = resolve<SendWelcomeEmailUseCase>(
+  const sendWelcomeEmailUseCase = resolve(
    'SendWelcomeEmailUseCase',
   );
   await sendWelcomeEmailUseCase.execute({
@@ -161,7 +170,7 @@ export async function userRegistrationWorkflowAction(
   });
 
   // 4. 分析イベント記録
-  const recordAnalyticsUseCase = resolve<RecordAnalyticsUseCase>(
+  const recordAnalyticsUseCase = resolve(
    'RecordAnalyticsUseCase',
   );
   await recordAnalyticsUseCase.execute({
@@ -195,13 +204,15 @@ export async function userRegistrationWorkflowAction(
 
 ```typescript
 // ✅ Server Component での Use Case 活用
-import { resolve } from '@/lib/di-container';
-import { GetUserListUseCase } from '@/usecases/user/GetUserListUseCase';
-import { UserCard } from '@/components/user/UserCard';
+import 'reflect-metadata';
+
+import { resolve } from '@/di/resolver';
+
+import { UserCard } from '@/components/features/user/UserCard';
 
 export default async function UsersPage() {
   // サーバーサイドで Use Case を実行
-  const getUserListUseCase = resolve<GetUserListUseCase>('GetUserListUseCase');
+  const getUserListUseCase = resolve('GetUserListUseCase');
   const users = await getUserListUseCase.execute({
     page: 1,
     limit: 20,
@@ -232,8 +243,10 @@ export default async function UsersPage() {
 
 ```typescript
 // ✅ 動的ルートでの Use Case 活用
-import { resolve } from '@/lib/di-container';
-import { GetUserDetailUseCase } from '@/usecases/user/GetUserDetailUseCase';
+import 'reflect-metadata';
+
+import { resolve } from '@/di/resolver';
+
 import { notFound } from 'next/navigation';
 
 interface UserDetailPageProps {
@@ -242,7 +255,7 @@ interface UserDetailPageProps {
 
 export default async function UserDetailPage({ params }: UserDetailPageProps) {
   try {
-    const getUserDetailUseCase = resolve<GetUserDetailUseCase>('GetUserDetailUseCase');
+    const getUserDetailUseCase = resolve('GetUserDetailUseCase');
     const userDetail = await getUserDetailUseCase.execute({
       userId: params.id,
     });
@@ -278,7 +291,7 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
 // メタデータ生成
 export async function generateMetadata({ params }: UserDetailPageProps) {
   try {
-    const getUserDetailUseCase = resolve<GetUserDetailUseCase>('GetUserDetailUseCase');
+    const getUserDetailUseCase = resolve('GetUserDetailUseCase');
     const userDetail = await getUserDetailUseCase.execute({
       userId: params.id,
     });
@@ -362,7 +375,7 @@ export function UserManagementClient() {
 // ✅ Server Actions: ビジネスロジック処理
 'use server';
 
-import { Result } from '@/layers/application/types/Result';
+import { failure, Result, success } from '@/layers/application/types/Result';
 import { resolve } from '@/di/resolver';
 
 import { revalidatePath } from 'next/cache';
@@ -371,7 +384,7 @@ export async function activateUserAction(
  userId: string,
 ): Promise<Result<void>> {
  try {
-  const activateUserUseCase = resolve<ActivateUserUseCase>(
+  const activateUserUseCase = resolve(
    'ActivateUserUseCase',
   );
   await activateUserUseCase.execute({ userId });
@@ -379,9 +392,9 @@ export async function activateUserAction(
   // Next.js最適化: キャッシュ無効化
   revalidatePath('/users');
 
-  return { success: true, data: undefined };
+  return success(undefined);
  } catch (error) {
-  return { success: false, error: 'ユーザーの有効化に失敗しました' };
+  return failure('ユーザーの有効化に失敗しました', 'ACTIVATE_FAILED');
  }
 }
 
@@ -389,16 +402,16 @@ export async function deactivateUserAction(
  userId: string,
 ): Promise<Result<void>> {
  try {
-  const deactivateUserUseCase = resolve<DeactivateUserUseCase>(
+  const deactivateUserUseCase = resolve(
    'DeactivateUserUseCase',
   );
   await deactivateUserUseCase.execute({ userId });
 
   revalidatePath('/users');
 
-  return { success: true, data: undefined };
+  return success(undefined);
  } catch (error) {
-  return { success: false, error: 'ユーザーの無効化に失敗しました' };
+  return failure('ユーザーの無効化に失敗しました', 'DEACTIVATE_FAILED');
  }
 }
 ```
@@ -421,7 +434,7 @@ export function UserActionsClient({ userId }: { userId: string }) {
       if (result.success) {
         setMessage('ユーザーを有効化しました');
       } else {
-        setMessage(result.error);
+        setMessage(result.error.message);
       }
     });
   };
@@ -433,7 +446,7 @@ export function UserActionsClient({ userId }: { userId: string }) {
       if (result.success) {
         setMessage('ユーザーを無効化しました');
       } else {
-        setMessage(result.error);
+        setMessage(result.error.message);
       }
     });
   };
@@ -511,7 +524,7 @@ export class CachedUserRepository implements IUserRepository {
 // ✅ Server Component でのキャッシュ活用
 export default async function UserListPage() {
   // Next.js キャッシュを活用した Use Case 実行
-  const getUserListUseCase = resolve<GetUserListUseCase>('GetUserListUseCase');
+  const getUserListUseCase = resolve('GetUserListUseCase');
 
   const users = await getUserListUseCase.execute(
     { page: 1, limit: 20 },
@@ -554,7 +567,7 @@ export default function UsersPage() {
 // 重い処理を分離
 async function UserListContent() {
   // この処理がストリーミングされる
-  const getUserListUseCase = resolve<GetUserListUseCase>('GetUserListUseCase');
+  const getUserListUseCase = resolve('GetUserListUseCase');
   const users = await getUserListUseCase.execute({
     page: 1,
     limit: 20,
@@ -579,9 +592,9 @@ export default async function UserDashboard({ params }: { params: { id: string }
 
   // 複数の Use Case を並列実行
   const [userDetail, userStats, userActivities] = await Promise.all([
-    resolve<GetUserDetailUseCase>('GetUserDetailUseCase').execute({ userId }),
-    resolve<GetUserStatsUseCase>('GetUserStatsUseCase').execute({ userId }),
-    resolve<GetUserActivitiesUseCase>('GetUserActivitiesUseCase').execute({
+    resolve('GetUserDetailUseCase').execute({ userId }),
+    resolve('GetUserStatsUseCase').execute({ userId }),
+    resolve('GetUserActivitiesUseCase').execute({
       userId,
       limit: 10
     }),
@@ -610,8 +623,10 @@ export default async function UserDashboard({ params }: { params: { id: string }
 
 ```typescript
 // ✅ API Routes での Use Case 活用
-import { resolve } from '@/lib/di-container';
-import { GetUserDetailUseCase } from '@/usecases/user/GetUserDetailUseCase';
+import 'reflect-metadata';
+
+import { resolve } from '@/di/resolver';
+import { isSuccess } from '@/layers/application/types/Result';
 
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -620,9 +635,7 @@ export async function GET(
  { params }: { params: { id: string } },
 ) {
  try {
-  const getUserDetailUseCase = resolve<GetUserDetailUseCase>(
-   'GetUserDetailUseCase',
-  );
+  const getUserDetailUseCase = resolve('GetUserDetailUseCase');
   const userDetail = await getUserDetailUseCase.execute({
    userId: params.id,
   });
@@ -649,7 +662,7 @@ export async function PATCH(
  try {
   const body = await request.json();
 
-  const updateUserUseCase = resolve<UpdateUserUseCase>('UpdateUserUseCase');
+  const updateUserUseCase = resolve('UpdateUserUseCase');
   const updatedUser = await updateUserUseCase.execute({
    userId: params.id,
    ...body,
@@ -850,17 +863,16 @@ export async function getUserData(id: string) {
 ```typescript
 // ✅ 統一されたエラーハンドリング
 export function handleNextjsError(error: unknown): NextResponse {
+ // DomainError はバリデーションエラーも含む（ValidationError クラスは使用しない）
  if (error instanceof DomainError) {
-  return NextResponse.json(
-   { error: error.message, code: error.code },
-   { status: error.statusCode },
-  );
- }
+  // バリデーションエラーの場合は 400 を返す
+  const isValidationError = error.code.startsWith('VALIDATION_') ||
+   error.code.includes('INVALID') || error.code.includes('REQUIRED');
+  const status = isValidationError ? 400 : error.statusCode ?? 500;
 
- if (error instanceof ValidationError) {
   return NextResponse.json(
-   { error: 'Validation failed', details: error.details },
-   { status: 400 },
+   { error: error.message, code: error.code, context: error.context },
+   { status },
   );
  }
 
@@ -902,4 +914,4 @@ export function handleNextjsError(error: unknown): NextResponse {
 - [クリーンアーキテクチャ概念](./ddd/concepts/clean-architecture.md) - 基本概念の理解
 - [プロジェクト設計判断](./project-architecture-decisions.md) - 実装判断の詳細
 - [テスト戦略](./testing-with-clean-architecture.md) - テスト手法の詳細
-- [開発ガイド](./development-guide.md) - 実装手順とベストプラクティス
+- [開発ワークフロー](./development/workflow.md) - 実装手順とベストプラクティス

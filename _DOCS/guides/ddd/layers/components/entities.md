@@ -76,64 +76,75 @@ graph TD
 #### Immutable Entity実装パターン
 
 ```typescript
-// ✅ 正しいImmutable Entity
+// ✅ 正しいImmutable Entity（public readonly パターン）
 export class User {
- private constructor(
-  public readonly id: UserId,
-  public readonly email: Email,
-  public readonly name: string,
-  public readonly passwordHash: string,
-  public readonly createdAt: Date,
-  private updatedAt: Date, // 内部管理
- ) {
+ public readonly id: UserId;
+ public readonly email: Email;
+ public readonly name: string;
+ public readonly passwordHash: string;
+ public readonly createdAt: Date;
+ public readonly updatedAt: Date;
+
+ private constructor(props: UserProps) {
+  this.id = props.id;
+  this.email = props.email;
+  this.name = props.name;
+  this.passwordHash = props.passwordHash;
+  this.createdAt = props.createdAt;
+  this.updatedAt = props.updatedAt;
   this.validateInvariants();
  }
 
  // ファクトリーメソッド：新規作成
- static create(email: Email, name: string, passwordHash: string): User {
+ static create(input: CreateUserInput): User {
   const now = new Date();
-  return new User(generateUserId(), email, name, passwordHash, now, now);
+  return new User({
+   id: UserId.generate(),
+   email: input.email,
+   name: input.name,
+   passwordHash: input.passwordHash,
+   createdAt: now,
+   updatedAt: now,
+  });
  }
 
  // ファクトリーメソッド：再構築（永続化から復元）
- static reconstruct(
-  id: UserId,
-  email: Email,
-  name: string,
-  passwordHash: string,
-  createdAt: Date,
-  updatedAt: Date,
- ): User {
-  return new User(id, email, name, passwordHash, createdAt, updatedAt);
+ static reconstruct(props: UserProps): User {
+  return new User(props);
  }
 
  // 新しいインスタンスを返すビジネスメソッド
  updateProfile(email: Email, name: string): User {
-  return new User(
-   this.id,
+  return new User({
+   ...this.toProps(),
    email,
    name,
-   this.passwordHash,
-   this.createdAt,
-   new Date(),
-  );
+   updatedAt: new Date(),
+  });
  }
 
- getUpdatedAt(): Date {
-  return this.updatedAt;
+ private toProps(): UserProps {
+  return {
+   id: this.id,
+   email: this.email,
+   name: this.name,
+   passwordHash: this.passwordHash,
+   createdAt: this.createdAt,
+   updatedAt: this.updatedAt,
+  };
  }
 }
 
 // ❌ 間違った可変実装
 export class User {
- public id: UserId; // ❌ mutable
- public email: Email; // ❌ mutable
- public name: string; // ❌ mutable
+ public id: UserId;    // ❌ readonly がない = mutable
+ public email: Email;  // ❌ readonly がない = mutable
+ public name: string;  // ❌ readonly がない = mutable
 
- // ❌ 状態を変更するメソッド
+ // ❌ 状態を変更するメソッド（void を返す）
  updateProfile(email: Email, name: string): void {
-  this.email = email; // 危険！
-  this.name = name; // 危険！
+  this.email = email;  // ❌ 危険！元のインスタンスを変更
+  this.name = name;    // ❌ 危険！元のインスタンスを変更
  }
 }
 ```
@@ -150,7 +161,7 @@ export class UpdateUserUseCase {
    new UserId(request.userId),
   );
 
-  // 新しいインスタンスを生成
+  // 新しいインスタンスを生成（existingUserは変更されない）
   const updatedUser = existingUser.updateProfile(
    new Email(request.email),
    request.name,
@@ -159,11 +170,12 @@ export class UpdateUserUseCase {
   // 新しいインスタンスを永続化
   await this.userRepository.update(updatedUser);
 
+  // public readonly で直接アクセス
   return success({
    id: updatedUser.id.value,
    email: updatedUser.email.value,
    name: updatedUser.name,
-   updatedAt: updatedUser.getUpdatedAt(),
+   updatedAt: updatedUser.updatedAt,  // 直接アクセス（getterではない）
   });
  }
 }
@@ -176,23 +188,21 @@ export class UpdateUserUseCase {
 ### 1. **一意のIDを持つ** 🆔
 
 ```typescript
-// ✅ 推薦：一意のIDによる識別
+// ✅ 推薦：一意のIDによる識別（public readonly パターン）
 export class User {
- private constructor(
-  private readonly id: UserId, // 一意のID
-  private email: Email,
-  private name: string,
-  private experiencePoints: number,
-  private level: number,
-  private readonly createdAt: Date,
-  private lastLoginAt?: Date,
- ) {
-  this.validateInvariants();
- }
+ public readonly id: UserId;        // 一意のID
+ public readonly email: Email;
+ public readonly name: string;
+ public readonly createdAt: Date;
+ public readonly updatedAt: Date;
 
- // IDアクセサ
- getId(): UserId {
-  return this.id;
+ private constructor(props: UserProps) {
+  this.id = props.id;
+  this.email = props.email;
+  this.name = props.name;
+  this.createdAt = props.createdAt;
+  this.updatedAt = props.updatedAt;
+  this.validateInvariants();
  }
 
  // 同一性判定
@@ -202,13 +212,18 @@ export class User {
 }
 ```
 
-### 2. **ビジネスメソッドの実装** 🎯
+### 2. **ビジネスメソッドの実装（Immutableパターン）** 🎯
 
 ```typescript
-// ✅ 推薦：Entity内でのビジネスロジック実装
+// ✅ 推薦：Entity内でのビジネスロジック実装（新インスタンス返却）
 export class User {
- // ビジネスメソッド：経験値追加
- addExperiencePoints(points: number): void {
+ public readonly id: UserId;
+ public readonly experiencePoints: number;
+ public readonly level: number;
+ // ... その他のプロパティ
+
+ // ビジネスメソッド：経験値追加（新インスタンスを返す）
+ addExperiencePoints(points: number): User {
   if (points <= 0) {
    throw new DomainError(
     '経験値は正の値である必要があります',
@@ -216,33 +231,47 @@ export class User {
    );
   }
 
-  this.experiencePoints += points;
-  this.checkLevelUp(); // 内部でレベルアップ判定
-  this.validateInvariants(); // 不変条件検証
+  const newExperiencePoints = this.experiencePoints + points;
+  const newLevel = this.calculateLevelFromExperience(newExperiencePoints);
+
+  return new User({
+   ...this.toProps(),
+   experiencePoints: newExperiencePoints,
+   level: newLevel,
+   updatedAt: new Date(),
+  });
  }
 
- // ビジネスメソッド：昇格処理
- promote(): void {
+ // ビジネスメソッド：昇格処理（新インスタンスを返す）
+ promote(): User {
   if (!this.canPromote()) {
    throw new DomainError('昇格条件を満たしていません', 'PROMOTION_NOT_ALLOWED');
   }
 
-  const oldLevel = this.level;
-  this.level += 1;
-
-  // ドメインイベント発行
-  DomainEvents.raise(
-   new UserPromotedEvent(this.id, oldLevel, this.level, new Date()),
-  );
+  return new User({
+   ...this.toProps(),
+   level: this.level + 1,
+   updatedAt: new Date(),
+  });
  }
 
- // ビジネスルール：昇格可能性判定
+ // ビジネスルール：昇格可能性判定（読み取り専用メソッド）
  canPromote(): boolean {
   return (
    this.experiencePoints >= this.getRequiredExperienceForNextLevel() &&
    this.level < 10 &&
-   this.isActive()
+   this.isActive
   );
+ }
+
+ // 内部ヘルパー
+ private toProps(): UserProps {
+  return {
+   id: this.id,
+   experiencePoints: this.experiencePoints,
+   level: this.level,
+   // ... その他のプロパティ
+  };
  }
 }
 ```
@@ -316,44 +345,51 @@ export class User {
 }
 ```
 
-### 5. **状態変更の制御** 🔄
+### 5. **状態変更の制御（新インスタンス返却）** 🔄
 
 ```typescript
-// ✅ 推薦：適切な状態変更メソッド
+// ✅ 推薦：適切な状態変更メソッド（Immutableパターン）
 export class User {
- // 状態変更は専用メソッドで
- updateEmail(newEmail: Email): void {
+ public readonly email: Email;
+ public readonly lastLoginAt: Date | null;
+ // ... その他のプロパティ
+
+ // 状態変更は新インスタンスを返す専用メソッドで
+ updateEmail(newEmail: Email): User {
   // ビジネスルール：メール変更の妥当性チェック
   if (this.email.equals(newEmail)) {
-   return; // 同じメールアドレスの場合は何もしない
+   return this; // 同じメールアドレスの場合は自身を返す
   }
 
-  const oldEmail = this.email;
-  this.email = newEmail;
-
-  // ドメインイベント発行
-  DomainEvents.raise(
-   new UserEmailChangedEvent(this.id, oldEmail, newEmail, new Date()),
-  );
-
-  this.validateInvariants();
+  // 新しいインスタンスを返す（元のオブジェクトは変更しない）
+  return new User({
+   ...this.toProps(),
+   email: newEmail,
+   updatedAt: new Date(),
+  });
  }
 
- // サインイン処理
- recordLogin(): void {
+ // サインイン処理（新インスタンスを返す）
+ recordLogin(): User {
   const now = new Date();
   const wasFirstLogin = !this.lastLoginAt;
 
-  this.lastLoginAt = now;
+  let updatedUser = new User({
+   ...this.toProps(),
+   lastLoginAt: now,
+   updatedAt: now,
+  });
 
   // 初回サインインボーナス
   if (wasFirstLogin) {
-   this.addExperiencePoints(50);
+   updatedUser = updatedUser.addExperiencePoints(50);
   }
   // 連続サインインボーナス
   else if (this.isConsecutiveLogin()) {
-   this.addExperiencePoints(10);
+   updatedUser = updatedUser.addExperiencePoints(10);
   }
+
+  return updatedUser;
  }
 }
 ```
@@ -370,7 +406,7 @@ export class User {
  async save(): Promise<void> {
   const prisma = new PrismaClient(); // 禁止
   await prisma.user.update({
-   where: { id: this.id.toString() },
+   where: { id: this.id.value },
    data: {
     /* ... */
    },
@@ -379,7 +415,7 @@ export class User {
 
  async delete(): Promise<void> {
   const prisma = new PrismaClient(); // 禁止
-  await prisma.user.delete({ where: { id: this.id.toString() } });
+  await prisma.user.delete({ where: { id: this.id.value } });
  }
 }
 ```
@@ -400,7 +436,7 @@ export class User {
  toJSON(): object {
   // API レスポンス用の変換は Application Layer の責務
   return {
-   id: this.id.toString(),
+   id: this.id.value,
    name: this.name,
    displayLevel: this.getFormattedLevel(), // 禁止
   };
@@ -417,7 +453,7 @@ export class User {
   // メール送信は Infrastructure Layer の責務
   const emailService = new SendGridService(); // 禁止
   await emailService.send({
-   to: this.email.toString(),
+   to: this.email.value,
    subject: 'Welcome!',
    body: '登録ありがとうございます',
   });
@@ -429,7 +465,7 @@ export class User {
   const result = await s3
    .upload({
     Bucket: 'avatars',
-    Key: `${this.id.toString()}.jpg`,
+    Key: `${this.id.value}.jpg`,
     Body: file,
    })
    .promise();
@@ -473,37 +509,34 @@ export class User {
 
 ## 🏗️ 設計パターンとベストプラクティス
 
-### 1. **Rich Domain Model の採用** 💰
+### 1. **Rich Domain Model の採用（Immutableパターン）** 💰
 
 ```typescript
-// ✅ 推薦：ビジネスロジックをEntityに集約
+// ✅ 推薦：ビジネスロジックをEntityに集約（不変設計）
 export class User {
- // データだけでなく、振る舞いも持つ
- private constructor(/* ... */) {
+ public readonly id: UserId;
+ public readonly email: Email;
+ public readonly name: string;
+ public readonly experiencePoints: number;
+ public readonly level: number;
+ public readonly isActive: boolean;
+
+ private constructor(props: UserProps) {
+  // 全プロパティを設定
+  this.id = props.id;
+  this.email = props.email;
+  // ...
   this.validateInvariants();
  }
 
- // ビジネスメソッド群
- addExperiencePoints(points: number): void {
-  /* ... */
- }
- promote(): void {
-  /* ... */
- }
- canPromote(): boolean {
-  /* ... */
- }
- isActive(): boolean {
-  /* ... */
- }
+ // ビジネスメソッド群（新インスタンスを返す）
+ addExperiencePoints(points: number): User { /* 新インスタンス返却 */ }
+ promote(): User { /* 新インスタンス返却 */ }
+ updateEmail(email: Email): User { /* 新インスタンス返却 */ }
+ recordLogin(): User { /* 新インスタンス返却 */ }
 
- // 状態変更メソッド
- updateEmail(email: Email): void {
-  /* ... */
- }
- recordLogin(): void {
-  /* ... */
- }
+ // 読み取り専用判定メソッド
+ canPromote(): boolean { /* 状態を変更しない */ }
 }
 
 // ❌ 避ける：Anemic Domain Model（貧血モデル）
@@ -517,72 +550,116 @@ export class User {
 }
 ```
 
-### 2. **カプセル化の徹底** 🔒
+### 2. **カプセル化の徹底（public readonly パターン）** 🔒
 
 ```typescript
-// ✅ 推薦：適切なカプセル化
+// ✅ 推薦：public readonly による適切なカプセル化
 export class User {
- private constructor(
-  private readonly id: UserId, // 読み取り専用
-  private email: Email, // private
-  private name: string, // private
-  private experiencePoints: number, // private
-  private level: number, // private
- ) {}
+ public readonly id: UserId;       // 読み取り専用で公開
+ public readonly email: Email;     // 読み取り専用で公開
+ public readonly name: string;     // 読み取り専用で公開
+ public readonly level: number;    // 読み取り専用で公開
+ public readonly createdAt: Date;
+ public readonly updatedAt: Date;
 
- // 必要な情報のみ公開
- getId(): UserId {
-  return this.id;
- }
- getEmail(): Email {
-  return this.email;
- }
- getName(): string {
-  return this.name;
- }
- getLevel(): number {
-  return this.level;
+ private constructor(props: UserProps) {
+  this.id = props.id;
+  this.email = props.email;
+  this.name = props.name;
+  this.level = props.level;
+  this.createdAt = props.createdAt;
+  this.updatedAt = props.updatedAt;
+  this.validateInvariants();
  }
 
- // 状態変更は制御されたメソッド経由のみ
- updateEmail(newEmail: Email): void {
-  /* ... */
+ // 状態変更は新インスタンスを返すメソッド経由のみ
+ updateEmail(newEmail: Email): User {
+  return new User({
+   ...this.toProps(),
+   email: newEmail,
+   updatedAt: new Date(),
+  });
+ }
+
+ private toProps(): UserProps {
+  return {
+   id: this.id,
+   email: this.email,
+   name: this.name,
+   level: this.level,
+   createdAt: this.createdAt,
+   updatedAt: this.updatedAt,
+  };
  }
 }
 
-// ❌ 避ける：直接的なプロパティアクセス
+// ❌ 避ける：mutableなpublicプロパティ
 export class User {
- public id: string; // public は避ける
- public email: string; // 直接変更可能になってしまう
+ public id: string;    // ❌ readonlyがない = 外部から変更可能
+ public email: string; // ❌ 直接変更可能になってしまう
  public name: string;
 }
 ```
 
-### 3. **ドメインイベントの活用** 📡
+**getterメソッドは禁止、public readonly を使用:**
+
+| 観点 | public readonly | getter メソッド |
+|------|-----------------|-----------------|
+| **使用可否** | ✅ 必須 | ❌ 禁止 |
+| **アクセス** | `user.email` | ~~`user.getEmail()`~~ |
+| **理由** | シンプルで明確 | 不要な複雑性 |
+| **Immutability** | TypeScriptで保証 | 実装依存 |
+
+> ⚠️ **重要**: Entityでは `get` プレフィックス付きのgetterメソッド（`getEmail()`, `getName()` 等）は使用禁止です。
+> `public readonly` で直接プロパティにアクセスしてください。
+
+### 3. **ドメインイベントの活用（Immutableパターン）** 📡
 
 ```typescript
-// ✅ 推薦：重要なビジネスイベントの通知
+// ✅ 推薦：重要なビジネスイベントの通知（UseCase側で処理）
 export class User {
- promote(): void {
-  const oldLevel = this.level;
-  this.level += 1;
+ public readonly level: number;
+ public readonly experiencePoints: number;
 
-  // ビジネス上重要なイベントを発行
-  DomainEvents.raise(
-   new UserPromotedEvent(this.id, oldLevel, this.level, new Date()),
-  );
+ // 昇格処理（新インスタンスを返す）
+ promote(): User {
+  const newLevel = this.level + 1;
+
+  return new User({
+   ...this.toProps(),
+   level: newLevel,
+   updatedAt: new Date(),
+  });
+  // 注: イベント発行はUseCase側で行う
  }
 
- addExperiencePoints(points: number): void {
-  this.experiencePoints += points;
+ // 経験値追加（新インスタンスを返す）
+ addExperiencePoints(points: number): User {
+  const newExperiencePoints = this.experiencePoints + points;
+  const newLevel = this.calculateLevelFromExperience(newExperiencePoints);
 
-  if (this.checkLevelUp()) {
-   // レベルアップイベント
-   DomainEvents.raise(
-    new UserLevelUpEvent(this.id, this.level - 1, this.level, new Date()),
-   );
-  }
+  return new User({
+   ...this.toProps(),
+   experiencePoints: newExperiencePoints,
+   level: newLevel,
+   updatedAt: new Date(),
+  });
  }
+
+ // レベルアップ判定（読み取り専用）
+ hasLeveledUp(previousLevel: number): boolean {
+  return this.level > previousLevel;
+ }
+}
+
+// UseCase でのイベント発行例
+const previousLevel = user.level;
+const updatedUser = user.addExperiencePoints(1000);
+
+if (updatedUser.hasLeveledUp(previousLevel)) {
+ DomainEvents.raise(
+  new UserLevelUpEvent(updatedUser.id, previousLevel, updatedUser.level, new Date()),
+ );
 }
 ```
 
@@ -593,7 +670,7 @@ export class User {
 ### Unit Tests（単体テスト）
 
 ```typescript
-// ✅ Entity テストの例
+// ✅ Entity テストの例（public readonly パターン）
 describe('User Entity', () => {
  describe('create', () => {
   it('正常なパラメータでUserを作成できる', () => {
@@ -603,46 +680,45 @@ describe('User Entity', () => {
    const name = 'テストユーザー';
 
    // Act
-   const user = User.create(id, email, name);
+   const user = User.create({ id, email, name });
 
-   // Assert
-   expect(user.getId()).toEqual(id);
-   expect(user.getEmail()).toEqual(email);
-   expect(user.getName()).toBe(name);
-   expect(user.getLevel()).toBe(1);
-   expect(user.getExperiencePoints()).toBe(0);
+   // Assert（直接プロパティアクセス）
+   expect(user.id).toEqual(id);
+   expect(user.email).toEqual(email);
+   expect(user.name).toBe(name);
+   expect(user.level).toBe(1);
+   expect(user.experiencePoints).toBe(0);
   });
  });
 
  describe('addExperiencePoints', () => {
   it('経験値追加でレベルアップが発生する', () => {
    // Arrange
-   const user = User.create(
-    new UserId('user-123'),
-    new Email('test@example.com'),
-    'テストユーザー',
-   );
+   const user = User.create({
+    id: new UserId('user-123'),
+    email: new Email('test@example.com'),
+    name: 'テストユーザー',
+   });
 
-   // Act
-   user.addExperiencePoints(1000);
+   // Act（新インスタンスを受け取る）
+   const updatedUser = user.addExperiencePoints(1000);
 
-   // Assert
-   expect(user.getLevel()).toBe(2);
-   expect(user.getExperiencePoints()).toBe(1000);
+   // Assert（元のuserは変更されない）
+   expect(user.level).toBe(1);
+   expect(user.experiencePoints).toBe(0);
 
-   // ドメインイベントの確認
-   const events = DomainEvents.getEvents();
-   expect(events).toHaveLength(1);
-   expect(events[0]).toBeInstanceOf(UserLevelUpEvent);
+   // 新しいインスタンスの確認
+   expect(updatedUser.level).toBe(2);
+   expect(updatedUser.experiencePoints).toBe(1000);
   });
 
   it('負の経験値でエラーが発生する', () => {
    // Arrange
-   const user = User.create(
-    new UserId('user-123'),
-    new Email('test@example.com'),
-    'テストユーザー',
-   );
+   const user = User.create({
+    id: new UserId('user-123'),
+    email: new Email('test@example.com'),
+    name: 'テストユーザー',
+   });
 
    // Act & Assert
    expect(() => user.addExperiencePoints(-100)).toThrow(
@@ -655,14 +731,15 @@ describe('User Entity', () => {
   it('レベルが範囲外の場合エラーが発生する', () => {
    // Arrange & Act & Assert
    expect(() =>
-    User.reconstruct(
-     new UserId('user-123'),
-     new Email('test@example.com'),
-     'テストユーザー',
-     0,
-     11, // 範囲外のレベル
-     new Date(),
-    ),
+    User.reconstruct({
+     id: new UserId('user-123'),
+     email: new Email('test@example.com'),
+     name: 'テストユーザー',
+     experiencePoints: 0,
+     level: 11, // 範囲外のレベル
+     createdAt: new Date(),
+     updatedAt: new Date(),
+    }),
    ).toThrow('レベルは1-10の範囲である必要があります');
   });
  });
@@ -677,20 +754,28 @@ Entity を実装する際の確認事項：
 
 ### 基本構造
 
-- [ ] 一意のIDを持っている
+- [ ] 一意のIDを持っている（Value Object として）
 - [ ] プライベートコンストラクタを使用している
 - [ ] ファクトリーメソッド（create/reconstruct）を提供している
-- [ ] 適切なgetterメソッドを提供している
+- [ ] `public readonly` でプロパティを公開している（getterメソッドは禁止）
+- [ ] `toProps()` メソッドで内部状態を取得できる
+
+### Immutable設計
+
+- [ ] 全プロパティが `readonly` である
+- [ ] 状態変更メソッドは新インスタンスを返す（`void` ではない）
+- [ ] 元のインスタンスは変更されない
+- [ ] 不変条件を validateInvariants() で検証している
 
 ### ビジネスロジック
 
 - [ ] ビジネスメソッドを Entity 内に実装している
-- [ ] 不変条件を validateInvariants() で検証している
-- [ ] 状態変更は専用メソッドで制御している
-- [ ] 重要なイベントでドメインイベントを発行している
+- [ ] 判定メソッド（canXxx, isXxx）は `boolean` を返す
+- [ ] 更新メソッドは新しい `Entity` インスタンスを返す
 
 ### 禁止事項の回避
 
+- [ ] getterメソッド（`getXxx()`）を使用していない
 - [ ] データベース操作を直接実装していない
 - [ ] UI・表示フォーマットを実装していない
 - [ ] 外部サービスを直接呼び出していない
@@ -700,7 +785,7 @@ Entity を実装する際の確認事項：
 
 - [ ] 各ビジネスメソッドの単体テストがある
 - [ ] 不変条件違反のテストがある
-- [ ] ドメインイベント発行のテストがある
+- [ ] Immutability（元のインスタンスが変更されないこと）のテストがある
 - [ ] ファクトリーメソッドのテストがある
 
 ---

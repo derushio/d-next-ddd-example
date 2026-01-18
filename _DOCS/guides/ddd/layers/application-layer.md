@@ -91,17 +91,19 @@ export class CreateUserUseCase {
    await this.userRepository.save(user);
 
    this.logger.info('ユーザー作成完了', {
-    userId: user.getId().toString(),
+    userId: user.id.value,
     email: request.email,
    });
 
    // 6. 成功レスポンス
+   // Value Object: .value で型安全にプリミティブ値を取得
+   // プリミティブ型: 直接アクセス
    return success({
-    id: user.getId().toString(),
-    name: user.getName(),
-    email: user.getEmail().toString(),
-    createdAt: user.getCreatedAt(),
-    updatedAt: user.getUpdatedAt(),
+    id: user.id.value,
+    name: user.name,
+    email: user.email.value,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
    });
   } catch (error) {
    this.logger.error('ユーザー作成失敗', {
@@ -375,17 +377,17 @@ export class PromoteUserUseCase {
    }
 
    // 3. ドメインオブジェクトで昇格実行
-   const oldLevel = user.getLevel();
+   const oldLevel = user.level;
    user.promote();
-   const newLevel = user.getLevel();
+   const newLevel = user.level;
 
    // 4. 永続化
    await this.userRepository.save(user);
 
    // 5. 通知送信（外部サービス）
    await this.notificationService.sendPromotionNotification(
-    user.getEmail().toString(),
-    user.getName(),
+    user.email.value,
+    user.name,
     newLevel,
    );
 
@@ -396,7 +398,7 @@ export class PromoteUserUseCase {
    });
 
    return success({
-    userId: user.getId().toString(),
+    userId: user.id.value,
     newLevel,
     oldLevel,
     promotedAt: new Date(),
@@ -442,7 +444,7 @@ export class CreateUserUseCase {
   const user = new User(/* ... */);
   await this.userRepository.save(user);
 
-  return success({ id: user.getId() /* ... */ });
+  return success({ id: user.id /* ... */ });
  }
 }
 
@@ -459,11 +461,11 @@ export class CreateUserUseCase {
    await this.userRepository.save(user);
 
    return success({
-    id: user.getId().toString(),
-    name: user.getName(),
-    email: user.getEmail().toString(),
-    createdAt: user.getCreatedAt(),
-    updatedAt: user.getUpdatedAt(),
+    id: user.id.value,
+    name: user.name,
+    email: user.email.value,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
    });
   } catch (error) {
    if (error instanceof DomainError) {
@@ -509,11 +511,11 @@ export class GetUsersUseCase {
 
    return success({
     users: users.map((user) => ({
-     id: user.getId().toString(),
-     name: user.getName(),
-     email: user.getEmail().toString(),
-     createdAt: user.getCreatedAt(),
-     updatedAt: user.getUpdatedAt(),
+     id: user.id.value,
+     name: user.name,
+     email: user.email.value,
+     createdAt: user.createdAt,
+     updatedAt: user.updatedAt,
     })),
     totalCount,
     currentPage: request.page || 1,
@@ -544,16 +546,16 @@ export class GetUserProfileUseCase {
 
   // ❌ 表示フォーマットはPresentation Layerの責務
   const displayName =
-   user.getName().length > 20
-    ? user.getName().substring(0, 20) + '...'
-    : user.getName();
+   user.name.length > 20
+    ? user.name.substring(0, 20) + '...'
+    : user.name;
 
-  const levelBadge = user.getLevel() >= 10 ? '🏆' : '⭐';
+  const levelBadge = user.level >= 10 ? '🏆' : '⭐';
 
   return success({
    displayName,
    levelBadge,
-   formattedJoinDate: user.getCreatedAt().toLocaleDateString('ja-JP'),
+   formattedJoinDate: user.createdAt.toLocaleDateString('ja-JP'),
   });
  }
 }
@@ -568,11 +570,11 @@ export class GetUserProfileUseCase {
    }
 
    return success({
-    id: user.getId().toString(),
-    name: user.getName(),
-    email: user.getEmail().toString(),
-    createdAt: user.getCreatedAt(),
-    updatedAt: user.getUpdatedAt(),
+    id: user.id.value,
+    name: user.name,
+    email: user.email.value,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
    });
   } catch (error) {
    this.logger.error('ユーザープロフィール取得失敗', {
@@ -629,7 +631,7 @@ export class ProcessOrderUseCase {
    // 3. 注文ドメインオブジェクト作成
    const order = Order.create(
     generateOrderId(),
-    user.getId(),
+    user.id,
     products,
     new Date(),
    );
@@ -642,7 +644,7 @@ export class ProcessOrderUseCase {
 
    // 6. 決済処理
    const payment = await this.paymentService.processPayment(
-    order.getTotalAmount(),
+    order.totalAmount,
     request.paymentMethod,
     transaction,
    );
@@ -656,10 +658,10 @@ export class ProcessOrderUseCase {
    await this.emailService.sendOrderConfirmation(order);
 
    return {
-    orderId: order.getId().toString(),
-    totalAmount: order.getTotalAmount(),
-    status: order.getStatus(),
-    estimatedDeliveryDate: order.getEstimatedDeliveryDate(),
+    orderId: order.id.value,
+    totalAmount: order.totalAmount,
+    status: order.status,
+    estimatedDeliveryDate: order.estimatedDeliveryDate,
    };
   } catch (error) {
    await transaction.rollback();

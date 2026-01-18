@@ -639,20 +639,20 @@ graph LR
 ### 詳細実装ガイド
 
 - **[Unit Testing](unit/overview.md)** - ユニットテスト実装詳細
-- **[E2E Testing](e2e/overview.md)** - E2Eテスト実践ガイド
+- **[E2E Testing](../guides/e2e-testing-guide.md)** - E2Eテスト実践ガイド
 - **[Mocking Strategy](unit/mocking.md)** - モック戦略詳細
 
 ### 設計・アーキテクチャ
 
 - **[アーキテクチャ概要](../architecture/overview.md)** - システム全体設計
 - **[依存性注入](../architecture/patterns/dependency-injection.md)** - DI連携
-- **[Result型パターン](../architecture/patterns/result-pattern.md)** - エラーハンドリング
+- **[エラーハンドリング](../guides/ddd/cross-cutting/error-handling.md)** - Result型パターン
 
 ### 開発・運用
 
 - **[開発フロー](../guides/development/workflow.md)** - 開発プロセス
-- **[トラブルシューティング](../troubleshooting/testing/)** - テスト問題解決
-- **[CI/CD設定](../reference/configuration/)** - 自動化設定
+- **[vitest-mock設定](../troubleshooting/development/vitest-mock-extended-setup.md)** - テスト問題解決
+- **[コマンドリファレンス](../reference/commands.md)** - テスト実行コマンド
 
 ---
 

@@ -91,8 +91,8 @@ pnpm dev
 NEXTAUTH_SECRET="your-secure-random-string"
 NEXTAUTH_URL="http://localhost:3000"
 
-# データベース設定 (SQLite)
-DATABASE_URL="file:./dev.db"
+# データベース設定 (PostgreSQL)
+DATABASE_URL="postgresql://user:password@localhost:5432/dbname?schema=public"
 
 # オプション: 外部サービス
 # SMTP_HOST="smtp.gmail.com"
@@ -143,25 +143,24 @@ graph TB
 
     subgraph "📋 推奨拡張機能"
         TS[TypeScript]
-        PRETTIER[Prettier]
-        ESLINT[ESLint]
+        BIOME[Biome]
         TAILWIND[Tailwind CSS]
+        PRISMA_EXT[Prisma]
     end
 
     VSCODE --> EXTENSIONS
     EXTENSIONS --> SETTINGS
 
     EXTENSIONS --> TS
-    EXTENSIONS --> PRETTIER
-    EXTENSIONS --> ESLINT
+    EXTENSIONS --> BIOME
     EXTENSIONS --> TAILWIND
+    EXTENSIONS --> PRISMA_EXT
 ```
 
 **VS Code拡張機能 (推奨):**
 
 - TypeScript and JavaScript Language Features
-- Prettier - Code formatter
-- ESLint
+- Biome (Lint + Format 統合)
 - Tailwind CSS IntelliSense
 - Prisma
 
@@ -223,8 +222,8 @@ pnpm db:migrate:dev
 # Prisma Studio起動
 pnpm db:studio
 
-# データベースリセット
-pnpm db:reset
+# データベースリセット（Docker含む完全リセット）
+make clean && make up
 ```
 
 ---
@@ -270,14 +269,12 @@ experimental: {
 ### Git設定
 
 ```bash
-# Git hooks設定 (Husky)
-pnpm prepare
+# Git hooks設定（環境自動判定）
+make setup-git-hooks
 
 # コミット前自動チェック
-# - ESLint実行
-# - Prettier実行
-# - 型チェック
-# - テスト実行
+# - pre-commit: Biomeでフォーマット実行 (pnpm format)
+# - pre-push: 全品質チェック実行 (pnpm check)
 ```
 
 ---
@@ -368,8 +365,10 @@ graph LR
 3. **データベース問題**
 
    ```bash
-   # データベースリセット
-   pnpm db:reset
+   # データベースリセット（Docker含む完全リセット）
+   make clean && make up
+
+   # または軽量なリセット
    pnpm db:generate
    pnpm db:push
    ```
@@ -419,8 +418,8 @@ graph TB
 ### 参考資料
 
 - **[コマンドリファレンス](../reference/commands.md)** - 全コマンド一覧
-- **[環境設定詳細](../reference/configuration/)** - 詳細設定方法
-- **[トラブルシューティング](../troubleshooting/)** - 問題解決ガイド
+- **[技術スタック](../reference/technologies.md)** - 使用技術詳細
+- **[トラブルシューティング](../troubleshooting/common-issues.md)** - 問題解決ガイド
 
 ---
 

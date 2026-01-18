@@ -1,11 +1,10 @@
 import { container } from '@/di/container';
 import { User } from '@/layers/domain/entities/User';
 import { UserSession } from '@/layers/domain/entities/UserSession';
-import { Email } from '@/layers/domain/value-objects/Email';
 import { SessionId } from '@/layers/domain/value-objects/SessionId';
 import { UserId } from '@/layers/domain/value-objects/UserId';
 import { PrismaSessionRepository } from '@/layers/infrastructure/repositories/implementations/PrismaSessionRepository';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 
 import { setupMockReturnValues } from '@tests/utils/helpers/testHelpers';
 import { createAutoMockLogger } from '@tests/utils/mocks/autoMocks';
@@ -177,10 +176,10 @@ describe('PrismaSessionRepository', () => {
 
       // Assert
       expect(result).not.toBeNull();
-      expect(result!.session).toBeInstanceOf(UserSession);
-      expect(result!.user).toBeInstanceOf(User);
-      expect(result!.session.id.value).toBe(testSessionId);
-      expect(result!.session.userId.value).toBe(testUserId);
+      expect(result?.session).toBeInstanceOf(UserSession);
+      expect(result?.user).toBeInstanceOf(User);
+      expect(result?.session.id.value).toBe(testSessionId);
+      expect(result?.session.userId.value).toBe(testUserId);
       expect(mockPrismaClient.userSession.findFirst).toHaveBeenCalledWith({
         where: {
           userId: testUserId,

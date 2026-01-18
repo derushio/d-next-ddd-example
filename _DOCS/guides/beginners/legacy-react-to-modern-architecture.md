@@ -92,10 +92,10 @@ export async function updateUserAction(userId: string, formData: FormData) {
   });
 
   if (isFailure(result)) {
-    return { success: false, error: result.error.message };
+    return failure(result.error.message, result.error.code);
   }
 
-  return { success: true };
+  return success(undefined);
 }
 ```
 
@@ -285,8 +285,8 @@ export async function createUser(userData) {
   const user = await userService.create(userData);
   return user;
  } catch (error) {
-  if (error instanceof ValidationError) {
-   // バリデーションエラー処理
+  if (error instanceof DomainError) {
+   // バリデーションエラー処理（DomainErrorで統一）
    throw new Error('入力値が不正です');
   } else if (error instanceof DatabaseError) {
    // データベースエラー処理
@@ -316,8 +316,9 @@ export async function createUser(userData): Promise<Result<User>> {
   const user = await userService.create(userData);
   return success(user); // 成功時
  } catch (error) {
-  if (error instanceof ValidationError) {
-   return failure('入力値が不正です', 'VALIDATION_ERROR');
+  // DomainError でバリデーションエラーも統一的に扱う
+  if (error instanceof DomainError) {
+   return failure(error.message, error.code);
   } else if (error instanceof DatabaseError) {
    return failure('データベースエラーです', 'DATABASE_ERROR');
   } else {
@@ -519,8 +520,8 @@ describe('SearchProductsUseCase', () => {
 
 1. **[簡単なチュートリアル](./simple-tutorial.md)** - 実際に手を動かして機能を作ってみる
 2. **[アーキテクチャ図解](./architecture-diagrams.md)** - 視覚的にアーキテクチャを理解する
-3. **[実践的なサンプル集](./practical-examples.md)** - よくあるパターンの実装例
-4. **[よくある質問集](./legacy-react-faq.md)** - よくある疑問・トラブル解決
+3. **[よくある質問集](./legacy-react-faq.md)** - よくある疑問・トラブル解決
+4. **[実装パターンガイド](../implementation/patterns-guide.md)** - よくあるパターンの実装例
 
 ---
 

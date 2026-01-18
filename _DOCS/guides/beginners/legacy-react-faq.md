@@ -189,9 +189,12 @@ const useCase = new CreateUserUseCase(userRepository, logger, hashService);
 @injectable() // これがあると...
 export class CreateUserUseCase {
  constructor(
-  @inject('UserRepository') private userRepository: IUserRepository,
-  @inject('Logger') private logger: ILogger,
-  @inject('HashService') private hashService: IHashService,
+  @inject(INJECTION_TOKENS.UserRepository)
+  private readonly userRepository: IUserRepository,
+  @inject(INJECTION_TOKENS.Logger)
+  private readonly logger: ILogger,
+  @inject(INJECTION_TOKENS.HashService)
+  private readonly hashService: IHashService,
  ) {}
 }
 
@@ -301,17 +304,17 @@ export async function createUserAction(formData: FormData) {
  });
 
  if (isFailure(result)) {
-  return { success: false, error: result.error.message };
+  return failure(result.error.message, result.error.code);
  }
 
- return { success: true };
+ return success(undefined);
 }
 
 // 2. フロントエンドで直接使用
 const handleSubmit = async (formData: FormData) => {
  const result = await createUserAction(formData); // 型安全！
- if (!result.success) {
-  setError(result.error);
+ if (isFailure(result)) {
+  setError(result.error.message);
  }
 };
 ```
@@ -393,7 +396,8 @@ describe('CreateProductUseCase', () => {
 describe('ProductRepository', () => {
  it('商品データを正しく保存できる', async () => {
   await repository.save(product);
-  const saved = await repository.findById(product.getId());
+  // public readonly プロパティに直接アクセス
+  const saved = await repository.findById(product.id);
   expect(saved).toEqual(product);
  });
 });

@@ -1,15 +1,13 @@
 import { User } from '@/layers/domain/entities/User';
 import { Email } from '@/layers/domain/value-objects/Email';
 import { UserId } from '@/layers/domain/value-objects/UserId';
-import type { PrismaClient } from '@/layers/infrastructure/persistence/prisma/generated';
 import { container } from '@/di/container';
-import { INJECTION_TOKENS } from '@/di/tokens';
 import { PrismaUserRepository } from '@/layers/infrastructure/repositories/implementations/PrismaUserRepository';
-import type { ILogger } from '@/layers/infrastructure/services/Logger';
+import type { ILogger } from '@/layers/application/interfaces/ILogger';
 
 import { createAutoMockLogger } from '@tests/utils/mocks/autoMocks';
 import { createMockPrismaClient } from '@tests/utils/mocks/commonMocks';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { MockProxy } from 'vitest-mock-extended';
 
 describe('PrismaUserRepository', () => {
@@ -32,9 +30,9 @@ describe('PrismaUserRepository', () => {
   describe('findById', () => {
     it('ユーザーIDでユーザーを正常に取得できる', async () => {
       // Arrange
-      const userId = new UserId('test-user-id');
+      const userId = new UserId('testuseridcuid2abc12');
       const mockUserData = {
-        id: 'test-user-id',
+        id: 'testuseridcuid2abc12',
         email: 'test@example.com',
         name: 'Test User',
         passwordHash: 'hashed-password',
@@ -49,17 +47,17 @@ describe('PrismaUserRepository', () => {
 
       // Assert
       expect(result).toBeInstanceOf(User);
-      expect(result?.id.toString()).toBe('test-user-id');
-      expect(result?.email.toString()).toBe('test@example.com');
+      expect(result?.id.value).toBe('testuseridcuid2abc12');
+      expect(result?.email.value).toBe('test@example.com');
       expect(result?.name).toBe('Test User');
       expect(mockPrismaClient.user.findUnique).toHaveBeenCalledWith({
-        where: { id: 'test-user-id' },
+        where: { id: 'testuseridcuid2abc12' },
       });
     });
 
     it('存在しないユーザーIDの場合nullを返す', async () => {
       // Arrange
-      const userId = new UserId('non-existent-id');
+      const userId = new UserId('nonexistentidcuid12');
       mockPrismaClient.user.findUnique.mockResolvedValue(null);
 
       // Act
@@ -75,7 +73,7 @@ describe('PrismaUserRepository', () => {
       // Arrange
       const email = new Email('test@example.com');
       const mockUserData = {
-        id: 'test-user-id',
+        id: 'testuseridcuid2abc12',
         email: 'test@example.com',
         name: 'Test User',
         passwordHash: 'hashed-password',
@@ -90,7 +88,7 @@ describe('PrismaUserRepository', () => {
 
       // Assert
       expect(result).toBeInstanceOf(User);
-      expect(result?.email.toString()).toBe('test@example.com');
+      expect(result?.email.value).toBe('test@example.com');
       expect(mockPrismaClient.user.findUnique).toHaveBeenCalledWith({
         where: { email: 'test@example.com' },
       });
@@ -119,8 +117,8 @@ describe('PrismaUserRepository', () => {
       );
 
       mockPrismaClient.user.upsert.mockResolvedValue({
-        id: user.id.toString(),
-        email: user.email.toString(),
+        id: user.id.value,
+        email: user.email.value,
         name: user.name,
         passwordHash: user.passwordHash,
         createdAt: user.createdAt,
@@ -132,15 +130,15 @@ describe('PrismaUserRepository', () => {
 
       // Assert
       expect(mockPrismaClient.user.upsert).toHaveBeenCalledWith({
-        where: { id: user.id.toString() },
+        where: { id: user.id.value },
         update: {
           name: user.name,
-          email: user.email.toString(),
+          email: user.email.value,
           updatedAt: user.updatedAt,
         },
         create: {
-          id: user.id.toString(),
-          email: user.email.toString(),
+          id: user.id.value,
+          email: user.email.value,
           name: user.name,
           passwordHash: user.passwordHash,
           createdAt: user.createdAt,
@@ -154,7 +152,7 @@ describe('PrismaUserRepository', () => {
     it('既存ユーザーを正常に更新できる', async () => {
       // Arrange
       const user = User.reconstruct(
-        new UserId('existing-user-id'),
+        new UserId('existinguseridcuid12'),
         new Email('old@example.com'),
         'Old Name',
         'hashed-password',
@@ -163,11 +161,14 @@ describe('PrismaUserRepository', () => {
       );
 
       // プロフィール更新（immutableパターンのため新しいインスタンスを取得）
-      const updatedUser = user.updateProfile(new Email('new@example.com'), 'New Name');
+      const updatedUser = user.updateProfile(
+        new Email('new@example.com'),
+        'New Name',
+      );
 
       mockPrismaClient.user.update.mockResolvedValue({
-        id: updatedUser.id.toString(),
-        email: updatedUser.email.toString(),
+        id: updatedUser.id.value,
+        email: updatedUser.email.value,
         name: updatedUser.name,
         passwordHash: updatedUser.passwordHash,
         createdAt: updatedUser.createdAt,
@@ -179,7 +180,7 @@ describe('PrismaUserRepository', () => {
 
       // Assert
       expect(mockPrismaClient.user.update).toHaveBeenCalledWith({
-        where: { id: 'existing-user-id' },
+        where: { id: 'existinguseridcuid12' },
         data: {
           name: 'New Name',
           email: 'new@example.com',
@@ -191,7 +192,7 @@ describe('PrismaUserRepository', () => {
     it('存在しないユーザーの更新時にエラーが発生する', async () => {
       // Arrange
       const user = User.reconstruct(
-        new UserId('non-existent-id'),
+        new UserId('nonexistentidcuid12'),
         new Email('test@example.com'),
         'Test User',
         'hashed-password',
@@ -212,9 +213,9 @@ describe('PrismaUserRepository', () => {
   describe('delete', () => {
     it('ユーザーを正常に削除できる', async () => {
       // Arrange
-      const userId = new UserId('test-user-id');
+      const userId = new UserId('testuseridcuid2abc12');
       mockPrismaClient.user.delete.mockResolvedValue({
-        id: 'test-user-id',
+        id: 'testuseridcuid2abc12',
         email: 'test@example.com',
         name: 'Test User',
         passwordHash: 'hashed-password',
@@ -227,7 +228,7 @@ describe('PrismaUserRepository', () => {
 
       // Assert
       expect(mockPrismaClient.user.delete).toHaveBeenCalledWith({
-        where: { id: 'test-user-id' },
+        where: { id: 'testuseridcuid2abc12' },
       });
     });
   });

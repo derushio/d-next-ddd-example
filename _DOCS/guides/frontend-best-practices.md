@@ -248,7 +248,7 @@ graph LR
 </Card>
 ```
 
-**参考：** 詳細な色設計・使用方法は [`theme-system.md`](../theme-system.md) を参照
+**参考：** 詳細な色設計・使用方法は [`theme-system.md`](theme-system.md) を参照
 
 ### shadcn/ui との統合
 
@@ -836,20 +836,16 @@ class ErrorBoundary extends React.Component<
 
 ### 🎨 UI・デザインシステム
 
-- [テーマカラーシステム v2.0](../theme-system.md) - shadcn/ui統合カラーパレット・HSL変数・ダークモード対応
-- [Next.js統合パターン](../nextjs-integration-patterns.md) - App Router + shadcn/ui統合パターン
+- [テーマカラーシステム v2.0](theme-system.md) - shadcn/ui統合カラーパレット・HSL変数・ダークモード対応
+- [Next.js統合パターン](nextjs-integration-patterns.md) - App Router + shadcn/ui統合パターン
 
 ### 🏗️ 開発・アーキテクチャ
 
-- [プロジェクト構造](../project-structure.md) - 全体のファイル配置
-- [開発ガイド](../development-guide.md) - 開発フロー全般
-- [テスト戦略](../testing-strategy.md) - Enhanced Componentsテスト手法
-
-### 🔄 shadcn/ui関連
-
-- [shadcn/ui移行計画](../../shadcn-ui-migration-plan.md) - 段階的移行戦略詳細
+- [プロジェクト構造](standards/project-structure.md) - 全体のファイル配置
+- [開発ワークフロー](development/workflow.md) - 開発フロー全般
+- [テスト戦略](../../testing/strategy.md) - テスト方針・構造・カバレッジ
 
 ### 📋 DDD・Clean Architecture
 
-- [Presentation Layer](../ddd/layers/presentation-layer.md) - UI層設計・Server Actions
-- [Frontend Architecture](../ddd/concepts/frontend-architecture.md) - フロントエンド設計原則
+- [Presentation Layer](ddd/layers/presentation-layer.md) - UI層設計・Server Actions
+- [Clean Architecture](ddd/concepts/clean-architecture.md) - アーキテクチャ設計原則

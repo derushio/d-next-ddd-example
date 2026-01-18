@@ -1,11 +1,12 @@
-# テーマカラーシステム v2.0 - shadcn/ui統合版
+# テーマカラーシステム v2.0 - Aurora Gradient System + shadcn/ui統合版
 
 統一されたデザインシステムとダークモード対応を実現するテーマカラーの設計と実装ガイド。
-shadcn/ui統合により、HSL形式のCSS変数とTailwindCSS v4対応を追加実装。
+**2024年トレンドのAurora Gradient System** + shadcn/ui統合により、美しいグラデーションとHSL形式のCSS変数を両立。
 
 ## 📋 目次
 
 - [概要](#概要)
+- [Aurora Gradient System](#aurora-gradient-system)
 - [shadcn/ui統合概要](#shadcnui統合概要)
 - [CSS変数定義](#css変数定義)
 - [shadcn/ui HSL変数系](#shadcnui-hsl変数系)
@@ -21,15 +22,101 @@ shadcn/ui統合により、HSL形式のCSS変数とTailwindCSS v4対応を追加
 
 ## 概要
 
-本プロジェクトでは、CSS変数を活用した統一テーマカラーシステムv2.0を採用しています。shadcn/ui統合により以下を実現：
+本プロジェクトでは、CSS変数を活用した統一テーマカラーシステムv2.0を採用しています。**Aurora Gradient System** + shadcn/ui統合により以下を実現：
 
+- **🌈 Aurora Gradient System**: 2024年トレンドの美しいグラデーション（Aurora/Sunset/Ocean/Cosmic/Solar）
 - **🎨 統一されたデザイン**: 全コンポーネントで一貫したブランドカラー
 - **🌓 完全ダークモード対応**: 自動切り替えによる最適な表示
 - **🔧 高い保守性**: 色変更が一箇所で完結
 - **♿ アクセシビリティ**: 適切なコントラスト比の確保
-- **🧩 shadcn/ui完全対応**: HSL形式変数によるshadcn/ui標準準拠
+- **🧩 shadcn/ui完全対応**: `--shadcn-*` 接頭辞付きHSL変数によるshadcn/ui標準準拠
 - **⚡ TailwindCSS v4統合**: @theme inline指定による最適化
 - **🔄 統一配置**: `@/components/ui/` にカスタマイズ済みコンポーネントを配置
+
+## Aurora Gradient System
+
+### 🌟 2024年トレンド：現代的グラデーションシステム
+
+本プロジェクトでは、従来の単色グラデーションから**5種類の美しいマルチカラーグラデーション**に進化：
+
+| グラデーション名 | 色構成 | 用途 |
+|-----------------|--------|------|
+| **Aurora** | Purple → Pink → Cyan | Primary / ブランド要素 |
+| **Sunset** | Orange → Pink → Purple | Secondary / アクセント |
+| **Ocean** | Teal → Green → Blue | Success / 成功状態 |
+| **Cosmic** | Red → Pink → Violet | Error / エラー状態 |
+| **Solar** | Yellow → Orange → Red | Warning / 警告状態 |
+
+### グラデーションCSS変数
+
+```css
+:root {
+  /* Aurora Primary - Purple to Pink to Blue */
+  --aurora-primary-start: #8b5cf6; /* violet-500 */
+  --aurora-primary-mid: #ec4899;   /* pink-500 */
+  --aurora-primary-end: #06b6d4;   /* cyan-500 */
+  --aurora-primary-light: #f3e8ff; /* violet-50 */
+
+  /* Sunset Secondary - Orange to Pink to Purple */
+  --sunset-secondary-start: #f97316; /* orange-500 */
+  --sunset-secondary-mid: #f472b6;   /* pink-400 */
+  --sunset-secondary-end: #a855f7;   /* purple-500 */
+
+  /* Ocean Success - Teal to Green to Blue */
+  --ocean-success-start: #14b8a6; /* teal-500 */
+  --ocean-success-mid: #22c55e;   /* green-500 */
+  --ocean-success-end: #3b82f6;   /* blue-500 */
+
+  /* Cosmic Error - Red to Magenta to Purple */
+  --cosmic-error-start: #ef4444; /* red-500 */
+  --cosmic-error-mid: #ec4899;   /* pink-500 */
+  --cosmic-error-end: #8b5cf6;   /* violet-500 */
+
+  /* Solar Warning - Yellow to Orange to Red */
+  --solar-warning-start: #eab308; /* yellow-500 */
+  --solar-warning-mid: #f97316;   /* orange-500 */
+  --solar-warning-end: #ef4444;   /* red-500 */
+}
+```
+
+### グラデーションユーティリティクラス
+
+```tsx
+// ✅ Aurora グラデーション（Primary用）
+<div className="gradient-aurora text-white">
+  オーロラグラデーション
+</div>
+
+// ✅ Sunset グラデーション（Secondary用）
+<div className="gradient-sunset text-white">
+  サンセットグラデーション
+</div>
+
+// ✅ Ocean グラデーション（Success用）
+<div className="gradient-ocean text-white">
+  オーシャングラデーション
+</div>
+
+// ✅ Cosmic グラデーション（Error用）
+<div className="gradient-cosmic text-white">
+  コズミックグラデーション
+</div>
+
+// ✅ Solar グラデーション（Warning用）
+<div className="gradient-solar text-white">
+  ソーラーグラデーション
+</div>
+
+// ✅ Animated グラデーション（特殊効果）
+<div className="gradient-animated text-white">
+  アニメーショングラデーション
+</div>
+
+// ✅ Glass Morphism
+<div className="gradient-glass">
+  ガラスモーフィズム効果
+</div>
+```
 
 ## shadcn/ui統合概要
 
@@ -1024,9 +1111,8 @@ import { Alert } from '@/components/ui/alert';
 
 ### 🔗 プロジェクト内ドキュメント
 
-- [`frontend-best-practices.md`](_DOCS/guides/frontend-best-practices.md) - フロントエンド全般のベストプラクティス
-- [`nextjs-integration-patterns.md`](_DOCS/guides/nextjs-integration-patterns.md) - Next.js統合パターン
-- [`shadcn-ui-migration-plan.md`](../shadcn-ui-migration-plan.md) - shadcn/ui移行計画詳細
+- [`frontend-best-practices.md`](frontend-best-practices.md) - フロントエンド全般のベストプラクティス
+- [`nextjs-integration-patterns.md`](nextjs-integration-patterns.md) - Next.js統合パターン
 
 ---
 
