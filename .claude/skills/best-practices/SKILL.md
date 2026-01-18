@@ -1,6 +1,27 @@
-# Best Practice Implementation Command
+---
+name: best-practices
+description: |
+  Clean Architecture + DDDのベストプラクティスを自動適用するスキル。
+  レイヤー構造、DIP、DRY、SRP等の原則に基づいた実装ガイダンスを提供。
+  Next.js 16 proxy.ts、shadcn/ui カスタマイズ済みコンポーネント等のフレームワーク固有注意事項も含む。
 
-以下のベストプラクティスを遵守しながら、$ARGUMENTSの実装を行ってください。
+  トリガー例:
+  - 「実装したい」「機能を作りたい」「コードを書きたい」
+  - 「UseCase」「Entity」「Repository」「Server Action」
+  - 「アーキテクチャ」「設計」「リファクタリング」
+  - 「middleware」「proxy.ts」「shadcn/ui」
+  - src/layers/ 配下のファイルを編集・作成するとき
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Glob
+  - Grep
+---
+
+# Best Practice Implementation Skill
+
+このスキルは、以下のベストプラクティスに基づいた実装ガイダンスを提供します。
 
 ---
 
@@ -8,7 +29,7 @@
 
 ### 1.1 要件の明確化
 
-実装を始める**前に**、以下を確認・整理してください：
+実装を始める**前に**、以下を確認・整理してください:
 
 - [ ] **目的**: この機能は何を解決するのか？
 - [ ] **スコープ**: 必要十分な範囲はどこまでか？（過剰実装を避ける）
@@ -17,7 +38,7 @@
 
 ### 1.2 設計の検討
 
-コードを書く前に設計を固めてください：
+コードを書く前に設計を固めてください:
 
 ```
 質問:
@@ -29,7 +50,7 @@
 
 ### 1.3 ベストプラクティスの調査
 
-不明点がある場合は**実装前に**調べてください：
+不明点がある場合は**実装前に**調べてください:
 
 - [ ] `_DOCS/` 内の関連ドキュメントを確認
 - [ ] 既存の類似実装コードを参照
@@ -98,7 +119,7 @@ import { UserRepository } from '@/layers/infrastructure/...'; // 禁止
 - [ ] **類似ロジック** → ジェネリクスや高階関数で汎用化
 - [ ] **定数値の重複** → 定数ファイルに集約
 
-ただし、**早すぎる抽象化は避ける**：
+ただし、**早すぎる抽象化は避ける**:
 
 - 2回の重複 → まだ様子を見る
 - 文脈が異なる類似コード → 無理に共通化しない
@@ -109,7 +130,7 @@ import { UserRepository } from '@/layers/infrastructure/...'; // 禁止
 
 ### 3.1 単一責任の原則（SRP）
 
-各ファイル/クラス/関数は**1つの責任**のみを持つ：
+各ファイル/クラス/関数は**1つの責任**のみを持つ:
 
 ```typescript
 // ❌ 悪い例: 複数の責任が混在
@@ -186,9 +207,78 @@ export default async function UsersPage() {
 
 ---
 
-## 📏 Phase 4: ファイルサイズと構成
+## 🛠️ Phase 4: フレームワーク固有の注意事項
 
-### 4.1 適正なファイル長の目安
+### 4.1 Next.js 16: middleware.ts → proxy.ts への変更
+
+**重要**: Next.js 16で `middleware.ts` が `proxy.ts` にリネームされました。
+
+```
+src/proxy.ts  # ← middleware.tsではない
+```
+
+**主な違い:**
+
+| 項目 | middleware.ts (旧) | proxy.ts (新) |
+|------|-------------------|--------------|
+| 関数名 | `middleware()` | `proxy()` |
+| ランタイム | Edge Runtime対応 | Node.jsのみ（Edge非対応） |
+| 用途 | リクエスト/レスポンス改変全般 | ネットワーク境界での認証・リダイレクト・ヘッダー操作 |
+
+**実装例:**
+
+```typescript
+// ❌ 禁止: middleware.ts（Next.js 16では動作しない）
+// src/middleware.ts
+export function middleware(request: NextRequest) {
+  // ...
+}
+
+// ✅ 正しい: proxy.ts
+// src/proxy.ts
+export function proxy(request: NextRequest) {
+  // 認証チェック、リダイレクト、ヘッダー操作
+  return NextResponse.next();
+}
+```
+
+**参考**: [Next.js proxy.ts Docs](https://nextjs.org/docs/app/api-reference/file-conventions/proxy)
+
+### 4.2 shadcn/ui カスタマイズ済みコンポーネント
+
+以下のコンポーネントは**プロジェクト固有のカスタマイズ**が施されているため、
+`pnpm ui:add` で再追加・上書き**禁止**:
+
+```
+✅ カスタマイズ済み（追加禁止）:
+button, card, input, alert, badge, dialog,
+form, label, separator, sonner, toast,
+loading, spinner
+```
+
+**理由:**
+- プロジェクト固有のスタイル適用
+- 追加のprops/variantsの実装
+- アニメーション・状態管理の拡張
+
+**新規コンポーネント追加時:**
+
+```bash
+# ✅ 正しい: カスタマイズされていないコンポーネントの追加
+pnpm ui:add dropdown-menu
+
+# ✅ 確認: 利用可能なコンポーネント一覧
+pnpm ui:list
+
+# ❌ 禁止: カスタマイズ済みコンポーネントの上書き
+pnpm ui:add button  # カスタマイズが失われる
+```
+
+---
+
+## 📏 Phase 5: ファイルサイズと構成
+
+### 5.1 適正なファイル長の目安
 
 | ファイル種別 | 推奨行数 | 上限目安 |
 |-------------|---------|---------|
@@ -198,7 +288,7 @@ export default async function UsersPage() {
 | Repository  | ~100行  | 200行   |
 | Utility     | ~50行   | 100行   |
 
-### 4.2 ファイルが大きくなった場合
+### 5.2 ファイルが大きくなった場合
 
 ```
 上限を超えたら:
@@ -210,9 +300,9 @@ export default async function UsersPage() {
 
 ---
 
-## 💬 Phase 5: 日本語コメント規約
+## 💬 Phase 6: 日本語コメント規約
 
-### 5.1 コメントの原則
+### 6.1 コメントの原則
 
 ```typescript
 // ❌ 悪い: コードの説明（What）
@@ -230,7 +320,7 @@ if (!user) throw new UnauthorizedError();
 const taxRate = calculateTaxRate(product, buyer);
 ```
 
-### 5.2 TypeScriptでのコメント（型アノテーション不要）
+### 6.2 TypeScriptでのコメント（型アノテーション不要）
 
 ```typescript
 // ❌ 冗長: TypeScriptで型は既に定義されている
@@ -251,7 +341,7 @@ const taxRate = calculateTaxRate(product, buyer);
 async execute(request: CreateUserRequest): Promise<Result<CreateUserResponse>>
 ```
 
-### 5.3 引数へのインラインコメント（推奨）
+### 6.3 引数へのインラインコメント（推奨）
 
 ```typescript
 // ✅ 引数の意味・制約・デフォルト挙動を引数直前に記述
@@ -275,7 +365,7 @@ function randomNormal(
 // - 単位や制約（0-1、ms等）を明示したい場合
 ```
 
-### 5.4 TODO/FIXME/NOTEの書き方
+### 6.4 TODO/FIXME/NOTEの書き方
 
 ```typescript
 // TODO: 機能説明 - 関連Issue
@@ -290,7 +380,7 @@ function randomNormal(
 
 ---
 
-## ✅ Phase 6: 実装チェックリスト
+## ✅ Phase 7: 実装チェックリスト
 
 ### 実装前
 
@@ -317,8 +407,8 @@ function randomNormal(
 
 ---
 
-## 🚀 実装を開始
+## 🚀 適用方法
 
-上記のベストプラクティスを遵守しながら、**$ARGUMENTS**の実装を進めてください。
+上記のベストプラクティスを参照しながら、実装を進めてください。
 
 不明点や設計判断が必要な場合は、実装前に確認・相談してください。

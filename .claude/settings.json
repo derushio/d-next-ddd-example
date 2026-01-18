@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [[ \"$CLAUDE_FILE_PATH\" =~ \\.(ts|tsx|js|jsx)$ ]]; then pnpm biome format --write \"$CLAUDE_FILE_PATH\" 2>/dev/null || true; fi",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_FILE_PATH\" | grep -q 'src/layers/domain/'; then if grep -qE 'from.*layers/(application|infrastructure|presentation)' \"$CLAUDE_FILE_PATH\" 2>/dev/null; then echo 'WARNING: Domain層が上位層に依存しています！'; fi; fi",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_FILE_PATH\" | grep -q 'UseCase\\.ts$'; then if ! grep -q 'Promise<Result<' \"$CLAUDE_FILE_PATH\" 2>/dev/null; then echo 'REMINDER: UseCaseはResult型を返却してください'; fi; fi",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

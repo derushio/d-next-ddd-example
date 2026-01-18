@@ -2,7 +2,7 @@
 
 ## プロジェクト名
 
-d-next-ddd-example - Next.js Clean Architecture Template
+d-next-resources - Next.js Clean Architecture Template
 
 ## プロジェクトの目的
 
@@ -13,9 +13,9 @@ d-next-ddd-example - Next.js Clean Architecture Template
 ## 主要な価値提案
 
 - **Clean Architecture + DDD**: スケーラブルで保守性の高い設計
-- **Next.js 15 + TypeScript**: 最新技術によるモダン開発
+- **Next.js 16 + TypeScript**: 最新技術によるモダン開発
 - **充実したテスト環境**: Vitest + Playwright
-- **開発体験重視**: ESLint/Prettier + pnpm
+- **開発体験重視**: Biome + pnpm
 - **Result型パターン**: 型安全なエラーハンドリング
 - **shadcn/ui統合**: Enhanced Components + Bridge System による統一UI
 - **Server Actions優先**: Client Componentsは最小限に抑制
@@ -33,3 +33,4 @@ d-next-ddd-example - Next.js Clean Architecture Template
 - **型安全性重視**: TypeScript strict mode + Result型パターン
 - **テスト駆動開発**: vitest-mock-extended活用
 - **包括的ドキュメント**: \_DOCSディレクトリに体系的な説明
+- **コード生成ツール**: Hygenテンプレートによる効率化

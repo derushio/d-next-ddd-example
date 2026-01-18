@@ -2,7 +2,7 @@
 
 ## フロントエンド
 
-- **Next.js 15**: React フレームワーク（App Router、Turbopack対応）
+- **Next.js 16**: React フレームワーク（App Router、Turbopack対応）
 - **React 19**: UI ライブラリ
 - **TypeScript 5**: 静的型付けシステム
 - **TailwindCSS v4**: CSSフレームワーク
@@ -11,7 +11,8 @@
 
 ## バックエンド・データベース
 
-- **Prisma 6.9.0**: ORM（PostgreSQL、SQLite対応）
+- **PostgreSQL**: メインデータベース
+- **Prisma 7**: ORM（Driver Adapter対応）
 - **NextAuth.js**: 認証システム
 - **bcryptjs**: パスワードハッシュ化
 - **jose**: JWT処理
@@ -26,8 +27,7 @@
 ## 開発ツール
 
 - **pnpm**: パッケージマネージャ
-- **ESLint 9**: 静的解析ツール
-- **Prettier**: コードフォーマッタ
+- **Biome**: Lint + Format 統合ツール（ESLint/Prettier代替）
 - **npm-run-all**: 並列・直列タスク実行
 
 ## テスト

@@ -12,6 +12,7 @@
 ├── docker/                   # Docker設定
 ├── k8s/                      # Kubernetes設定
 ├── scripts/                  # ビルド・実行スクリプト
+├── _templates/               # Hygenテンプレート
 └── .serena/                  # Serena MCP設定
 ```
 
@@ -58,9 +59,10 @@ src/
 ├── hooks/                   # Custom Hooks
 ├── utils/                   # ユーティリティ関数
 ├── lib/                     # ライブラリ設定
+├── di/                      # DIコンテナ設定
 ├── types/                   # 型定義
 ├── tools/                   # 開発ツール
-└── middleware.ts            # Next.js Middleware
+└── proxy.ts                 # Next.js 16 Proxy（旧middleware.ts）
 ```
 
 ## 🧪 tests/ ディレクトリ構造
@@ -100,7 +102,7 @@ _DOCS/
 - **CLAUDE.md**: プロジェクト概要・コマンド・ルール
 - **package.json**: 依存関係・スクリプト定義
 - **tsconfig.json**: TypeScript設定
-- **eslint.config.mjs**: ESLint設定
+- **biome.json**: Biome設定（Lint/Format）
 - **vitest.config.ts**: テスト設定
 - **next.config.ts**: Next.js設定
 - **playwright.config.ts**: E2Eテスト設定
