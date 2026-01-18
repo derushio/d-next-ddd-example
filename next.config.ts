@@ -2,6 +2,21 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   /* config options here */
+  /**
+   * 画像最適化設定
+   *
+   * NOTE: セキュリティ考慮事項
+   * - 開発環境では hostname: '*' で全ホストを許可（利便性優先）
+   * - 本番環境では特定のホストに制限することを推奨
+   *
+   * 本番環境での推奨設定例:
+   * ```
+   * remotePatterns: [
+   *   { hostname: 'your-cdn.example.com' },
+   *   { hostname: 'images.example.com' },
+   * ],
+   * ```
+   */
   images: {
     remotePatterns: [
       {

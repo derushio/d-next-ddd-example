@@ -32,6 +32,7 @@ up:
 		exit 1; \
 	fi
 	pnpm db:migrate:dev
+	pnpm db:generate
 	pnpm db:seed
 
 dev: up
@@ -76,12 +77,12 @@ setup:
 	# Install Playwright browsers for E2E testing
 	pnpm exec playwright install chromium firefox
 
-	# Replace d-next-ddd-example with project name from package.json
+	# Replace d-next-resources with project name from package.json
 	PROJECT_NAME=$$(jq -r '.name' package.json) && \
 	command -v fd >/dev/null 2>&1 || { echo "Error: fd command is required but not found." >&2; exit 1; } && \
 	fd --hidden --no-ignore -t f \
 		-E node_modules -E .next -E dist -E .git \
-		-x sed -i "s/d-next-ddd-example/$${PROJECT_NAME}/g" {}
+		-x sed -i "s/d-next-resources/$${PROJECT_NAME}/g" {}
 
 	# Setup Git hooks
 	@echo ""

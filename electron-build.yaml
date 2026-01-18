@@ -1,4 +1,4 @@
-productName: "d-next-ddd-example"
+productName: "d-next-resources"
 
 asar: true
 afterPack: "./afterPack.js"
@@ -29,7 +29,7 @@ asarUnpack:
   - "prisma/**/*"
 
 win:
-  executableName: "d-next-ddd-example"
+  executableName: "d-next-resources"
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}

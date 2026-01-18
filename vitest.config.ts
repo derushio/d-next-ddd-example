@@ -12,11 +12,13 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@prisma/generated': path.resolve(__dirname, './src/layers/infrastructure/persistence/prisma/generated'),
+      '@prisma/generated': path.resolve(
+        __dirname,
+        './src/layers/infrastructure/persistence/prisma/generated',
+      ),
       '@tests': path.resolve(__dirname, './tests'),
-      '@/components/ui': path.resolve(__dirname, './src/components/ui-shadcn'),
-      '@/components/ui-shadcn': path.resolve(__dirname, './src/components/ui-shadcn'),
-      '@/components/ui-legacy': path.resolve(__dirname, './src/components/ui-legacy'),
+      // shadcn/ui コンポーネントは src/components/ui に配置
+      '@/components/ui': path.resolve(__dirname, './src/components/ui'),
       '@/lib/utils-shadcn': path.resolve(__dirname, './src/lib/utils-shadcn'),
     },
   },
