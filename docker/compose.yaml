@@ -1,6 +1,6 @@
 services:
   pg:
-    image: postgres:17
+    image: docker.io/library/postgres:17
     environment:
       POSTGRES_USER: $DB_USER
       POSTGRES_PASSWORD: $DB_PASSWORD
@@ -9,7 +9,7 @@ services:
     ports:
       - '${DB_PORT}:5432'
     volumes:
-      - d-next-ddd-example-volume:/var/lib/postgresql/data
+      - d-next-resources-volume:/var/lib/postgresql/data
 
 volumes:
-  d-next-ddd-example-volume: {}
+  d-next-resources-volume: {}
