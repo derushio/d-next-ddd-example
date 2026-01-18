@@ -19,7 +19,6 @@ generator comments {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 /// ユーザーテーブル
@@ -59,4 +58,28 @@ model UserSession {
 
   @@index([createdAt])
   @@index([updatedAt])
+}
+
+/// ログイン試行履歴（セキュリティ監査・アカウントロックアウト用）
+/// ブルートフォース攻撃対策として、失敗回数に基づいてアカウントをロックする
+model LoginAttempt {
+  id String @id @default(cuid())
+
+  /// 対象メールアドレス（ユーザー存在有無に関わらず記録）
+  email String
+
+  /// 試行元IPアドレス（プライバシー配慮で任意）
+  ipAddress String?
+
+  /// 成功/失敗
+  success Boolean
+
+  /// 失敗理由コード（INVALID_CREDENTIALS, ACCOUNT_LOCKED等）
+  failureReason String?
+
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([ipAddress, createdAt])
+  @@index([createdAt])
 }

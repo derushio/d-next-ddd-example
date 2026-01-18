@@ -84,5 +84,43 @@
         "comment": ""
       }
     ]
+  },
+  "LoginAttempt": {
+    "table": {
+      "tableName": "LoginAttempt",
+      "comment": "ログイン試行履歴（セキュリティ監査・アカウントロックアウト用）\nブルートフォース攻撃対策として、失敗回数に基づいてアカウントをロックする"
+    },
+    "columns": [
+      {
+        "tableName": "LoginAttempt",
+        "columnName": "id",
+        "comment": ""
+      },
+      {
+        "tableName": "LoginAttempt",
+        "columnName": "email",
+        "comment": "対象メールアドレス（ユーザー存在有無に関わらず記録）"
+      },
+      {
+        "tableName": "LoginAttempt",
+        "columnName": "ipAddress",
+        "comment": "試行元IPアドレス（プライバシー配慮で任意）"
+      },
+      {
+        "tableName": "LoginAttempt",
+        "columnName": "success",
+        "comment": "成功/失敗"
+      },
+      {
+        "tableName": "LoginAttempt",
+        "columnName": "failureReason",
+        "comment": "失敗理由コード（INVALID_CREDENTIALS, ACCOUNT_LOCKED等）"
+      },
+      {
+        "tableName": "LoginAttempt",
+        "columnName": "createdAt",
+        "comment": ""
+      }
+    ]
   }
 }
