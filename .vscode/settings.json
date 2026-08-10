@@ -1,0 +1,79 @@
+{
+  "editor.formatOnSave": true,
+  "javascript.preferences.importModuleSpecifier": "non-relative",
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "jsx",
+    "tsx"
+  ],
+  "favorites.resources": [
+    {
+      "filePath": "src/app",
+      "group": "Default"
+    },
+    {
+      "filePath": "src/components",
+      "group": "Default"
+    },
+    {
+      "filePath": "src/data-accesses",
+      "group": "Default"
+    },
+    {
+      "filePath": "prisma/schema.prisma",
+      "group": "Default"
+    },
+    {
+      "filePath": "prisma/sql",
+      "group": "Default"
+    },
+    {
+      "filePath": "public",
+      "group": "Default"
+    },
+    {
+      "filePath": "src/hooks",
+      "group": "Default"
+    },
+    {
+      "filePath": "README.md",
+      "group": "Default"
+    },
+    {
+      "filePath": "package.json",
+      "group": "Default"
+    },
+    {
+      "filePath": ".env",
+      "group": "Default"
+    },
+    {
+      "filePath": "src/data-accesses/infra/prisma/seeds",
+      "group": "Default"
+    },
+    {
+      "filePath": "prisma/migrations",
+      "group": "Default"
+    },
+    {
+      "filePath": "src/utils",
+      "group": "Default"
+    }
+  ],
+  "favorites.sortOrder": "ASC",
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "tailwindCSS.classAttributes": ["class", "className", "theme"],
+  "tailwindCSS.experimental.classRegex": [
+    ["twMerge\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    [
+      "createTheme(?:<\\w+>)?\\s*\\(([^)]*)\\)",
+      "{?\\s?[\\w].*:\\s*?[\"'`]([^\"'`]*).*?,?\\s?}?"
+    ]
+  ]
+}

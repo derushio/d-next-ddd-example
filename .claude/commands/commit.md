@@ -1,0 +1,197 @@
+# Smart Commit Command
+
+> **重要**: `pnpm check`、`pnpm type-check`、`pnpm lint`等の品質チェックコマンドは**絶対に手動実行しないでください**。これらはpre-commit/pre-pushフックで自動実行されます。
+
+以下の手順でgit commitを実行してください。
+
+## 1. 変更内容の取得
+
+まず、現在の変更内容を確認してください：
+
+```bash
+git diff --staged
+git diff
+git status
+```
+
+## 2. コードレビュー
+
+以下のエンジニアリングベストプラクティスの観点で変更をレビューしてください：
+
+### コード品質
+
+- [ ] 命名規則は適切か（変数名、関数名、クラス名）
+- [ ] 単一責任の原則は守られているか
+- [ ] 重複コードはないか（DRY原則）
+- [ ] 不要なコメント、デバッグコード、console.logは残っていないか
+
+### アーキテクチャ（Clean Architecture + DDD）
+
+#### レイヤー依存関係チェック
+
+変更されたファイルが以下の依存関係ルールに違反していないか確認してください：
+
+- [ ] **Domain層** (`layers/domain/`): Application/Infrastructure/Presentation への import が**ない**こと
+  - 違反パターン: `from '@/layers/(application|infrastructure|presentation)'`
+- [ ] **Application層** (`layers/application/`): Infrastructure/Presentation への import が**ない**こと
+  - 違反パターン: `from '@/layers/(infrastructure|presentation)'`
+- [ ] **Infrastructure層** (`layers/infrastructure/`): Presentation への import が**ない**こと
+  - 違反パターン: `from '@/layers/presentation'`
+
+#### Result型パターンチェック（UseCaseのみ）
+
+UseCase ファイル（`layers/application/usecases/` 配下）の変更がある場合：
+
+- [ ] 戻り値の型が `Promise<Result<...>>` になっているか
+- [ ] `success()` / `failure()` 関数が適切に使用されているか
+- [ ] `throw new Error()` などの例外スローが**ない**こと（Result型で統一）
+- [ ] `import { Result, success, failure } from '@/layers/application/types/Result'` が含まれているか
+
+### セキュリティ（IPA基準準拠）
+
+#### 必須チェック（全変更対象）
+
+- [ ] **機密情報**: APIキー、パスワード等のハードコード禁止
+- [ ] **入力値検証**: FormData、クエリパラメータのバリデーション
+- [ ] **エラーハンドリング**: スタックトレース非公開、統一エラーメッセージ
+
+#### 認証・認可関連変更時
+
+- [ ] **認証チェック**: 保護エンドポイントで`requireAuthentication()`使用（Auth.js v5）
+- [ ] **認可チェック**: リソースアクセス前の権限確認
+- [ ] **セッション**: 適切なタイムアウト、再生成
+
+#### データ操作関連変更時
+
+- [ ] **SQLインジェクション**: Prismaパラメータ化クエリ使用
+- [ ] **XSS**: ユーザー入力表示時のサニタイゼーション
+- [ ] **CSRF**: Server Actions使用または適切なトークン
+
+#### 外部連携関連変更時
+
+- [ ] **APIキー管理**: 環境変数使用
+- [ ] **ログ出力**: 機密情報マスク（SecureLogger使用）
+
+**必須**: `security-review` スキルの内容に従って、IPA基準のフルセキュリティチェックを実行してください。
+
+#### セキュリティリスクパターン検出コマンド
+
+```bash
+# 機密情報ハードコードチェック
+git diff --staged | grep -E '(password|secret|apiKey|token)' | grep -v 'process\.env'
+
+# 生SQLクエリ検出
+git diff --staged | grep -E '(\$queryRaw|\$executeRaw)'
+
+# XSS脆弱性チェック
+git diff --staged | grep -E 'dangerouslySetInnerHTML'
+
+# デバッグコード残存チェック
+git diff --staged | grep -E '(console\.log|console\.error)'
+```
+
+### パフォーマンス
+
+- [ ] 不要なループや再レンダリングはないか
+- [ ] メモリリークの可能性はないか
+
+### 保守性
+
+- [ ] 型定義は適切か（TypeScript）
+- [ ] エラーハンドリングは適切か
+- [ ] テストの追加・更新は必要か
+
+## 3. 問題点の報告と対応
+
+上記レビューで問題が見つかった場合：
+
+1. **問題点を具体的に報告**してください
+2. ユーザーに**修正を提案**してください
+3. ユーザーの承認を得てから修正を行ってください
+
+## 4. Conventional Commits形式ガイド
+
+問題がない場合、または修正完了後、以下のConventional Commits形式でコミットメッセージを作成してください：
+
+### フォーマット
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+### Type一覧
+
+- `feat`: 新機能追加
+- `fix`: バグ修正
+- `docs`: ドキュメントのみの変更
+- `style`: コードの意味に影響しない変更（空白、フォーマット等）
+- `refactor`: バグ修正でも機能追加でもないコード変更
+- `perf`: パフォーマンス改善
+- `test`: テストの追加・修正
+- `chore`: ビルドプロセスやツールの変更
+- `ci`: CI設定の変更
+
+### 良いコミットメッセージの例
+
+```
+feat(auth): ログイン機能にOAuth2.0認証を追加
+
+- Google OAuth2.0プロバイダーを実装
+- セッション管理にJWTを採用
+- リフレッシュトークンのローテーション機能を追加
+
+Closes #123
+```
+
+### コミット分割の原則
+
+1. 変更を適切な単位でステージング
+2. 論理的に分離可能な変更は**複数のコミットに分割**
+3. 各コミットは**単一の目的**を持つようにする
+
+## 5. コミット実行
+
+コミットメッセージを作成したら、以下のコマンドでコミットを実行してください：
+
+```bash
+git commit -m "<type>(<scope>): <subject>"
+```
+
+## 6. Git Hooksによる自動品質チェック
+
+このプロジェクトでは以下のGit Hooksが設定されています：
+
+- **pre-commit**: `pnpm format` で自動フォーマット
+- **pre-push**: `pnpm check` で品質チェック（format, type-check, lint, test:unit）
+
+そのため、コミット時に手動で品質チェックコマンドを実行する必要はありません。
+
+## 7. フォーマット後の差分処理
+
+pre-commitフックでフォーマッターが実行された結果、追加の変更が発生することがあります。
+
+この場合、以下の対応を行ってください：
+
+```bash
+# 差分確認
+git status
+git diff
+
+# フォーマット差分のみの場合は --amend で追加
+git add -A
+git commit --amend --no-edit
+```
+
+フォーマット以外の変更が含まれている場合は、別コミットとして処理することを推奨します。
+
+## 8. 最終確認
+
+```bash
+git log --oneline -3
+```
+
+コミット履歴を確認して完了報告してください。

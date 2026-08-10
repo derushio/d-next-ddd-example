@@ -1,0 +1,30 @@
+services:
+  pg:
+    image: docker.io/library/postgres:17
+    environment:
+      POSTGRES_USER: $DB_USER
+      POSTGRES_PASSWORD: $DB_PASSWORD
+      POSTGRES_DB: $DB_NAME
+      POSTGRES_INITDB_ARGS: '--locale-provider=icu --icu-locale=ja-x-icu'
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    networks:
+      - traefik
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.${COMPOSE_PROJECT_NAME:?COMPOSE_PROJECT_NAME required (use Makefile)}-pg.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.${COMPOSE_PROJECT_NAME:?COMPOSE_PROJECT_NAME required (use Makefile)}-pg.entrypoints=pg-${DB_PORT:?DB_PORT required (use Makefile)}"
+      - "traefik.tcp.services.${COMPOSE_PROJECT_NAME:?COMPOSE_PROJECT_NAME required (use Makefile)}-pg.loadbalancer.server.port=5432"
+
+volumes:
+  pg-data: {}
+
+networks:
+  traefik:
+    external: true

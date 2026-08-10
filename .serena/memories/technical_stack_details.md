@@ -1,0 +1,54 @@
+# 技術スタック詳細
+
+## フロントエンド
+
+- **Next.js 16**: React フレームワーク（App Router、Turbopack対応）
+- **React 19**: UI ライブラリ
+- **TypeScript 6**: 静的型付けシステム
+- **TailwindCSS v4**: CSSフレームワーク
+- **shadcn/ui**: UIコンポーネントライブラリ
+- **next-themes**: ダークモード対応
+
+## バックエンド・データベース
+
+- **PostgreSQL**: メインデータベース
+- **Prisma 7**: ORM（Driver Adapter対応）
+- **NextAuth.js**: 認証システム
+- **@node-rs/argon2**: パスワードハッシュ化（Argon2id）
+- **jose**: JWT処理
+
+## アーキテクチャ・DI
+
+- **TSyringe**: 依存性注入コンテナ
+- **reflect-metadata**: デコレーターサポート
+- **Clean Architecture**: 4層アーキテクチャ実装
+- **DDD**: ドメイン駆動設計パターン
+
+## 開発ツール
+
+- **pnpm**: パッケージマネージャ
+- **Biome**: Lint + Format 統合ツール（ESLint/Prettier代替）
+- **npm-run-all**: 並列・直列タスク実行
+
+## テスト
+
+- **Vitest**: ユニットテストフレームワーク
+- **vitest-mock-extended**: 自動モック生成
+- **@testing-library/react**: React テスティングライブラリ
+- **Playwright**: E2Eテストフレームワーク
+- **jsdom**: DOM環境シミュレーション
+
+## バリデーション・ユーティリティ
+
+- **Zod**: スキーマバリデーション
+- **lodash**: ユーティリティライブラリ
+- **date-fns**: 日付操作ライブラリ
+- **uuid**: UUID生成
+- **p-queue**: 非同期キュー管理
+
+## 設定・環境
+
+- **@dotenvx/dotenvx**: 環境変数管理
+- **cross-env**: 環境変数設定（クロスプラットフォーム）
+- **markdownlint**: Markdownリント
+- **tsx**: TypeScript実行環境

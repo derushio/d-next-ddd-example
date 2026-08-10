@@ -1,0 +1,36 @@
+# syntax=docker/dockerfile:1
+
+# Stage 1: base - Node.js環境とpnpmセットアップ
+FROM node:24-slim AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN npm install -g corepack@latest
+RUN corepack enable
+RUN apt-get update \
+  && apt-get install -y libssl-dev \
+  && apt clean \
+  && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+
+# Stage 2: prod-deps - 本番依存のみインストール
+FROM base AS prod-deps
+COPY package.json pnpm-lock.yaml ./
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --prod
+
+# Stage 3: build - フルビルド（devDependencies含む）
+FROM base AS build
+COPY package.json pnpm-lock.yaml ./
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+COPY . /app
+COPY ./.env.example.prod /app/.env
+RUN pnpm build
+
+# Stage 4: next - 最小限ランタイムイメージ
+FROM base AS next
+COPY --from=prod-deps /app/node_modules /app/node_modules
+COPY --from=build /app/src/layers/infrastructure/persistence/prisma/generated /app/src/layers/infrastructure/persistence/prisma/generated
+COPY --from=build /app/.next /app/.next
+COPY --from=build /app/public /app/public
+COPY --from=build /app/package.json /app/package.json
+EXPOSE 3000
+CMD [ "pnpm", "start" ]

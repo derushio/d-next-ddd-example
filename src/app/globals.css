@@ -1,0 +1,503 @@
+@import "tailwindcss";
+
+/* =================================
+   統一テーマシステム v3.0
+   OKLCH色空間 + shadcn/ui v4 統合
+   ================================= */
+
+:root {
+  /* =================================
+     1. カラーシステム（グラデーション用 + 意味的色変数）
+     グラデーション系: OKLCH色空間（マルチストップグラデーション用）
+     意味的色変数: 可能な限り shadcn/ui OKLCH変数へのエイリアスに統一済み
+     ================================= */
+
+  /* Aurora Primary - Purple to Pink to Blue */
+  --aurora-primary-start: oklch(0.606 0.219 292.7); /* violet-500 */
+  --aurora-primary-mid: oklch(0.656 0.212 354.3); /* pink-500 */
+  --aurora-primary-end: oklch(0.715 0.126 215.2); /* cyan-500 */
+  --aurora-primary-light: oklch(0.946 0.033 307.2); /* violet-50 */
+
+  /* Sunset Secondary - Orange to Pink to Purple */
+  --sunset-secondary-start: oklch(0.705 0.187 47.6); /* orange-500 */
+  --sunset-secondary-mid: oklch(0.725 0.175 349.8); /* pink-400 */
+  --sunset-secondary-end: oklch(0.627 0.233 303.9); /* purple-500 */
+  --sunset-secondary-light: oklch(0.98 0.016 73.7); /* orange-50 */
+
+  /* Ocean Success - Teal to Green to Blue */
+  --ocean-success-start: oklch(0.704 0.123 182.5); /* teal-500 */
+  --ocean-success-mid: oklch(0.723 0.192 149.6); /* green-500 */
+  --ocean-success-end: oklch(0.623 0.188 259.8); /* blue-500 */
+  --ocean-success-light: oklch(0.984 0.014 180.7); /* teal-50 */
+
+  /* Cosmic Error - Red to Magenta to Purple */
+  --cosmic-error-start: oklch(0.637 0.208 25.3); /* red-500 */
+  --cosmic-error-mid: oklch(0.656 0.212 354.3); /* pink-500 */
+  --cosmic-error-end: oklch(0.606 0.219 292.7); /* violet-500 */
+  --cosmic-error-light: oklch(0.971 0.013 17.4); /* red-50 */
+
+  /* Solar Warning - Yellow to Orange to Red */
+  --solar-warning-start: oklch(0.795 0.162 86); /* yellow-500 */
+  --solar-warning-mid: oklch(0.705 0.187 47.6); /* orange-500 */
+  --solar-warning-end: oklch(0.637 0.208 25.3); /* red-500 */
+  --solar-warning-light: oklch(0.987 0.026 102.2); /* yellow-50 */
+
+  /* hover/light/muted 変数（グラデーション/カスタム用途） */
+  /* violet-600 */
+  --primary-hover: oklch(0.541 0.221 263);
+  /* violet-50 */
+  --primary-light: oklch(0.969 0.016 281.5);
+  /* violet-300 */
+  --primary-muted: oklch(0.806 0.124 261.2);
+
+  /* orange-600 */
+  --secondary-hover: oklch(0.595 0.219 44.5);
+  /* orange-50 */
+  --secondary-light: oklch(0.98 0.016 73.7);
+
+  /* teal-600 */
+  --success-hover: oklch(0.556 0.151 166.2);
+  /* teal-50 */
+  --success-light: oklch(0.984 0.014 166);
+  /* teal-300 */
+  --success-muted: oklch(0.87 0.097 181.6);
+
+  /* → shadcn/ui --destructive (oklch(0.636 0.208 25.38) ≈ red-500) */
+  --error: var(--destructive);
+  /* red-600 */
+  --error-hover: oklch(0.577 0.218 27.3);
+  /* red-50 */
+  --error-light: oklch(0.971 0.013 17.4);
+  /* red-300 */
+  --error-muted: oklch(0.81 0.108 22.9);
+
+  /* amber-600 */
+  --warning-hover: oklch(0.618 0.157 55.8);
+  /* yellow-50 */
+  --warning-light: oklch(0.987 0.026 102.2);
+  /* yellow-300 */
+  --warning-muted: oklch(0.877 0.148 91.9);
+
+  /* cyan-600 */
+  --info-hover: oklch(0.583 0.138 226.5);
+  /* cyan-50 */
+  --info-light: oklch(0.977 0.013 236.6);
+  /* cyan-300 */
+  --info-muted: oklch(0.877 0.083 209.1);
+
+  /* サーフェス（背景）カラー */
+  /* → shadcn/ui --background (oklch(1 0 0) = white) */
+  --surface: var(--background);
+  /* gray-50 */
+  --surface-50: oklch(0.985 0 0);
+  /* gray-100 */
+  --surface-100: oklch(0.967 0 0);
+
+  /* テキストカラー */
+  /* → shadcn/ui --foreground (oklch(0.145 0 0) ≈ gray-900) */
+  --text-primary: var(--foreground);
+  /* gray-700 */
+  --text-secondary: oklch(0.373 0.023 255.7);
+  /* → shadcn/ui --muted-foreground (oklch(0.555 0.041 257.44) ≈ gray-500) */
+  --text-muted: var(--muted-foreground);
+  /* gray-400 */
+  --text-disabled: oklch(0.707 0.022 257.7);
+  /* → shadcn/ui --primary-foreground (oklch(0.985 0 0) = near-white) */
+  --text-inverse: var(--primary-foreground);
+
+  /* ボーダーカラー */
+  /* gray-100: --borderより薄い境界線用 */
+  --border-light: oklch(0.969 0.003 264.5);
+
+  /* =================================
+     2. shadcn/ui テーマ変数（OKLCH直接定義）
+     ================================= */
+
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --primary: oklch(0.626 0.186 259.6);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.556 0.252 293);
+  --secondary-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.636 0.208 25.38);
+  --destructive-foreground: oklch(0.985 0 0);
+  --success: oklch(0.623 0.169 149.18);
+  --success-foreground: oklch(0.985 0 0);
+  --warning: oklch(0.669 0.159 57.96);
+  --warning-foreground: oklch(0.985 0 0);
+  --info: oklch(0.678 0.148 238.1);
+  --info-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.968 0.007 247.9);
+  --muted-foreground: oklch(0.555 0.041 257.44);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --border: oklch(0.929 0.013 255.53);
+  --input: oklch(0.929 0.013 255.53);
+  --accent: oklch(0.968 0.007 247.9);
+  --accent-foreground: oklch(0.555 0.041 257.44);
+  --ring: oklch(0.626 0.186 259.6);
+  --radius: 0.5rem;
+}
+
+/* =================================
+   ダークモード変数（設計上の判断: 意図的に省略）
+   ================================= */
+
+/*
+ * 現在はライトモードとダークモードで同一の表示を維持する設計を採用している。
+ * （ブランドカラー・UIの一貫性を優先するため）
+ *
+ * そのため .dark ブロックは :root と完全同一になるため省略している（パフォーマンス最適化）。
+ *
+ * 将来ダークモード対応が必要になった場合の手順:
+ *   1. 下記のように .dark ブロックを復活させ、OKLCH値の L（明度）を反転する
+ *      例: oklch(0.145 0 0) → oklch(0.985 0 0)、oklch(1 0 0) → oklch(0.1 0 0)
+ *   2. [data-theme="dark"] セレクタでも対応可能（class 属性ではなく data 属性を使う場合）
+ *
+ *   .dark {
+ *     --background: oklch(0.1 0 0);
+ *     --foreground: oklch(0.985 0 0);
+ *     ... （各変数を順次ダーク値に変更）
+ *   }
+ */
+
+/* =================================
+   3. TailwindCSS v4 統合設定
+   ================================= */
+
+@theme inline {
+  /* shadcn/ui OKLCH変数をTailwindで使用可能に（hsl()ラッピング不要） */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-ring: var(--ring);
+  --radius: var(--radius);
+
+  /* カスタム用 */
+  --color-surface: var(--surface);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-border-hex: var(--border-light);
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* 現代的グラデーションクラス */
+@layer utilities {
+  /* Aurora Gradient - Purple to Pink to Blue */
+  .gradient-aurora {
+    background: linear-gradient(
+      135deg,
+      var(--aurora-primary-start) 0%,
+      var(--aurora-primary-mid) 50%,
+      var(--aurora-primary-end) 100%
+    );
+  }
+
+  .gradient-aurora-hover:hover {
+    background: linear-gradient(
+      135deg,
+      var(--aurora-primary-start) 0%,
+      var(--aurora-primary-mid) 30%,
+      var(--aurora-primary-end) 100%
+    );
+    transform: scale(1.02);
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  /* Sunset Gradient - Orange to Pink to Purple */
+  .gradient-sunset {
+    background: linear-gradient(
+      135deg,
+      var(--sunset-secondary-start) 0%,
+      var(--sunset-secondary-mid) 50%,
+      var(--sunset-secondary-end) 100%
+    );
+  }
+
+  .gradient-sunset-hover:hover {
+    background: linear-gradient(
+      135deg,
+      var(--sunset-secondary-start) 0%,
+      var(--sunset-secondary-mid) 40%,
+      var(--sunset-secondary-end) 100%
+    );
+    transform: scale(1.02);
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  /* Ocean Gradient - Teal to Green to Blue */
+  .gradient-ocean {
+    background: linear-gradient(
+      135deg,
+      var(--ocean-success-start) 0%,
+      var(--ocean-success-mid) 50%,
+      var(--ocean-success-end) 100%
+    );
+  }
+
+  .gradient-ocean-hover:hover {
+    background: linear-gradient(
+      135deg,
+      var(--ocean-success-start) 0%,
+      var(--ocean-success-mid) 40%,
+      var(--ocean-success-end) 100%
+    );
+    transform: scale(1.02);
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  /* Cosmic Gradient - Red to Magenta to Purple */
+  .gradient-cosmic {
+    background: linear-gradient(
+      135deg,
+      var(--cosmic-error-start) 0%,
+      var(--cosmic-error-mid) 50%,
+      var(--cosmic-error-end) 100%
+    );
+  }
+
+  .gradient-cosmic-hover:hover {
+    background: linear-gradient(
+      135deg,
+      var(--cosmic-error-start) 0%,
+      var(--cosmic-error-mid) 40%,
+      var(--cosmic-error-end) 100%
+    );
+    transform: scale(1.02);
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  /* Solar Gradient - Yellow to Orange to Red */
+  .gradient-solar {
+    background: linear-gradient(
+      135deg,
+      var(--solar-warning-start) 0%,
+      var(--solar-warning-mid) 50%,
+      var(--solar-warning-end) 100%
+    );
+  }
+
+  .gradient-solar-hover:hover {
+    background: linear-gradient(
+      135deg,
+      var(--solar-warning-start) 0%,
+      var(--solar-warning-mid) 40%,
+      var(--solar-warning-end) 100%
+    );
+    transform: scale(1.02);
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  /* Special Effects - Animated Gradients */
+  .gradient-animated {
+    background: linear-gradient(
+      -45deg,
+      var(--aurora-primary-start),
+      var(--sunset-secondary-mid),
+      var(--ocean-success-start),
+      var(--aurora-primary-end)
+    );
+    background-size: 400% 400%;
+    animation: gradientShift 6s ease infinite;
+    will-change: transform;
+    contain: layout style;
+  }
+
+  @keyframes gradientShift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  /* Glass Morphism Gradient */
+  .gradient-glass {
+    background: linear-gradient(
+      135deg,
+      oklch(100% 0 0 / 10%) 0%,
+      oklch(100% 0 0 / 5%) 100%
+    );
+    backdrop-filter: blur(10px);
+    border: 1px solid oklch(100% 0 0 / 20%);
+  }
+
+  /* Compatibility - Legacy gradient names (alias to canonical classes) */
+  .gradient-brand {
+    background: linear-gradient(
+      135deg,
+      var(--aurora-primary-start) 0%,
+      var(--aurora-primary-mid) 50%,
+      var(--aurora-primary-end) 100%
+    );
+  }
+
+  .gradient-brand-hover:hover {
+    background: linear-gradient(
+      135deg,
+      var(--aurora-primary-start) 0%,
+      var(--aurora-primary-mid) 50%,
+      var(--aurora-primary-end) 100%
+    );
+    transform: scale(1.02);
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  .gradient-danger {
+    background: linear-gradient(
+      135deg,
+      var(--cosmic-error-start) 0%,
+      var(--cosmic-error-mid) 50%,
+      var(--cosmic-error-end) 100%
+    );
+  }
+
+  .gradient-danger-hover:hover {
+    background: linear-gradient(
+      135deg,
+      var(--cosmic-error-start) 0%,
+      var(--cosmic-error-mid) 50%,
+      var(--cosmic-error-end) 100%
+    );
+    transform: scale(1.02);
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  .gradient-success {
+    background: linear-gradient(
+      135deg,
+      var(--ocean-success-start) 0%,
+      var(--ocean-success-mid) 50%,
+      var(--ocean-success-end) 100%
+    );
+  }
+
+  .gradient-success-hover:hover {
+    background: linear-gradient(
+      135deg,
+      var(--ocean-success-start) 0%,
+      var(--ocean-success-mid) 50%,
+      var(--ocean-success-end) 100%
+    );
+    transform: scale(1.02);
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+}
+
+/* カスタムコンポーネント */
+@layer components {
+  /* カスタムスクロールバー */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--muted) var(--background);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--background);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--muted);
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--muted-foreground);
+  }
+}
+
+/* カスタムユーティリティ */
+@layer utilities {
+  .hidden-scrollbar {
+    -ms-overflow-style: none; /* IE, Edge 対応 */
+    scrollbar-width: none; /* Firefox 対応 */
+  }
+  .hidden-scrollbar::-webkit-scrollbar {
+    /* Chrome, Safari 対応 */
+    display: none;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* フォーカス可視化 */
+  .focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+.h-screen {
+  /* 元々はvh */
+  height: 100svh;
+}
+
+/* Performance utilities */
+.perf-contain-layout {
+  contain: layout style;
+}
+.perf-contain-paint {
+  contain: layout paint style;
+}
+.perf-content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}

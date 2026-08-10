@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["typedSql"]
+  output          = "../src/layers/infrastructure/persistence/prisma/generated"
+}
+
+generator comments {
+  // 少々クセのある動きをする
+  // generateでも生成されてしまうが、対象のテーブルが未生成の場合migrate:devに失敗するので
+  // その場合は生成されたコメントのmigrationディレクトリとcomments-latest.jsonを消去した上で再度migrate:devを実行するべき
+  provider = "prisma-db-comments-generator"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// ユーザーテーブル
+model User {
+  id String @id
+
+  name String
+
+  email        String @unique
+  /// salt hash
+  passwordHash String
+
+  UserSession UserSession[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("users")
+  @@index([createdAt])
+  @@index([updatedAt])
+}
+
+/// ユーザーのサインインセッション
+model UserSession {
+  id String @id
+
+  User   User   @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  userId String
+
+  accessTokenHash     String
+  accessTokenExpireAt DateTime
+
+  resetTokenHash     String
+  resetTokenExpireAt DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("user_sessions")
+  @@index([createdAt])
+  @@index([updatedAt])
+}
+
+/// ログイン試行履歴（セキュリティ監査・アカウントロックアウト用）
+/// ブルートフォース攻撃対策として、失敗回数に基づいてアカウントをロックする
+model LoginAttempt {
+  id String @id
+
+  /// 対象メールアドレス（ユーザー存在有無に関わらず記録）
+  email String
+
+  /// 試行元IPアドレス（プライバシー配慮で任意）
+  ipAddress String?
+
+  /// 成功/失敗
+  success Boolean
+
+  /// 失敗理由コード（INVALID_CREDENTIALS, ACCOUNT_LOCKED等）
+  failureReason String?
+
+  createdAt DateTime @default(now())
+
+  @@map("login_attempts")
+  @@index([email, createdAt])
+  @@index([ipAddress, createdAt])
+  @@index([createdAt])
+}
