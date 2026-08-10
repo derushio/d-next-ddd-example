@@ -2,7 +2,7 @@
 
 ## プロジェクト名
 
-d-next-resources - Next.js Clean Architecture Template
+d-next-ddd-example - Next.js Clean Architecture Template
 
 ## プロジェクトの目的
 

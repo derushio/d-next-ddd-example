@@ -49,10 +49,10 @@ Next.js listen:   localhost:4609                                ← 実際のポ
 
 ```typescript
 const nextConfig: NextConfig = {
-  // NOTE: "d-next-resources" は make setup 時に package.json の name で自動置換される
+  // NOTE: "d-next-ddd-example" は make setup 時に package.json の name で自動置換される
   allowedDevOrigins: [
-    '*.d-next-resources.localhost',  // worktree経由
-    'd-next-resources.localhost',    // main直接アクセス
+    '*.d-next-ddd-example.localhost',  // worktree経由
+    'd-next-ddd-example.localhost',    // main直接アクセス
   ],
 };
 ```
@@ -62,7 +62,7 @@ const nextConfig: NextConfig = {
 # Makefile の setup ターゲット末尾で全ファイルを一括置換
 PROJECT_NAME=$(jq -r '.name' package.json)
 fd --hidden --no-ignore -t f -E node_modules -E .next -E dist -E .git \
-  -x sed -i "s/d-next-resources/${PROJECT_NAME}/g" {}
+  -x sed -i "s/d-next-ddd-example/${PROJECT_NAME}/g" {}
 ```
 
 → `package.json` の `name` を変更して `make setup` を実行すれば、
@@ -83,7 +83,7 @@ fd --hidden --no-ignore -t f -E node_modules -E .next -E dist -E .git \
 `make setup` が自動処理するが、手動セットアップの場合は以下を確認:
 
 - [ ] `package.json` の `name` を新プロジェクト名に変更
-- [ ] `make setup` を実行（`d-next-resources` が全ファイルで自動置換される）
+- [ ] `make setup` を実行（`d-next-ddd-example` が全ファイルで自動置換される）
 - [ ] `next.config.ts` の `allowedDevOrigins` にプロジェクト名が反映されていること
 - [ ] Makefile の `PROJECT_BASE` が `jq -r '.name' package.json` で動的取得していること
 

@@ -23,7 +23,7 @@ Clean Architecture + DDD プロジェクトのディレクトリ・ファイル�
 ## 🗂️ ルートディレクトリ構造
 
 ```
-d-next-resources/
+d-next-ddd-example/
 ├── src/                    # ソースコード
 ├── tests/                  # テストコード
 ├── prisma/                 # Prismaスキーマ・マイグレーション

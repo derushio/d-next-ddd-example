@@ -7,7 +7,7 @@ async function main() {
   ).toString();
 
   dockerComposeYaml = dockerComposeYaml.replaceAll(
-    'd-next-resources-volume',
+    'd-next-ddd-example-volume',
     `${path.basename(process.cwd())}-volume`,
   );
 

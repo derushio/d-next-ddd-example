@@ -73,7 +73,7 @@ DATABASE_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT].supabase.co:5432/pos
 NEXT_PUBLIC_BASE_URL=""
 
 # portless経由のアクセスURL例（portless listで確認）
-# http://d-next-resources.localhost:1355
+# http://d-next-ddd-example.localhost:1355
 
 # 本番環境
 NEXT_PUBLIC_BASE_URL="https://your-domain.com"
@@ -258,11 +258,11 @@ LOG_MASK_PII=true
 # 開発環境設定
 # ===========================================
 
-# アプリケーション（portless管理のため空欄。アクセスURL: http://d-next-resources.localhost:1355）
+# アプリケーション（portless管理のため空欄。アクセスURL: http://d-next-ddd-example.localhost:1355）
 NEXT_PUBLIC_BASE_URL=""
 
 # Auth.js v5（portless起動後に設定）
-AUTH_URL="http://d-next-resources.localhost:1355"
+AUTH_URL="http://d-next-ddd-example.localhost:1355"
 AUTH_SECRET="dev-auth-secret-key-for-local-development-only"
 
 # データベース（Docker Compose）

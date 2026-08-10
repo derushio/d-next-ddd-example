@@ -61,7 +61,7 @@ pnpm dev
 make setup && make dev
 ```
 
-**<http://d-next-resources.localhost:1355>** でアプリケーションが起動します（portless経由）。
+**<http://d-next-ddd-example.localhost:1355>** でアプリケーションが起動します（portless経由）。
 
 ---
 

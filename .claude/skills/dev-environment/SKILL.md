@@ -107,7 +107,7 @@ portless list
 4. Git hooks 設定（pre-commit, pre-push）
 5. Docker コンテナ起動（worktreeごとに独立したDBポート）
 6. DB マイグレーション + シード投入
-7. 開発サーバー起動（`http://d-next-resources.localhost:1355`）
+7. 開発サーバー起動（`http://d-next-ddd-example.localhost:1355`）
 
 #### 2回目以降
 
@@ -125,7 +125,7 @@ make dev
 
 ```bash
 portless list
-# 例: http://d-next-resources.localhost:1355
+# 例: http://d-next-ddd-example.localhost:1355
 ```
 
 #### worktreeでの並列開発

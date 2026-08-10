@@ -208,8 +208,8 @@ setup:
 	@command -v openssl >/dev/null 2>&1 || { echo "❌ Error: openssl is required but not found." >&2; exit 1; }
 	@command -v pnpm >/dev/null 2>&1 || { echo "❌ Error: pnpm is required but not found." >&2; exit 1; }
 	@PROJECT_NAME=$$(jq -r '.name' package.json) && \
-	if [ "$$PROJECT_NAME" = "d-next-resources" ]; then \
-		echo "❌ Error: 先に package.json の name を変更してください（現在: d-next-resources）" >&2; \
+	if [ "$$PROJECT_NAME" = "d-next-ddd-example" ]; then \
+		echo "❌ Error: 先に package.json の name を変更してください（現在: d-next-ddd-example）" >&2; \
 		exit 1; \
 	fi
 	@echo "✅ Prerequisites OK"
@@ -229,19 +229,19 @@ setup:
 	fi
 
 	# === Phase C: プロジェクト名一括置換（pnpm install の前） ===
-	# トリガーは「リポジトリ内のどこかに 'd-next-resources' 文字列が残っているか」。
+	# トリガーは「リポジトリ内のどこかに 'd-next-ddd-example' 文字列が残っているか」。
 	# next.config.ts 単体のチェックでは初期テンプレが該当文字列を含まない場合に
 	# 置換スキップ → README/.env.example.dev/k8s/createdb.sql 等に残存する。
 	@if fd --hidden --no-ignore -t f \
 			-E node_modules -E .next -E dist -E .git \
 			-E pnpm-lock.yaml -E '*.ico' -E .env \
-			-x grep -l 'd-next-resources' {} 2>/dev/null | grep -q .; then \
+			-x grep -l 'd-next-ddd-example' {} 2>/dev/null | grep -q .; then \
 		PROJECT_NAME=$$(jq -r '.name' package.json) && \
-		echo "🔄 Replacing 'd-next-resources' with '$$PROJECT_NAME'..." && \
+		echo "🔄 Replacing 'd-next-ddd-example' with '$$PROJECT_NAME'..." && \
 		fd --hidden --no-ignore -t f \
 			-E node_modules -E .next -E dist -E .git \
 			-E pnpm-lock.yaml -E '*.ico' -E .env \
-			-x $(SED) -i "s/d-next-resources/$$PROJECT_NAME/g" {} && \
+			-x $(SED) -i "s/d-next-ddd-example/$$PROJECT_NAME/g" {} && \
 		echo "✅ Project name replaced"; \
 	else \
 		echo "ℹ️  Project name already replaced, skipping..."; \

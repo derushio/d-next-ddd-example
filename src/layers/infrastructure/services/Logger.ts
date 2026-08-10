@@ -40,7 +40,7 @@ function createPinoLogger() {
   return pino({
     level,
     base: {
-      service: 'd-next-resources',
+      service: 'd-next-ddd-example',
       environment: process.env.NODE_ENV ?? 'development',
     },
   });
